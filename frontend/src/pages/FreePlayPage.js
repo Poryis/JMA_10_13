@@ -881,7 +881,7 @@ function FreePlayPage() {
               <button
                 data-testid="capture-jam-btn"
                 className="chunky-btn text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
-                style={{ backgroundColor: '#AF52DE' }}
+                style={{ backgroundColor: 'var(--jma-red, #FF3B30)' }}
                 onClick={() => {
                   initAudioContext();
                   // Clear any previous loop + MP3 so the new capture is fresh

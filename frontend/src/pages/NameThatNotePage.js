@@ -19,6 +19,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import SolfegeStaff, { NOTE_Y, STAFF_NOTE_AREA_LEFT } from '../components/SolfegeStaff';
 import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
+import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { formatNoteName, getNoteNameMode, NOTE_NAME_MODES } from '../hooks/useNoteNames';
 
@@ -355,6 +356,7 @@ export default function NameThatNotePage() {
     if (secs > 0) {
       tickRef.current = setInterval(() => {
         setSecsLeft((s) => {
+          if (isGamePaused()) return s; // hold the clock while a badge/dialog is up
           if (s <= 1) { clearInterval(tickRef.current); tickRef.current = null; return 0; }
           return s - 1;
         });
@@ -364,6 +366,32 @@ export default function NameThatNotePage() {
     // Place It: ring the note we want placed so the ear reinforces where it should go.
     else timerRef.current = setTimeout(() => { try { playBellNote(n); } catch { /* ignore */ } }, 350);
   }, [playBellNote, promptFor, answerMode]);
+
+  // Walk the staff C → High C, lighting + ringing each note. Shared by the
+  // round-opening tour AND the in-game "Replay Notes" review button.
+  const walkTour = useCallback((diff, m, onDone) => {
+    setGameState('tour');
+    setTourIndex(0);
+    setBubble(`This is ${labelFor(ALL_NOTES[0], answerMode)} — it ${WHY[ALL_NOTES[0]]}!`);
+    setMoodFor('cheer', 500);
+    timerRef.current = setTimeout(() => { try { playBellNote(ALL_NOTES[0]); } catch { /* ignore */ } }, 250);
+    let i = 0;
+    tourRef.current = setInterval(() => {
+      i += 1;
+      if (i >= ALL_NOTES.length) {
+        clearInterval(tourRef.current); tourRef.current = null;
+        setBubble("Got it? Let's go!");
+        setMoodFor('party', 900);
+        timerRef.current = setTimeout(() => onDone(diff, m), 900);
+        return;
+      }
+      setTourIndex(i);
+      const tn = ALL_NOTES[i];
+      setBubble(`This is ${labelFor(tn, answerMode)} — it ${WHY[tn]}!`);
+      setMoodFor('cheer', 400);
+      try { playBellNote(tn); } catch { /* ignore */ }
+    }, 900);
+  }, [answerMode, playBellNote, setMoodFor]);
 
   const startRound = useCallback((diffOverride, modeOverride) => {
     initAudioContext();
@@ -382,28 +410,20 @@ export default function NameThatNotePage() {
     setHintOn(false);
     setFinnMood('idle');
     prevTargetRef.current = null;
-    setGameState('tour');
-    setTourIndex(0);
-    setBubble(`This is ${labelFor(ALL_NOTES[0], answerMode)} — it ${WHY[ALL_NOTES[0]]}!`);
-    setMoodFor('cheer', 500);
-    timerRef.current = setTimeout(() => { try { playBellNote(ALL_NOTES[0]); } catch { /* ignore */ } }, 250);
-    let i = 0;
-    tourRef.current = setInterval(() => {
-      i += 1;
-      if (i >= ALL_NOTES.length) {
-        clearInterval(tourRef.current); tourRef.current = null;
-        setBubble("Got it? Let's go!");
-        setMoodFor('party', 900);
-        timerRef.current = setTimeout(() => { setGameState('playing'); nextQuestion(diff, m); }, 900);
-        return;
-      }
-      setTourIndex(i);
-      const tn = ALL_NOTES[i];
-      setBubble(`This is ${labelFor(tn, answerMode)} — it ${WHY[tn]}!`);
-      setMoodFor('cheer', 400);
-      try { playBellNote(tn); } catch { /* ignore */ }
-    }, 900);
-  }, [initAudioContext, clearTimers, difficulty, mode, nextQuestion, playBellNote, answerMode, setMoodFor]);
+    walkTour(diff, m, (d, mm) => { setGameState('playing'); nextQuestion(d, mm); });
+  }, [initAudioContext, clearTimers, difficulty, mode, nextQuestion, walkTour]);
+
+  // "Replay Notes" — re-walk the staff tour mid-round without losing the
+  // kid's score/progress, then continue with a fresh question. Rose found
+  // Name That Note confusing and wanted to hear/see all the notes again.
+  const reviewTour = useCallback(() => {
+    if (isTour || locked) return;
+    clearTimers();
+    setLocked(true);
+    setReveal(false);
+    setHintOn(false);
+    walkTour(difficulty, mode, (d, mm) => { setGameState('playing'); nextQuestion(d, mm); });
+  }, [isTour, locked, clearTimers, walkTour, difficulty, mode, nextQuestion]);
 
   const skipTour = useCallback(() => {
     clearTimers();
@@ -841,6 +861,17 @@ export default function NameThatNotePage() {
         )}
 
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          {!isTour && (
+            <button
+              data-testid="ntn-review-btn"
+              onClick={reviewTour}
+              disabled={locked}
+              className="chunky-btn bg-[var(--jma-blue)] text-white px-4 py-2 flex items-center gap-1.5"
+              style={{ opacity: locked ? 0.5 : 1 }}
+            >
+              <Music2 className="w-4 h-4" /> Replay Notes
+            </button>
+          )}
           {!isTour && level.hints > 0 && (
             <button
               data-testid="ntn-hint-btn"

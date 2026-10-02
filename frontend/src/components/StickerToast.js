@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import useStickers from '../hooks/useStickers';
 import useRank from '../hooks/useRank';
+import { setOverlayActive } from '../hooks/useGamePause';
 import { STICKER_MAP } from '../data/stickers';
 import { ALL_ACHIEVEMENT_IDS } from '../data/achievements';
 
@@ -65,6 +66,14 @@ export default function StickerToast() {
   // Coordination gate: if this earn also triggered a rank-up, the toast
   // yields the moment entirely to RankUpCelebration.
   const suppressForRankUp = isAchievement && rankJustChanged;
+
+  // Freeze timer/sequence games underneath while a badge is showing so a
+  // kid can't get an unfair miss while the toast covers the action.
+  const toastVisible = !!toast && !suppressForRankUp;
+  useEffect(() => {
+    setOverlayActive('sticker-toast', toastVisible);
+    return () => setOverlayActive('sticker-toast', false);
+  }, [toastVisible]);
 
   const handleTap = () => {
     dismissToast();

@@ -2,12 +2,20 @@
 // crosses into a new rank. Confetti + character + warm message.
 // Hooked into App.js so it works from any page.
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useRank from '../hooks/useRank';
+import { setOverlayActive } from '../hooks/useGamePause';
 import Confetti from './Confetti';
 
 export default function RankUpCelebration() {
   const { rankUp, dismissRankUp } = useRank({ withCelebration: true });
+
+  // Freeze any game underneath while the full-screen celebration is up.
+  useEffect(() => {
+    setOverlayActive('rank-up', !!rankUp);
+    return () => setOverlayActive('rank-up', false);
+  }, [rankUp]);
 
   return (
     <AnimatePresence>

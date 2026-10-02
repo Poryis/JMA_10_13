@@ -6,6 +6,7 @@ import { KazoosRow, KAZOOS } from '../components/Kazoos';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
+import useGamePaused from '../hooks/useGamePause';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
@@ -53,6 +54,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   const [message, setMessage] = useState('Watch and listen!');
 
   const timeoutRef = useRef(null);
+  const paused = useGamePaused(); // freeze the demo while a badge/dialog is up
   const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
   const stewFrameRefs = useRef([null, null, null, null]);
   const stewContainerRef = useRef(null); // For head-tilt rotation
@@ -179,6 +181,11 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   // Show pattern to player
   useEffect(() => {
     if (gameState !== 'showing') return;
+    // A badge/rank-up dialog is covering the screen — hold the demo so the
+    // kid doesn't miss Stew playing the pattern behind the popup. The
+    // cleanup below clears any pending step; when `paused` flips back to
+    // false this effect re-runs and replays the current note.
+    if (paused) return;
 
     if (showingIndex >= currentPattern.length) {
       // Done showing, player's turn
@@ -208,7 +215,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [gameState, showingIndex, currentPattern, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote]);
+  }, [gameState, showingIndex, currentPattern, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote, paused]);
 
   // Handle player input
   const handlePlayNote = useCallback((note) => {

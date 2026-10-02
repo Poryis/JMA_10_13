@@ -24,6 +24,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import SolfegeStaff from '../components/SolfegeStaff';
 import { JellyBellsRow } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
+import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const LOW_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -130,6 +131,7 @@ export default function SightReadingPage() {
         setSecsLeft(secs);
         tickRef.current = setInterval(() => {
           setSecsLeft((s) => {
+            if (isGamePaused()) return s; // hold the clock while a badge/dialog is up
             if (s <= 1) {
               clearInterval(tickRef.current);
               tickRef.current = null;
@@ -277,18 +279,22 @@ export default function SightReadingPage() {
         <FullscreenButton />
         <RoomCharacters room="sight-reading" />
 
-        <motion.h1
-          className="text-3xl md:text-5xl font-black mb-2 text-center font-display uppercase"
+        <motion.div
+          className="mb-4 px-5 py-3 rounded-2xl text-center max-w-md"
+          style={{
+            backgroundColor: 'rgba(10,37,64,0.82)',
+            border: '3px solid var(--jma-yellow)',
+            boxShadow: '0 5px 0 0 rgba(0,0,0,0.4)',
+          }}
           initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         >
-          SIGHT-READING SPRINT
-        </motion.h1>
-        <motion.p
-          className="text-base md:text-lg font-bold mb-4 text-center"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-        >
-          Read each card. Play it back fast. <b>5 cards per run.</b>
-        </motion.p>
+          <h1 className="text-3xl md:text-5xl font-black font-display uppercase" style={{ color: 'white' }}>
+            SIGHT-READING SPRINT
+          </h1>
+          <p className="text-sm md:text-base font-bold mt-1" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            Read each card. Play it back fast. <b style={{ color: 'var(--jma-yellow)' }}>5 cards per run.</b>
+          </p>
+        </motion.div>
 
         <motion.div className="game-card p-5 mb-4 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
           <BookOpen className="w-10 h-10 mx-auto mb-2" style={{ color: '#34A853' }} />

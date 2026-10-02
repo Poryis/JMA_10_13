@@ -5,7 +5,7 @@
 // Bottom: a single helper pill explaining each section.
 
 import { motion, useAnimationControls } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
@@ -14,6 +14,7 @@ import NextMissionPanel from '../components/NextMissionPanel';
 import RetroTV from '../components/RetroTV';
 import BlimpFlyby from '../components/BlimpFlyby';
 import HomeProgressCard from '../components/HomeProgressCard';
+import { pickFeaturedEpisode } from '../data/jmatv';
 
 // Easter-egg animation variants for the shield. Click cycles through them.
 const SHIELD_ANIMS = [
@@ -181,7 +182,7 @@ function Blob({ b }) {
   );
 }
 
-function PrimaryCard({ card, index, navigate }) {
+function PrimaryCard({ card, index, navigate, wide = false }) {
   const [hovered, setHovered] = useState(false);
 
   const handleClick = () => {
@@ -212,13 +213,13 @@ function PrimaryCard({ card, index, navigate }) {
       whileTap={{ scale: 0.97 }}
     >
       <div
-        className="relative rounded-[26px] flex flex-col items-center justify-end overflow-hidden"
+        className={`relative rounded-[26px] overflow-hidden flex ${wide ? 'flex-row items-center justify-center gap-4' : 'flex-col items-center justify-end'}`}
         style={{
           background: card.bg,
           border: `5px solid ${card.border}`,
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
-          aspectRatio: '1 / 1.05',
-          padding: 'clamp(12px, 2.2vw, 22px)',
+          aspectRatio: wide ? '16 / 6.4' : '1 / 1.05',
+          padding: wide ? 'clamp(10px, 3vw, 20px)' : 'clamp(12px, 2.2vw, 22px)',
         }}
       >
         {/* Watercolor blobs (deepest layer) */}
@@ -230,8 +231,8 @@ function PrimaryCard({ card, index, navigate }) {
           style={{ background: 'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.32) 0%, transparent 50%)', zIndex: 0 }}
         />
 
-        {/* Decorative accents — z controls in-front vs behind icon */}
-        {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
+        {/* Decorative accents — skipped in wide/banner mode to keep it clean */}
+        {!wide && card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
 
         {/* HUGE primary icon (off-center, per-card sized via iconWidthPct) */}
         <motion.img
@@ -241,10 +242,12 @@ function PrimaryCard({ card, index, navigate }) {
           loading="eager"
           className="relative object-contain select-none"
           style={{
-            width: `min(${card.iconWidthPct || 100}%, ${Math.round((card.iconWidthPct || 100) * 5.6)}px)`,
+            width: wide
+              ? 'min(32%, 190px)'
+              : `min(${card.iconWidthPct || 100}%, ${Math.round((card.iconWidthPct || 100) * 5.6)}px)`,
             height: 'auto',
-            maxHeight: '88%',
-            marginBottom: 'clamp(2px, 1vw, 10px)',
+            maxHeight: wide ? '128%' : '88%',
+            marginBottom: wide ? 0 : 'clamp(2px, 1vw, 10px)',
             filter: 'drop-shadow(0 12px 12px rgba(0,0,0,0.28))',
             zIndex: 10,
             transform: `translate(${card.iconShift?.x || 0}%, ${card.iconShift?.y || 0}%) rotate(${card.iconShift?.rot || 0}deg)`,
@@ -264,7 +267,7 @@ function PrimaryCard({ card, index, navigate }) {
         <h2
           className="relative font-black font-display leading-none text-center"
           style={{
-            fontSize: 'clamp(28px, 5.2vw, 56px)',
+            fontSize: wide ? 'clamp(36px, 10vw, 60px)' : 'clamp(28px, 5.2vw, 56px)',
             color: card.titleColor,
             WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
             paintOrder: 'stroke fill',
@@ -274,6 +277,90 @@ function PrimaryCard({ card, index, navigate }) {
         >
           {card.title}
         </h2>
+      </div>
+    </motion.button>
+  );
+}
+
+function JmatvCrtMobile({ navigate }) {
+  const featured = useMemo(() => pickFeaturedEpisode(), []);
+  const previewSrc = featured
+    ? `https://player.vimeo.com/video/${featured.vimeoId}?autoplay=1&loop=1&muted=1&background=1&controls=0&app_id=122963&title=0&byline=0&portrait=0&dnt=1`
+    : null;
+
+  return (
+    <motion.button
+      type="button"
+      data-testid="home-card-jmatv"
+      onClick={() => navigate('/jmatv')}
+      aria-label="Open JMAtv — today's episode"
+      className="relative w-full bg-transparent border-0 p-0 cursor-pointer block text-left"
+      initial={{ y: 50, opacity: 0, scale: 0.95 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      transition={{ delay: 0.5, type: 'spring', stiffness: 220 }}
+      whileTap={{ scale: 0.98, y: 2 }}
+    >
+      <div
+        className="relative rounded-[22px] overflow-hidden flex items-center gap-3 px-3 py-3"
+        style={{
+          background: 'linear-gradient(180deg,#FFF9E9 0%,#FFF1CE 100%)',
+          border: '4px solid var(--jma-dark)',
+          boxShadow: '0 8px 0 0 var(--jma-dark)',
+        }}
+      >
+        {/* CRT */}
+        <div className="relative flex-shrink-0" style={{ width: '46%' }}>
+          {/* Rabbit ears */}
+          <div aria-hidden="true" className="absolute" style={{ top: '-14%', left: '50%', transform: 'translateX(-50%)', width: '52%', height: '20%', zIndex: 0 }}>
+            <div style={{ position: 'absolute', top: 0, left: '18%', width: 5, height: '100%', background: '#6B7280', transform: 'rotate(-22deg)', transformOrigin: 'bottom center', borderRadius: 4 }} />
+            <div style={{ position: 'absolute', top: 0, right: '18%', width: 5, height: '100%', background: '#6B7280', transform: 'rotate(22deg)', transformOrigin: 'bottom center', borderRadius: 4 }} />
+          </div>
+          {/* Wood body */}
+          <div
+            className="relative rounded-2xl"
+            style={{
+              background: 'repeating-linear-gradient(90deg, #A67B4C 0px, #A67B4C 2px, #C89968 2px, #C89968 5px), linear-gradient(180deg, #C89968, #8B6540)',
+              backgroundBlendMode: 'multiply',
+              border: '4px solid #000',
+              boxShadow: '0 6px 0 0 #000',
+              padding: '8px',
+              zIndex: 1,
+            }}
+          >
+            <div className="relative rounded-lg overflow-hidden" style={{ background: '#0A0A0A', border: '2px solid #1F2937', aspectRatio: '4 / 3' }}>
+              {previewSrc ? (
+                <iframe
+                  key={featured.vimeoId}
+                  title="JMAtv preview"
+                  src={previewSrc}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: '50%', left: '50%', width: '177.77%', height: '100%', transform: 'translate(-50%, -50%)', border: 0, pointerEvents: 'none' }}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" className="object-contain" style={{ width: '62%' }} draggable={false} />
+                </div>
+              )}
+              {/* scanlines */}
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: 'repeating-linear-gradient(180deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px)', mixBlendMode: 'multiply' }} />
+              {/* brand bug */}
+              <img src="assets/ui/jmatv-logo-v2.png" alt="" aria-hidden="true" draggable={false} className="absolute pointer-events-none" style={{ bottom: 4, right: 4, width: '24%', opacity: 0.92 }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Text side */}
+        <div className="flex-1 flex flex-col items-start min-w-0">
+          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.18))' }} />
+          <p className="mt-1 font-black font-display leading-tight" style={{ color: 'var(--jma-dark)', fontSize: 'clamp(14px, 4vw, 18px)' }}>
+            Watch today&apos;s episode!
+          </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span aria-hidden="true" className="inline-block rounded-full" style={{ width: 9, height: 9, backgroundColor: '#FF3B30', boxShadow: '0 0 8px rgba(255,59,48,0.7)', animation: 'jma-pulse 1.4s ease-in-out infinite' }} />
+            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--jma-dark)', opacity: 0.75 }}>Streaming Now</span>
+          </div>
+        </div>
       </div>
     </motion.button>
   );
@@ -431,13 +518,13 @@ function HomePage() {
       ))}
 
       {/* HERO ROW — Finn · Shield · Charlie */}
-      <div className="relative z-10 flex items-center justify-center gap-2 sm:gap-4 md:gap-8 mt-2 mb-2 w-full">
+      <div className="relative z-10 flex items-center justify-center gap-2 sm:gap-4 md:gap-8 mt-1 mb-1 w-full">
         <motion.img
           src="assets/characters/finn-danger.png"
           alt="Finn"
           data-testid="home-finn"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(61px, 11vw, 131px)', height: 'auto' }}
+          style={{ width: 'clamp(46px, 10vw, 131px)', height: 'auto' }}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
@@ -456,7 +543,7 @@ function HomePage() {
           data-testid="jma-logo"
           className="object-contain cursor-pointer"
           style={{
-            width: 'clamp(120px, 22vw, 280px)',
+            width: 'clamp(94px, 19vw, 280px)',
             height: 'auto',
             filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
             transformOrigin: 'center',
@@ -473,7 +560,7 @@ function HomePage() {
           alt="Charlie"
           data-testid="home-charlie"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
+          style={{ width: 'clamp(58px, 12vw, 170px)', height: 'auto' }}
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
@@ -491,7 +578,7 @@ function HomePage() {
           PracticeStreakChip is folded INSIDE HomeProgressCard now, so
           the Home page only carries the single-row banner + Next Mission
           + the three big destination cards. */}
-      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl">
+      <div className="relative z-10 mb-2 md:mb-4 w-full max-w-4xl">
         <HomeProgressCard />
       </div>
 
@@ -499,22 +586,32 @@ function HomePage() {
           Sits BETWEEN the rank row and the 3 main category cards because
           it's the most important kid-facing signal: "do this one thing next."
           Hidden when the kid has earned every achievement. */}
-      <div className="relative z-10 mb-4 md:mb-5 w-full max-w-4xl px-2">
+      <div className="relative z-10 mb-2 md:mb-5 w-full max-w-4xl px-2">
         <NextMissionPanel />
       </div>
 
-      {/* THREE PRIMARY CARDS */}
-      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 px-1">
-        {CARDS.map((card, idx) => (
-          <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
-        ))}
+      {/* ===== PHONE LAYOUT (2 / 1 / 1) — all four destinations above the
+           fold: Play+Learn row, full-width Create banner, then the JMAtv
+           CRT. Hidden at md+ which keeps the original 3-across + big TV. */}
+      <div className="md:hidden relative z-10 w-full max-w-md flex flex-col gap-3 px-1">
+        <div className="grid grid-cols-2 gap-3">
+          <PrimaryCard card={CARDS[0]} index={0} navigate={navigate} />
+          <PrimaryCard card={CARDS[1]} index={1} navigate={navigate} />
+        </div>
+        <PrimaryCard card={CARDS[2]} index={2} navigate={navigate} wide />
+        <JmatvCrtMobile navigate={navigate} />
       </div>
 
-      {/* JMAtv retro CRT — small, deliberately placed BELOW the 3 main
-          category cards so kids don't bypass the interactive features.
-          Per the partner's "TV-first cannibalization" concern, this lives
-          in the periphery; option 4 from the placement discussion. */}
-      <RetroTV />
+      {/* ===== TABLET / DESKTOP LAYOUT — unchanged: 3 cards across with the
+           full retro-TV widget below. */}
+      <div className="hidden md:block relative z-10 w-full max-w-6xl">
+        <div className="grid grid-cols-3 gap-6 px-1">
+          {CARDS.map((card, idx) => (
+            <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
+          ))}
+        </div>
+        <RetroTV />
+      </div>
     </div>
   );
 }

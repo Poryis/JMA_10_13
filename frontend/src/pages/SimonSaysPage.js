@@ -580,14 +580,16 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       </main>
 
       {/* Finished — win celebration with replay / free-play / exit so kids
-          aren't dumped back to the menu automatically. */}
-      <AnimatePresence>
-        {gameState === 'finished' && (
+          aren't dumped back to the menu automatically. Rendered WITHOUT an
+          AnimatePresence exit so it unmounts instantly on "Keep Playing" —
+          otherwise the fading full-screen backdrop briefly swallowed the
+          first kazoo taps (no sound in free play). */}
+      {gameState === 'finished' && (
           <motion.div
             data-testid="simon-win-overlay"
             className="fixed inset-0 z-[90] flex items-center justify-center p-4"
             style={{ backgroundColor: 'rgba(10,37,64,0.55)', backdropFilter: 'blur(4px)' }}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           >
             <motion.div
               className="bg-white rounded-3xl border-4 p-6 max-w-sm w-full text-center relative"
@@ -603,7 +605,11 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
                 <button data-testid="simon-win-again" onClick={() => startGame(difficulty)} className="chunky-btn bg-[var(--jma-green)] text-white px-4 py-2 flex items-center justify-center gap-2">
                   <RotateCcw className="w-4 h-4" /> Play Again
                 </button>
-                <button data-testid="simon-win-freeplay" onClick={() => { setGameState('freeplay'); setMessage('Free play! Tap the kazoos 🎵'); }} className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-4 py-2">
+                <button
+                  data-testid="simon-win-freeplay"
+                  onClick={() => { initAudioContext(); setGameState('freeplay'); setMessage('Free play! Tap the kazoos 🎵'); }}
+                  className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-4 py-2"
+                >
                   Keep Playing the Kazoos
                 </button>
                 <button data-testid="simon-win-exit" onClick={() => navigate('/play')} className="chunky-btn bg-white text-[var(--jma-dark)] px-4 py-2 border-2" style={{ borderColor: 'var(--jma-dark)' }}>
@@ -612,8 +618,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+      )}
 
       {/* Free-play bar — after "Keep Playing", a slim bar always offers a
           clear way onward (replay / back). */}

@@ -219,14 +219,20 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
   // Handle player input
   const handlePlayNote = useCallback((note) => {
-    if (gameState !== 'playing') return;
+    if (gameState === 'showing') return; // ignore taps while Stew is demoing
 
+    // Always make sound + animate — this also powers FREE PLAY after the
+    // kid finishes the whole game (beta: Rose wanted to keep honking the
+    // kazoos once she beat every level).
     playKazooNote(note);
     cycleStew();
     tiltStewForNote(note);
     emitFloatingNote(note);
     setHighlightedNote(note);
     setTimeout(() => setHighlightedNote(null), 200);
+
+    // Scoring only happens during an active round.
+    if (gameState !== 'playing') return;
 
     const expectedNote = currentPattern[playerIndex];
 
@@ -258,14 +264,13 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           if (level >= 8) earnAchievementUpTo('keyboard', 'master');
           if (level >= 8) {
             earnSticker('fit_charlie_grad');
-            // Big celebration on beating the final level, then home.
+            // Big celebration on beating the final level. We now show a
+            // win overlay (Play Again / Keep Playing / Back) instead of
+            // auto-navigating away — beta: Rose closed out too fast and
+            // got confused about what to do next.
             celebrate(true);
             setMessage('YOU BEAT THE WHOLE GAME!');
             setGameState('finished');
-            // Beta feedback: kids expect to bounce back to Stew's own
-            // difficulty menu after crushing the whole game, not all the
-            // way out to the app home. Loops them tighter into replay.
-            timeoutRef.current = setTimeout(() => navigate('/simon-says'), 3200);
           } else {
             // Mega celebration on milestone level 5; regular on every other.
             celebrate(level === 5);
@@ -573,6 +578,60 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           </motion.p>
         )}
       </main>
+
+      {/* Finished — win celebration with replay / free-play / exit so kids
+          aren't dumped back to the menu automatically. */}
+      <AnimatePresence>
+        {gameState === 'finished' && (
+          <motion.div
+            data-testid="simon-win-overlay"
+            className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(10,37,64,0.55)', backdropFilter: 'blur(4px)' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-3xl border-4 p-6 max-w-sm w-full text-center relative"
+              style={{ borderColor: 'var(--jma-blue)', boxShadow: '0 10px 0 0 var(--jma-blue)' }}
+              initial={{ scale: 0.6, y: 30 }} animate={{ scale: 1, y: 0 }}
+            >
+              <img src="assets/stew/stew-plays-1.png" alt="Stew" className="w-24 h-24 mx-auto -mt-16 mb-1 object-contain drop-shadow-xl" draggable={false} />
+              <h2 className="text-2xl font-black font-display mb-1" style={{ color: 'var(--jma-dark)' }}>You beat the whole game!</h2>
+              <p className="text-sm font-bold mb-4" style={{ color: 'var(--jma-dark)', opacity: 0.7 }}>
+                Nice ears! Keep honking the kazoos, play again, or head back.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button data-testid="simon-win-again" onClick={() => startGame(difficulty)} className="chunky-btn bg-[var(--jma-green)] text-white px-4 py-2 flex items-center justify-center gap-2">
+                  <RotateCcw className="w-4 h-4" /> Play Again
+                </button>
+                <button data-testid="simon-win-freeplay" onClick={() => { setGameState('freeplay'); setMessage('Free play! Tap the kazoos 🎵'); }} className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-4 py-2">
+                  Keep Playing the Kazoos
+                </button>
+                <button data-testid="simon-win-exit" onClick={() => navigate('/play')} className="chunky-btn bg-white text-[var(--jma-dark)] px-4 py-2 border-2" style={{ borderColor: 'var(--jma-dark)' }}>
+                  Back to Games
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Free-play bar — after "Keep Playing", a slim bar always offers a
+          clear way onward (replay / back). */}
+      {gameState === 'freeplay' && (
+        <div
+          data-testid="simon-freeplay-bar"
+          className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-2 bg-white rounded-full border-3 px-3 py-2"
+          style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}
+        >
+          <span className="text-xs font-black" style={{ color: 'var(--jma-dark)' }}>Free play!</span>
+          <button data-testid="simon-freeplay-again" onClick={() => startGame(difficulty)} className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1 text-xs flex items-center gap-1">
+            <RotateCcw className="w-3 h-3" /> Play Again
+          </button>
+          <button data-testid="simon-freeplay-exit" onClick={() => navigate('/play')} className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-3 py-1 text-xs">
+            Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -200,6 +200,54 @@ export default function JMAtvHomePage() {
         </p>
       </motion.div>
 
+      {/* LIVE channel banner — always-on interleaved feed. Sits above the
+          channel guide so it reads like "the channel that's always playing". */}
+      <motion.button
+        type="button"
+        data-testid="jmatv-live-banner"
+        onClick={() => navigate('/jmatv/live')}
+        initial={{ y: 16, opacity: 0, scale: 0.97 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 220 }}
+        whileHover={{ y: -4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="relative z-10 w-full max-w-2xl mb-8 md:mb-10 cursor-pointer bg-transparent border-0 p-0"
+      >
+        <div
+          className="relative rounded-2xl flex items-center gap-3 px-4 py-3 md:px-5 md:py-4 overflow-hidden"
+          style={{
+            background: 'linear-gradient(100deg, #FF3B30 0%, #C71F1F 100%)',
+            border: `4px solid ${JMA_DARK}`,
+            boxShadow: `0 8px 0 0 ${JMA_DARK}`,
+          }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 4px)' }}
+          />
+          <span
+            className="relative inline-flex items-center gap-2 rounded-full px-2.5 py-1 flex-shrink-0"
+            style={{ backgroundColor: JMA_DARK }}
+          >
+            <span
+              className="inline-block rounded-full"
+              style={{ width: 9, height: 9, backgroundColor: '#FF3B30', boxShadow: '0 0 8px rgba(255,59,48,0.9)', animation: 'jma-pulse 1.2s ease-in-out infinite' }}
+            />
+            <span className="text-xs font-black uppercase tracking-widest text-white">Live</span>
+          </span>
+          <div className="relative flex-1 text-left min-w-0">
+            <div className="font-black font-display uppercase text-white leading-tight" style={{ fontSize: 'clamp(16px, 3vw, 24px)' }}>
+              JMAtv Live Channel
+            </div>
+            <div className="text-[11px] md:text-xs font-bold text-white/90 truncate">
+              Always on — music videos, puns &amp; fun facts, back to back
+            </div>
+          </div>
+          <span className="relative flex-shrink-0 text-white font-black text-lg" aria-hidden="true">▶</span>
+        </div>
+      </motion.button>
+
       {/* Olympic-rings layout on desktop: 6-col grid where each tile
           spans 2 cols. Top row fills cols 1-2 / 3-4 / 5-6. Bottom row
           is offset to cols 2-3 / 4-5 so it centers under the top row

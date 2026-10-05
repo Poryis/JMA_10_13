@@ -117,3 +117,51 @@ export function pickFeaturedEpisode() {
   const idx = Math.floor(Math.random() * ch.episodes.length);
   return { ...ch.episodes[idx], channelId: ch.id, index: idx };
 }
+
+// ---- JMAtv LIVE ----------------------------------------------------------
+// One never-ending, interleaved feed built from every channel that has
+// episodes. We round-robin across channels (music → pun → fun fact → …) so
+// the LIVE channel always feels like a variety stream rather than a block of
+// one show. Order is deterministic (same for everyone) so the clock-based
+// "tune in mid-stream" logic in JMAtvLivePage is stable.
+export function buildLivePlaylist() {
+  const playable = JMATV_CHANNELS.filter((c) => c.episodes.length > 0);
+  const queues = playable.map((c) => ({
+    channelId: c.id,
+    channelTitle: c.title,
+    color: c.color,
+    accent: c.accent,
+    eps: [...c.episodes],
+    i: 0,
+  }));
+  const out = [];
+  let remaining = queues.reduce((n, q) => n + q.eps.length, 0);
+  while (remaining > 0) {
+    for (const q of queues) {
+      if (q.i < q.eps.length) {
+        const ep = q.eps[q.i++];
+        out.push({
+          vimeoId: ep.vimeoId,
+          title: ep.title,
+          channelId: q.channelId,
+          channelTitle: q.channelTitle,
+          color: q.color,
+          accent: q.accent,
+        });
+        remaining -= 1;
+      }
+    }
+  }
+  return out;
+}
+
+// Average segment length (seconds) used only to pick a CLOCK-BASED starting
+// index, so tuning in at different times lands on different content and the
+// feed appears to roll forward on its own. The exact mid-video offset is
+// computed from the real player duration once it loads.
+const LIVE_AVG_SEGMENT_SEC = 75;
+export function getLiveStartIndex(playlistLength) {
+  if (!playlistLength) return 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  return Math.floor(nowSec / LIVE_AVG_SEGMENT_SEC) % playlistLength;
+}

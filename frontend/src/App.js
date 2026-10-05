@@ -25,6 +25,7 @@ import NameThatNotePage from "./pages/NameThatNotePage";
 import BoomGardenPage from "./pages/BoomGardenPage";
 import RobotBoogiePage from "./pages/RobotBoogiePage";
 import JMAtvHomePage from "./pages/JMAtvHomePage";
+import JMAtvLivePage from "./pages/JMAtvLivePage";
 import JMAtvChannelPage from "./pages/JMAtvChannelPage";
 import JMAtvPlayerPage from "./pages/JMAtvPlayerPage";
 import StickerToast from "./components/StickerToast";
@@ -99,6 +100,7 @@ function App() {
             <Route path="/boom-garden" element={<BoomGardenPage />} />
             <Route path="/robot-boogie" element={<RobotBoogiePage />} />
             <Route path="/jmatv" element={<JMAtvHomePage />} />
+            <Route path="/jmatv/live" element={<JMAtvLivePage />} />
             <Route path="/jmatv/:channelId" element={<JMAtvChannelPage />} />
             <Route path="/jmatv/:channelId/:episodeIndex" element={<JMAtvPlayerPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />

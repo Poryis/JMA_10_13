@@ -2141,3 +2141,8 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - Jelly Jukebox in-game progress bar centered (`flex justify-center`) so it clears the harp.
 - "Lessons 1–7" → "Season 1" (LearnMenuPage tile + LessonsPage heading).
 - Charlie's Song Studio: no-scroll console. Slot size is `--slot: clamp(40px, 8.5vh, 72px)` (was aspect-square growing to 150px on desktop); piano keys `clamp(70px,13vh,150px)`; mood picker is a single compact row; md+ layout = `grid-cols-[auto_minmax(0,1fr)_auto]` with Charlie | grid | stacked control rail, piano spanning under the first two. Verified scrollHeight == viewport at 1366×768, 1024×700, 768×1024, 390×844.
+
+## June 2026 — Note Match overlap + JMAtv LIVE sound/cycling fixes
+- **Note Match**: removed the difficulty subtitle chip (Easy/Medium/Hard) from the game `GameHeader` — it overlapped the Moves/Pairs HUD pills on all screens (`NoteMatchPage.js`, dropped `subtitle` prop).
+- **JMAtv LIVE — cycling restored**: the single variety-show loop was reverted back to the interleaved cross-channel feed (`buildLivePlaylist`). Variety Show added to its channel (`jmatv.js`, vimeoId 1233079709) so it plays in rotation AND fills the previously-empty channel page (chip now shows "1 episode", no more "Coming Soon").
+- **JMAtv LIVE — no tap-for-sound per clip**: reworked to a SINGLE persistent Vimeo `Player`. Segments now swap via `player.loadVideo()` instead of remounting the iframe (removed `key={current.vimeoId}`, pinned `src` to the tune-in index via `startIndexRef`). `unmutedRef` remembers the kid's one unmute tap and re-applies `setMuted(false)` after each `loadVideo`, so sound carries across every clip. Verified: overlay does NOT reappear across 3 skips.

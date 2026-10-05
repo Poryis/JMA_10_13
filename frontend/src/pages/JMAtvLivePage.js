@@ -21,25 +21,23 @@ export default function JMAtvLivePage() {
   const playlist = useMemo(() => buildLivePlaylist(), []);
   const len = playlist.length;
 
-  const [index, setIndex] = useState(() => getLiveStartIndex(len));
+  // Pin the "tune-in" index once so the initial iframe src never changes
+  // (changing src would reload the iframe and re-mute — the whole bug).
+  const startIndexRef = useRef(getLiveStartIndex(len));
+  const [index, setIndex] = useState(startIndexRef.current);
   const [loadError, setLoadError] = useState(false);
   const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
-  // Only the FIRST segment we tune into gets the mid-show seek; everything
-  // after that plays start-to-finish as the schedule naturally rolls on.
-  const didSeekRef = useRef(false);
+  // Once the kid has unmuted (one tap) we remember it and keep every
+  // following segment unmuted — no tap-for-sound on every clip.
+  const unmutedRef = useRef(false);
   const indexRef = useRef(index);
   useEffect(() => { indexRef.current = index; }, [index]);
 
   const current = len ? playlist[index] : null;
   const next = len ? playlist[(index + 1) % len] : null;
-
-  const advance = useCallback(() => {
-    setLoadError(false);
-    setIndex((i) => (i + 1) % len);
-  }, [len]);
 
   const destroyPlayer = useCallback(() => {
     const p = playerRef.current;
@@ -48,32 +46,51 @@ export default function JMAtvLivePage() {
     try { p.destroy(); } catch { /* ignore */ }
   }, []);
 
+  // Swap to a new segment WITHOUT reloading the iframe. Because we reuse the
+  // same Vimeo Player instance (loadVideo), the audio permission the kid
+  // granted on their first unmute tap carries across every clip.
+  const playIndex = useCallback((i) => {
+    setLoadError(false);
+    setIndex(i);
+    const player = playerRef.current;
+    if (!player || !len) return;
+    player.loadVideo(playlist[i].vimeoId).then(async () => {
+      try {
+        if (unmutedRef.current) { await player.setMuted(false); await player.setVolume(1); }
+        await player.play();
+      } catch { /* no-op */ }
+    }).catch(() => setLoadError(true));
+  }, [len, playlist]);
+
+  const advance = useCallback(() => {
+    if (!len) return;
+    playIndex((indexRef.current + 1) % len);
+  }, [len, playIndex]);
+
   const initPlayer = useCallback(() => {
     const el = iframeRef.current;
     if (!el || !el.isConnected) return;
-    destroyPlayer();
+    // Single persistent player — never recreate it (recreating = re-mute).
+    if (playerRef.current) return;
     let player;
     try { player = new Player(el); } catch { return; }
     playerRef.current = player;
 
     player.ready().then(async () => {
-      // iOS/Safari autoplays muted — offer a one-tap unmute.
+      // iOS/Safari autoplays muted — offer a one-tap unmute (just once).
       try {
         const muted = await player.getMuted();
         setNeedsUnmute(!!muted);
       } catch { /* no-op */ }
 
-      // Clock-based "join mid-show" — seek into the current segment once.
-      if (!didSeekRef.current) {
-        didSeekRef.current = true;
-        try {
-          const dur = await player.getDuration();
-          if (dur && dur > 8) {
-            const offset = (Math.floor(Date.now() / 1000) % Math.floor(dur - 4));
-            if (offset > 2) { await player.setCurrentTime(offset); await player.play(); }
-          }
-        } catch { /* seek not critical */ }
-      }
+      // Clock-based "join mid-show" — seek into the first segment once.
+      try {
+        const dur = await player.getDuration();
+        if (dur && dur > 8) {
+          const offset = (Math.floor(Date.now() / 1000) % Math.floor(dur - 4));
+          if (offset > 2) { await player.setCurrentTime(offset); await player.play(); }
+        }
+      } catch { /* seek not critical */ }
     }).catch(() => setLoadError(true));
 
     // Auto-advance when a segment finishes.
@@ -84,12 +101,13 @@ export default function JMAtvLivePage() {
       // network/embed is unreachable).
       player.on('error', () => { setLoadError(true); });
     } catch { /* ignore */ }
-  }, [destroyPlayer, advance]);
+  }, [advance]);
 
   useEffect(() => () => destroyPlayer(), [destroyPlayer]);
 
   const handleUnmute = useCallback(async () => {
     const player = playerRef.current;
+    unmutedRef.current = true;
     setNeedsUnmute(false);
     if (!player) return;
     try {
@@ -129,7 +147,7 @@ export default function JMAtvLivePage() {
     );
   }
 
-  const iframeSrc = `https://player.vimeo.com/video/${current.vimeoId}?app_id=122963&autoplay=1&muted=1&title=0&byline=0&portrait=0&dnt=1`;
+  const iframeSrc = `https://player.vimeo.com/video/${playlist[startIndexRef.current].vimeoId}?app_id=122963&autoplay=1&muted=1&title=0&byline=0&portrait=0&dnt=1`;
 
   return (
     <div
@@ -194,9 +212,8 @@ export default function JMAtvLivePage() {
             style={{ background: '#000', border: '4px solid #1F2937', boxShadow: 'inset 0 0 18px rgba(0,0,0,0.8)', paddingBottom: '56.25%', height: 0 }}
           >
             <iframe
-              key={current.vimeoId}
               ref={iframeRef}
-              title={current.title}
+              title="JMAtv LIVE"
               src={iframeSrc}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               referrerPolicy="strict-origin-when-cross-origin"

@@ -110,11 +110,18 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   const [feedback, setFeedback] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('JMA Originals');
+  // Becomes true once the per-run beat-sync is measured and the backing
+  // track has been started — the note spawner waits for this so the first
+  // note lands exactly on a real song beat.
+  const [syncReady, setSyncReady] = useState(false);
 
   const gameLoopRef = useRef(null);
   const noteIdRef = useRef(0);
   const fallingNotesRef = useRef([]);
   const audioRef = useRef(null); // Backing track <audio> element for JMA Originals
+  const lanesRef = useRef(null); // play-area container — measured for beat sync
+  const reachMsRef = useRef(0);  // measured ms from spawn → visual overlap w/ target
+  const leadInRef = useRef(0);   // ms before the first note spawns (beat-aligned)
   // Imperative refs for instant bell frame swap (no React render involved)
   const bellImgRefs = useRef({});
   const pressedKeysRef = useRef(new Set()); // dedup keyboard repeats
@@ -172,22 +179,68 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     setIsNewRecord(false);
   }, [initAudioContext, resetGame]);
 
-  // Play / stop backing track. Audio starts IMMEDIATELY (fading in while notes are
-  // delayed). The note-spawn effect below waits FADE_IN_MS before starting so the
-  // first note lands after the fade-in completes.
+  // Beat-sync setup. When a run starts we (1) measure — on THIS device — how
+  // long a note takes from spawn to the moment it visually overlaps the target
+  // bell (the "tap moment"), then (2) pick a lead-in so that tap moment lands
+  // exactly on a real beat of the backing track, then (3) start the track.
+  // The note spawner (below) waits on `syncReady` so its clock starts in step
+  // with the audio. `SYNC_OFFSET_MS` nudges for the small start latency of the
+  // <audio> element (increase if the music feels slightly behind the notes).
+  const SYNC_OFFSET_MS = 70;
   useEffect(() => {
+    if (gameState !== 'playing') { setSyncReady(false); return; }
     const audio = audioRef.current;
-    if (!audio || !selectedSong.audioUrl) return;
-    if (gameState === 'playing') {
-      audio.currentTime = 0;
-      audio.volume = 0.7;
-      audio.play().catch(() => {});
-      return () => { audio.pause(); };
-    } else {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-  }, [gameState, selectedSong.audioUrl, speedConfig.fallSpeed]);
+    const fallSpeed = speedConfig.fallSpeed;
+    let raf1 = 0, raf2 = 0;
+
+    const setup = () => {
+      // (1) Measure the real overlap fraction from the rendered layout.
+      let reachFrac = 0.55;
+      const lanes = lanesRef.current;
+      const firstTarget = Object.values(bellImgRefs.current).find((r) => r?.current)?.current;
+      if (lanes && firstTarget) {
+        const lr = lanes.getBoundingClientRect();
+        const tr = firstTarget.getBoundingClientRect();
+        const H = lr.height;
+        const targetCenterRel = (tr.top + tr.height / 2) - lr.top;
+        const startY = -80, endY = H + 80; // note travels -80 → H+80 over fallSpeed
+        const f = (targetCenterRel - startY) / (endY - startY);
+        if (Number.isFinite(f)) reachFrac = Math.min(0.9, Math.max(0.25, f));
+      }
+      const R = reachFrac * fallSpeed;
+      reachMsRef.current = R;
+
+      // (2) Lead-in so the first tap lands on a beat ≥ ~2.2s into the track.
+      let leadIn = selectedSong.audioUrl ? 2000 : 0;
+      if (selectedSong.bpm && selectedSong.audioAnchorMs != null) {
+        const beat = 60000 / selectedSong.bpm;
+        const A = selectedSong.audioAnchorMs;
+        const TARGET = 2200;
+        let k = Math.ceil((TARGET - A) / beat);
+        if (k < 0) k = 0;
+        const firstTapPos = A + k * beat; // audio-position (ms) of the first tap
+        leadIn = firstTapPos - R + SYNC_OFFSET_MS;
+        while (leadIn < 400) leadIn += beat; // keep a sane minimum lead-in
+      }
+      leadInRef.current = leadIn;
+
+      // (3) Start the backing track — this instant is t0 for the spawn clock.
+      if (audio && selectedSong.audioUrl) {
+        try { audio.currentTime = 0; audio.volume = 0.7; audio.play().catch(() => {}); } catch (_) { /* ignore */ }
+      }
+      setSyncReady(true);
+    };
+
+    // Two rAFs so the playing layout is laid out/painted before measuring.
+    raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(setup); });
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      if (audio) { audio.pause(); audio.currentTime = 0; }
+      setSyncReady(false);
+    };
+  }, [gameState, selectedSong, speedConfig.fallSpeed]);
 
   const handlePlayNote = useCallback((tappedNote) => {
     if (isDrumMode) {
@@ -288,13 +341,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
   }, [gameState, isDrumMode, activeBells, handlePlayNote]);
 
-  // Spawn notes. First note is delayed FADE_IN_MS so audio fade-in completes
-  // before it lands. Subsequent notes cadence at effectiveSpawnMs.
-  // `null` entries in notes[] are RESTS - tick forward but don't spawn a visual note.
+  // Spawn notes. The first note is delayed by the beat-aligned `leadInRef`
+  // (computed above) so it reaches the tap line exactly on a song beat;
+  // subsequent notes cadence at effectiveSpawnMs. `null` entries are RESTS —
+  // they tick the grid forward (consuming one slot of time) without spawning.
   useEffect(() => {
     if (gameState !== 'playing') return;
-    const FADE_IN_MS = selectedSong.audioUrl ? 2000 : 0;
-    const delay = currentNoteIndex === 0 ? FADE_IN_MS : effectiveSpawnMs;
+    if (!syncReady) return; // wait until beat-sync is measured + audio started
+    const delay = currentNoteIndex === 0 ? leadInRef.current : effectiveSpawnMs;
     const spawnNote = () => {
       if (currentNoteIndex >= selectedSong.notes.length) {
         setTimeout(() => setGameState('finished'), 2000);
@@ -312,7 +366,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     };
     const t = setTimeout(spawnNote, delay);
     return () => clearTimeout(t);
-  }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs]);
+  }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs, syncReady]);
 
   // Handle missed notes
   const handleNoteMiss = useCallback((noteId) => {
@@ -787,7 +841,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       <main className="relative z-10 flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
         <div className="game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
           {/* Lanes - each lane has its instrument target at the bottom */}
-          <div className="rhythm-lanes" style={{ height: '100%' }}>
+          <div className="rhythm-lanes" ref={lanesRef} style={{ height: '100%' }}>
             {activeBells.map((note) => {
               const bell = isDrumMode ? DRUM_LANES[note] : BELLS.find(b => b.note === note);
               const idleSrc = isDrumMode ? bell?.img1 : bell?.image1;
@@ -901,7 +955,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                   speed={speedConfig.fallSpeed}
                   isDrum={isDrumMode}
                   registerRef={registerFallingRef}
-                  glowDelayMs={0.55 * speedConfig.fallSpeed}
+                  glowDelayMs={reachMsRef.current || 0.55 * speedConfig.fallSpeed}
                   glowDurationMs={0.40 * speedConfig.fallSpeed}
                 />
               ))}

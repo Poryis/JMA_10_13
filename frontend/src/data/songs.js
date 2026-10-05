@@ -12,6 +12,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/play_one_skip_one.mp3',
     bpm: 76,
+    audioAnchorMs: 47, // measured beat phase (first downbeat in the mp3)
     beatsPerNote: 1, // quarter notes
     mode: 'C-major',
     originalKey: 'C major',
@@ -39,6 +40,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/magic_in_music.mp3',
     bpm: 152,
+    audioAnchorMs: 278, // measured beat phase
     beatsPerNote: 1, // quarter notes
     mode: 'A-minor',
     originalKey: 'A minor',
@@ -70,6 +72,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/brand_new_friend.mp3',
     bpm: 136,
+    audioAnchorMs: 139, // measured beat phase
     beatsPerNote: 1, // quarter notes - lots of rests create the rhythmic variance
     mode: 'C-mixolydian',
     originalKey: 'C major',
@@ -98,6 +101,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/faster_as_we_go.mp3',
     bpm: 103,
+    audioAnchorMs: 265, // measured beat phase
     beatsPerNote: 1, // quarter notes
     mode: 'A-minor',
     originalKey: 'A minor',
@@ -122,6 +126,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/goody_bag.mp3',
     bpm: 123,
+    audioAnchorMs: 298, // measured beat phase
     beatsPerNote: 1, // quarter notes
     mode: 'A-minor',
     originalKey: 'A minor',
@@ -149,6 +154,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/play_one_skip_one.mp3',
     bpm: 76,
+    audioAnchorMs: 47, // measured beat phase
     beatsPerNote: 1,
     instrumentMode: 'drums',
     // Standard rock pattern: kick/snare backbeat with a hihat ride
@@ -174,6 +180,7 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/goody_bag.mp3',
     bpm: 123,
+    audioAnchorMs: 298, // measured beat phase
     beatsPerNote: 1,
     instrumentMode: 'drums',
     // Bouncy boogie pattern with crash accents

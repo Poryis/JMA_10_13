@@ -55,6 +55,10 @@ const HELMET = {
   top: '-4%',
   width: '91%',
   aspectRatio: '1 / 1', // roughly square helmet dome
+  // Grow the whole helmet 2% about its center (keeps it in the same spot
+  // relative to Dr. Jellybone — per beta request it was a hair too small).
+  transform: 'scale(1.02)',
+  transformOrigin: 'center',
 };
 
 // Back layer: dome silhouette peeking around head, neck collar,

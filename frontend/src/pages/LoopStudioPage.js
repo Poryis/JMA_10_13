@@ -859,7 +859,7 @@ function LoopStudioPage() {
                   return (
                     <div
                       key={`label-${trackId}`}
-                      className="h-9 md:h-11 flex items-center gap-1.5"
+                      className="h-9 md:h-11 flex items-center gap-1.5 w-full min-w-0"
                       data-testid={`track-label-${trackId}`}
                     >
                       <button
@@ -875,7 +875,7 @@ function LoopStudioPage() {
                         title={`Preview ${preset?.label}`}
                       />
                       <button
-                        className="px-2 py-1 rounded-lg text-xs md:text-sm font-black truncate flex-1"
+                        className="px-2 py-1 rounded-lg text-xs md:text-sm font-black truncate flex-1 min-w-0"
                         style={{
                           background: isMuted ? '#131F30' : '#243854',
                           color: isMuted ? '#5E7899' : '#E8F4FF',

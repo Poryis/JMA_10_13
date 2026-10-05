@@ -210,6 +210,7 @@ export default function BoomGardenPage() {
   const [matchAnswer, setMatchAnswer] = useState(-1);
   const [phase, setPhase] = useState('idle');       // idle | demo | input | reveal
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [tapCue, setTapCue] = useState(null);       // {key} — one-shot "tap now" pulse on the drum
   const [hitStates, setHitStates] = useState([]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -379,9 +380,19 @@ export default function BoomGardenPage() {
   // haven't tapped yet.
   const scheduleVisualPlayhead = useCallback((pat, startDelayMs = 0) => {
     const starts = noteStartTimes(pat, beatMsRef.current);
-    pat.forEach((_, i) => {
+    pat.forEach((key, i) => {
       const t = setTimeout(() => setHighlightIndex(i), startDelayMs + starts[i]);
       timeoutsRef.current.push(t);
+      // On each PLAYABLE note (skip rests), fire a one-shot "TAP NOW" pulse
+      // ring right on the drum so the kid sees the exact instant to hit —
+      // not just which block is lit. Rests get no cue (nothing to tap).
+      if (key !== 'rest') {
+        const c = setTimeout(
+          () => setTapCue({ key: Date.now() + i }),
+          startDelayMs + starts[i],
+        );
+        timeoutsRef.current.push(c);
+      }
     });
   }, []);
 
@@ -1484,6 +1495,27 @@ export default function BoomGardenPage() {
                   style={{
                     boxShadow: '0 0 0 6px rgba(155, 109, 224, 0.55), 0 0 42px 14px rgba(155, 109, 224, 0.55)',
                     zIndex: 1,
+                  }}
+                />
+              )}
+            </AnimatePresence>
+            {/* TAP-NOW cue — a one-shot ring that pops on the drum at the exact
+                instant each note is due during the kid's input window, so
+                they see precisely WHEN to tap (not just which block is lit).
+                Only on copy/trail (match picks strips, not the drum). */}
+            <AnimatePresence>
+              {tapCue && phase === 'input' && mode !== 'match' && (
+                <motion.div
+                  key={tapCue.key}
+                  data-testid="boom-tap-cue"
+                  initial={{ scale: 0.7, opacity: 0.95 }}
+                  animate={{ scale: 1.55, opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.42, ease: 'easeOut' }}
+                  className="absolute inset-0 pointer-events-none rounded-full"
+                  style={{
+                    boxShadow: '0 0 0 7px rgba(255,204,0,0.95), 0 0 34px 10px rgba(255,204,0,0.6)',
+                    zIndex: 2,
                   }}
                 />
               )}

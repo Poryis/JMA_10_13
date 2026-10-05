@@ -173,10 +173,10 @@ export default function JMAtvLivePage() {
               className="inline-block rounded-full"
               style={{ width: 8, height: 8, backgroundColor: 'white', animation: 'jma-pulse 1.3s ease-in-out infinite' }}
             />
-            Live
+            JMAtv
           </span>
           <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FFE7C2' }}>
-            JMAtv Channel 1
+            LIVE
           </span>
         </div>
         <h1

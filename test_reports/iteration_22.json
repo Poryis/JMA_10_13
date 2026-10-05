@@ -1,0 +1,47 @@
+{
+  "summary": "Frontend-only regression test for the beat-sync rework of Jelly Jukebox (#/rhythm-game). Verified (1) audio unlock overlay dismisses on tap, (2) JMA 'Play One, Skip One' song starts a run and renders rhythm-game-playing, (3) falling notes keep spawning without deadlock (.bell-tap-now-halo progressed 1→2→3→4→6→7 over 10s), (4) backing-track audio currentTime advanced 0.84 → 9.95 (playing, not paused), (5) tapping bell-C 5x caused zero crashes, (6) Classic 'Ode to Joy' (no audioUrl / no bpm) still renders playing screen with notes falling (halos 2→6 within 3s) and correctly has no backing-track element. No deadlock from the syncReady gate.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "console_warnings": [
+      {"component": "RhythmGamePage (playing screen render)",
+       "issue": "React warning repeated multiple times: 'Encountered two children with the same key'. Likely a non-unique key= in a mapped list (notes/lanes/falling notes). Not blocking gameplay but should be fixed.",
+       "priority": "LOW"}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Investigate and fix the 'two children with the same key' React warning in RhythmGamePage during a playing run (likely falling-notes map using a non-unique key)."
+  ],
+  "critical_code_review_comments": [
+    "Beat-sync regression: PASS. syncReady gate opens properly in both audio-backed (JMA) and non-audio (Classic) songs; the two-rAF measurement + leadInRef path does not block spawning.",
+    "No in-game exit/back-to-menu button exists during the 'playing' state — only menu/back-button and results-screen 'Pick Song'/'Home'. If product wants mid-run exit, add a data-testid=\"exit-game-button\". Not a regression, flagged for QA ergonomics."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (not tested per request)", "frontend": "100% (all 7 checklist items pass)"},
+  "test_credentials": "none",
+  "seed_data_creation": "none; only localStorage flag jma_player_name_skipped_v1 was set during tests to bypass the name prompt — this does not persist on fresh users.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "On a fresh browser, both the audio-unlock overlay (dismiss by click anywhere) AND the PlayerNamePrompt (data-testid=player-name-prompt, skip button data-testid=player-name-skip, or set localStorage key jma_player_name_skipped_v1=1 before load) block interactions. Dismiss both before clicking song cards. There is NO in-run exit button, so to switch songs either wait for finish, reload, or use the back-button in the menu after game ends. The backing-track <audio> element is only mounted when selectedSong.audioUrl is set (JMA Originals); Classic/MiniJams have no <audio data-testid=backing-track>.",
+  "concrete_numbers": {
+    "jma_play_one_skip_one": {
+      "halo_series_over_10s": [1,1,2,3,3,4,6,6,7,7],
+      "halo_max": 7,
+      "halo_exceeded_zero": true,
+      "audio_currentTime_first": 0.845,
+      "audio_currentTime_last": 9.951,
+      "audio_advanced": true,
+      "audio_paused": false,
+      "tap_crashes": 0
+    },
+    "ode_to_joy": {
+      "halo_series_within_3s": [2,3,4,5,6],
+      "halo_max": 6,
+      "halo_exceeded_zero_within_2s": true,
+      "backing_track_element_present": false
+    }
+  }
+}

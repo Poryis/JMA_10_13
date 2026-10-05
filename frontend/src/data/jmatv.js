@@ -86,12 +86,14 @@ export const JMATV_CHANNELS = [
   {
     id: 'variety-show',
     title: 'VARIETY SHOW',
-    tagline: 'Sketches, skits & silliness — new episodes coming soon!',
+    tagline: 'Sketches, skits & silliness — the full variety show!',
     color: '#AF52DE',
     accent: '#6D2E96',
     icon: 'assets/characters/jelly-rap-trio.png',
     badgeBg: '#EEDDFF',
-    episodes: [],
+    episodes: [
+      { vimeoId: '1233079709', title: 'The JOTMC Variety Show' },
+    ],
   },
 ];
 

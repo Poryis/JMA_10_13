@@ -57,7 +57,7 @@ const HELMET = {
   aspectRatio: '1 / 1', // roughly square helmet dome
   // Grow the whole helmet 2% about its center (keeps it in the same spot
   // relative to Dr. Jellybone — per beta request it was a hair too small).
-  transform: 'scale(1.02)',
+  transform: 'scale(1.04)',
   transformOrigin: 'center',
 };
 

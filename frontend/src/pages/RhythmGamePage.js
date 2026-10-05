@@ -25,6 +25,12 @@ const CATEGORY_STYLE = {
 // Per-speed icon
 const SPEED_ICON = { chill: Leaf, normal: Music2, turbo: Flame };
 
+// How many of the song's notes to actually show, per difficulty. Easy thins
+// to the strong beats (every other grid slot) so it feels deliberate and
+// un-busy; normal/hard show everything. Only applied to the bpm-locked JMA
+// songs (stylized arpeggios) — never to Classic/Mini Jams real melodies.
+const NOTE_DENSITY = { chill: 0.5, normal: 1, turbo: 1 };
+
 // Drum-mode lanes: same falling-note machinery, but the targets at the bottom
 // are drum images, kid plays drum sounds, and the keyboard map uses simpler keys.
 const DRUM_LANES = {
@@ -142,11 +148,13 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     if (selectedSong.bpm) {
       const msPerBeat = 60000 / selectedSong.bpm;
       const baseBeats = selectedSong.beatsPerNote ?? 2;
-      const difficultyMult = { chill: 2, normal: 1, turbo: 0.5 }[speed] || 1;
-      return Math.round(msPerBeat * baseBeats * difficultyMult);
+      // Spawn cadence is LOCKED to the song's beat grid at every difficulty so
+      // notes always line up with the music. Difficulty changes note DENSITY
+      // and fall speed instead (see NOTE_DENSITY / speedConfig.fallSpeed).
+      return Math.round(msPerBeat * baseBeats);
     }
     return speedConfig.ms;
-  }, [selectedSong.bpm, selectedSong.beatsPerNote, speed, speedConfig.ms]);
+  }, [selectedSong.bpm, selectedSong.beatsPerNote, speedConfig.ms]);
   const songCategories = useMemo(() => getSongsByCategory(), []);
   // Show only the three top-level categories — no "All", and "Game" tracks
   // have been removed entirely from the library.
@@ -355,8 +363,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         return;
       }
       const note = selectedSong.notes[currentNoteIndex];
-      if (note == null) {
-        // Rest - just advance the index, no visual note spawns
+      // Easy-mode thinning: on melodic bpm songs, drop the off-beat (odd)
+      // grid slots so Easy plays the strong beats only — calmer and more
+      // deliberate, while staying perfectly on the beat. Drum songs are left
+      // intact (their backbeat is already deliberate). Treated like a rest.
+      const density = (selectedSong.bpm && !isDrumMode) ? (NOTE_DENSITY[speed] || 1) : 1;
+      const thinned = density < 1 && (currentNoteIndex % 2 === 1);
+      if (note == null || thinned) {
+        // Rest (or thinned-out slot) - advance the grid, no visual note spawns
         setCurrentNoteIndex(prev => prev + 1);
         return;
       }
@@ -366,7 +380,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     };
     const t = setTimeout(spawnNote, delay);
     return () => clearTimeout(t);
-  }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs, syncReady]);
+  }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs, syncReady, speed]);
 
   // Handle missed notes
   const handleNoteMiss = useCallback((noteId) => {

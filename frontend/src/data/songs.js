@@ -157,22 +157,11 @@ export const SONG_LIBRARY = [
     audioAnchorMs: 47, // measured beat phase
     beatsPerNote: 1,
     instrumentMode: 'drums',
-    // Standard rock pattern: kick/snare backbeat with a hihat ride
-    // 64 slots. kick = beat 1 & 3, snare = beat 2 & 4, hihat = on every quarter
-    notes: [
-      // bar 1-2 (Cmaj) kick-snare with hihat
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      // bar 3-4 (Dmin) sparser
-      'kick',null,'snare','hihat',     'kick','hihat','snare',null,
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      // bar 5-6 build
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
-      // bar 7-8 ending
-      'kick',null,'snare',null,        'kick','hihat','snare','crash',
-      'kick',null,'snare',null,        'kick',null,'snare','crash',
-    ]
+    // Deliberate backbeat locked to the song: kick on beats 1 & 3, snare on
+    // 2 & 4, crash at the top of each 4-bar phrase + a final crash. 64 slots.
+    notes: Array.from({ length: 64 }, (_, i) =>
+      (i % 16 === 0 || i === 63) ? 'crash' : (i % 2 === 0 ? 'kick' : 'snare')
+    )
   },
   {
     id: 'jma_goody_bag_drums',
@@ -183,28 +172,11 @@ export const SONG_LIBRARY = [
     audioAnchorMs: 298, // measured beat phase
     beatsPerNote: 1,
     instrumentMode: 'drums',
-    // Bouncy boogie pattern with crash accents
-    // 96 slots
-    notes: [
-      // C1 simple
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
-      // C2 arpeggios (rhythmic version)
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
-      // C3 bouncy
-      'kick',null,'snare','hihat',     'kick','hihat','snare',null,
-      'kick','hihat','snare','hihat',  'kick',null,'snare','crash',
-      // C4 riff
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
-      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
-      // C5 syncopated
-      'kick',null,'snare','hihat',     null,'hihat','snare',null,
-      'kick','hihat',null,'snare',     null,'hihat',null,'snare',
-      // C6 outro
-      'kick',null,'snare',null,        null,'hihat',null,null,
-      null,null,'snare',null,          'crash',null,null,null,
-    ]
+    // Deliberate backbeat locked to the song: kick 1 & 3, snare 2 & 4, crash
+    // at the top of each 4-bar phrase + a final crash. 96 slots.
+    notes: Array.from({ length: 96 }, (_, i) =>
+      (i % 16 === 0 || i === 95) ? 'crash' : (i % 2 === 0 ? 'kick' : 'snare')
+    )
   },
   // Jam-along drum loops (no notes/melody — just a 1-min groove for kids to
   // play instruments over). Marked `jamOnly` so they never appear in Rhythm Arcade.

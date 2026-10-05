@@ -1,0 +1,50 @@
+{
+  "summary": "Frontend-only test of the new JMAtv LIVE channel. All 7 requested scenarios PASSED: audio-unlock + name-prompt dismissed; LIVE banner (data-testid='jmatv-live-banner') visible on #/jmatv and routes to #/jmatv/live; the live page (jmatv-live-page) renders with pulsing badge, now-playing title, Up Next line, and a Vimeo iframe inside the CRT frame; idle 5s shows NO self-advance (stable); 'Next Show' manual advance works and cycles distinct titles; homepage CRT (home-card-jmatv) opens #/jmatv/live; back-button returns to #/jmatv. No crashes, no runaway navigation, no infinite-loop. Expected Vimeo 401 errors in sandbox (environment artifact, not a bug) were seen as noted in the brief.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "HomePage CRT card (home-card-jmatv)", "issues": ["Element has data-testid on an inner <button> whose client bounding rect is 0x0 (display:block but width/height=0). Native .click() still fires handler and navigation works, but Playwright/user-facing hit-testing on the button itself is unreliable. Users click the surrounding CRT illustration which likely wraps this hidden button. Recommend attaching data-testid to the visible CRT wrapper, or giving the button non-zero dimensions, so automated tests and screen-reader focus rings behave normally."]}
+    ]
+  },
+  "test_evidence": {
+    "idle_stability_5s": "title stayed 'Dough is in Pizza' before and after 5s wait with no clicks (no self-advance storm)",
+    "manual_advance_title_sequence": [
+      "Dough is in Pizza",
+      "Faster as We Go",
+      "High and Low",
+      "We Groovin’ Freeze Dance",
+      "We Mosh Freeze Dance",
+      "Who’s Got the Rhythm"
+    ],
+    "unique_titles_in_6_clicks": 6,
+    "banner_click_url": "#/jmatv/live",
+    "home_card_click_url": "#/jmatv/live",
+    "back_button_url": "#/jmatv",
+    "live_page_elements": "badge=true, title=true, upnext=true, frame=true, vimeo-iframe=true",
+    "upnext_sample": "Faster as We Go · OFFICIAL MUSIC VIDEOS",
+    "vimeo_401": "Observed as expected (sandbox referrer not whitelisted). Not treated as bug per request."
+  },
+  "console_warnings_noted": [
+    "React duplicate key warning: 'Encountered two children with the same key' — likely in the live playlist render; worth investigating in jmatv.js / JMAtvLivePage.js. Not blocking.",
+    "AnimatePresence mode='wait' with multiple children warning.",
+    "Cloudflare Turnstile 'already rendered' warning (likely from For-Grown-Ups auth; unrelated to this feature)."
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "Move data-testid='home-card-jmatv' onto the visible CRT wrapper element (currently on an inner button with 0x0 bounding rect). Interaction still works but automated hit-testing and focus outlines are unreliable.",
+    "Investigate the React 'duplicate key' console error on the live page — buildLivePlaylist() may emit duplicate ids when the same source item appears in more than one channel feed."
+  ],
+  "critical_code_review_comments": [
+    "JMAtvLivePage advance() uses setIndex((i)=>(i+1)%len) — safe and does NOT auto-advance on error (only on 'ended'), confirmed by 5s idle stability test.",
+    "Route '/jmatv/live' is registered BEFORE '/jmatv/:channelId' in App.js, confirmed working (direct nav, banner nav, and home-card nav all resolved to the Live page, not to a channel page with id='live').",
+    "data-testid attribute present on home-card-jmatv is on a zero-dimension inner button — a11y/testability smell."
+  ],
+  "updated_files": [],
+  "success_rate": {"frontend": "100%"},
+  "seed_data_creation": "None. Set localStorage flag jma_player_name_skipped_v1=1 to skip name prompt during test runs.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "JMAtv LIVE feature fully functional end-to-end. HashRouter routes #/jmatv, #/jmatv/live and #/home all working. Known cosmetic/testability issue: home-card-jmatv data-testid sits on a 0x0 inner button — Playwright must use JS .click() or force=True on an outer locator; this is not a user-facing bug but should be cleaned up."
+}

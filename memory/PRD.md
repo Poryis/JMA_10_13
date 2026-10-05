@@ -247,3 +247,33 @@ N/A — frontend-only, no auth.
 - `musicFacts.js`: renamed `'Lou & Stew'` key → `'Lou'`; existing `Stew` facts (kazoo/bird facts) now wired to the standalone Stew.
 - Verified via manual screenshot: all 7 characters found, Stew visible top-right on the palm, Lou standalone in bottom-right.
 
+
+---
+
+## Session Update — June 2026 (Beta feedback + JMAtv Live)
+
+Beta tester (Rose) feedback pass + a new Live channel. Respond in English.
+
+### Shipped this session
+- **Global "pause behind pop-ups"** (`hooks/useGamePause.js`): rank-up celebration + sticker toast register as active overlays; countdown games (Name That Note, Sight Reading) hold their clock, and Stew Kazoo holds its demo while a badge/dialog is up. Wired in `RankUpCelebration.js`, `StickerToast.js`.
+- **Sight-Reading Sprint**: real fix was the dark `clubhouse` bg hiding the Do/Re/Mi — swapped menu + gameplay bg to bright `wintery-sunburst1.png`; title reverted to plain dark text (reads on bright bg).
+- **Name That Note**: added "Replay Notes" button (`reviewTour` via shared `walkTour`) to re-walk the staff tour mid-round without losing score.
+- **Stew Kazoo Says**: after beating all levels → win overlay (Play Again / Keep Playing the Kazoos / Back to Games) + free-play mode (kazoos make sound, no scoring). Fixed silent-kazoo bug (overlay AnimatePresence exit was swallowing taps → render instantly, resume audio ctx).
+- **Jam Session**: record button recolored red.
+- **HomePage mobile layout**: phones now show all 4 destinations above the fold — Play+Learn (2-col), full-width Create banner (PrimaryCard `wide`), and a JMAtv CRT card (`JmatvCrtMobile`). Hero + pills shrunk on mobile. Desktop unchanged (3 cards + RetroTV).
+- **Jelly Jukebox beat-sync** (`RhythmGamePage.js` + `songs.js`): notes now land on real song beats. Per-song `audioAnchorMs` (measured via librosa comb-filter) added to 7 audio JMA Originals; all configured bpms verified correct. Engine measures device overlap fraction → beat-aligned lead-in; `SYNC_OFFSET_MS=70` nudge. Difficulty no longer time-stretches (broke sync): spawn cadence locked to beat; Easy = half the notes (strong beats) + slow fall; drums left intact. Drum songs rewritten to deliberate kick/snare/crash backbeat. (User says sync "better"; Easy feel still being tuned — TABLED.)
+- **JMAtv LIVE** (`pages/JMAtvLivePage.js`, route `/jmatv/live`): interleaved never-ending feed of all 3 channels (`buildLivePlaylist()` round-robin, 33 items); clock-based start index + mid-show seek via Vimeo SDK `getDuration`/`setCurrentTime`; auto-advance on `ended`; manual "Next Show"; error shows manual-skip card (no auto-advance storm). LIVE banner on JMAtv home; homepage CRTs (RetroTV + mobile tile) now open `/jmatv/live`. Verified via testing_agent iteration_23 (all pass).
+
+### Open / backlog from beta review (not yet done)
+- Robot Boogie title overlaps Reset/tempo controls (P1) — SKIPPED per user.
+- Jelly Jukebox Easy feel still "not great" — TABLED by user.
+- Fun Facts: "found X of 7" progress indicator + shuffle/reset after all found (play-again button exists, may be cut off on phone).
+- Beat Lab track mute button cut off on phone (exists, mobile visibility).
+- Who's Got the Rhythm: clearer timing cue.
+- "Learn this in the Academy!" hint nudges when a kid struggles.
+- Sticker page overflow (may be pinch-zoom; verify).
+- Note Names label toggle audit across all games.
+
+### Testing notes
+- The main-agent screenshot harness CANNOT dismiss the audio-unlock overlay reliably nor read runtime console / post-interaction state (it captures only load-time console + a pre-interaction frame). Use `testing_agent` for anything behind the overlay. Reports: iteration_22 (Jelly Jukebox regression), iteration_23 (JMAtv Live) — both pass.
+- Vimeo embeds 401 in the test sandbox (referrer not whitelisted) — environment artifact, works on real preview/device.

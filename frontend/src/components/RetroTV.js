@@ -85,7 +85,7 @@ export default function RetroTV() {
   // The inner TV and starburst are non-interactive visuals; the outer
   // <motion.button> handles routing. Hover/tap animations run on the
   // whole card to reinforce the "tap anywhere" affordance.
-  const openJMAtv = () => navigate('/jmatv/live');
+  const openJMAtv = () => navigate('/jmatv');
 
   return (
     <motion.button

@@ -1,45 +1,29 @@
-// JMAtv LIVE — a never-ending, auto-advancing variety feed.
+// JMAtv LIVE — the always-on channel.
 //
-// Interleaves every channel's episodes into one continuous stream. When a kid
-// tunes in we use the wall-clock to drop them onto the current segment AND
-// (via the Vimeo SDK's getDuration) seek into it so it feels genuinely live —
-// not like pressing play on a playlist. When a segment ends it auto-advances
-// to the next and loops forever. No scrub bar (that's the whole "live" point);
-// we keep tap-for-sound + fullscreen, mirroring JMAtvPlayerPage's CRT.
+// Plays one continuously-running produced "variety show" video. We join it
+// mid-stream using the wall-clock (so it feels genuinely live and different
+// each time you tune in) and loop it forever. Because it's a SINGLE video,
+// sound is turned on ONCE and stays on — no tap-for-sound on every clip.
+// We arrive here via a tap (banner / card), so we try to start WITH sound
+// immediately and only show a one-tap "sound" fallback if the browser blocks
+// unmuted autoplay.
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Player from '@vimeo/player';
-import { Maximize2, Volume2, SkipForward } from 'lucide-react';
+import { Maximize2, Volume2 } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import SpaceBackdrop, { SPACE_BG_STYLE } from '../components/SpaceBackdrop';
-import { buildLivePlaylist, getLiveStartIndex } from '../data/jmatv';
+import { LIVE_VARIETY } from '../data/jmatv';
 
 export default function JMAtvLivePage() {
   const navigate = useNavigate();
-  const playlist = useMemo(() => buildLivePlaylist(), []);
-  const len = playlist.length;
-
-  const [index, setIndex] = useState(() => getLiveStartIndex(len));
   const [loadError, setLoadError] = useState(false);
   const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
-  // Only the FIRST segment we tune into gets the mid-show seek; everything
-  // after that plays start-to-finish as the schedule naturally rolls on.
-  const didSeekRef = useRef(false);
-  const indexRef = useRef(index);
-  useEffect(() => { indexRef.current = index; }, [index]);
-
-  const current = len ? playlist[index] : null;
-  const next = len ? playlist[(index + 1) % len] : null;
-
-  const advance = useCallback(() => {
-    setLoadError(false);
-    setIndex((i) => (i + 1) % len);
-  }, [len]);
 
   const destroyPlayer = useCallback(() => {
     const p = playerRef.current;
@@ -57,34 +41,30 @@ export default function JMAtvLivePage() {
     playerRef.current = player;
 
     player.ready().then(async () => {
-      // iOS/Safari autoplays muted — offer a one-tap unmute.
+      // Join mid-stream by the clock.
       try {
-        const muted = await player.getMuted();
-        setNeedsUnmute(!!muted);
-      } catch { /* no-op */ }
+        const dur = await player.getDuration();
+        if (dur && dur > 10) {
+          const offset = Math.floor(Date.now() / 1000) % Math.floor(dur - 4);
+          if (offset > 2) await player.setCurrentTime(offset);
+        }
+      } catch { /* seek not critical */ }
 
-      // Clock-based "join mid-show" — seek into the current segment once.
-      if (!didSeekRef.current) {
-        didSeekRef.current = true;
-        try {
-          const dur = await player.getDuration();
-          if (dur && dur > 8) {
-            const offset = (Math.floor(Date.now() / 1000) % Math.floor(dur - 4));
-            if (offset > 2) { await player.setCurrentTime(offset); await player.play(); }
-          }
-        } catch { /* seek not critical */ }
+      // Try to play WITH sound right away (we got here via a tap).
+      try {
+        await player.setMuted(false);
+        await player.setVolume(1);
+        await player.play();
+        setNeedsUnmute(false);
+      } catch {
+        // Browser blocked unmuted autoplay → muted fallback + one-tap unmute.
+        try { await player.setMuted(true); await player.play(); } catch { /* ignore */ }
+        setNeedsUnmute(true);
       }
     }).catch(() => setLoadError(true));
 
-    // Auto-advance when a segment finishes.
-    try {
-      player.on('ended', () => { advance(); });
-      // On a load/playback error, show the error card with a manual skip
-      // (NOT auto-advance — that could storm through the whole feed if the
-      // network/embed is unreachable).
-      player.on('error', () => { setLoadError(true); });
-    } catch { /* ignore */ }
-  }, [destroyPlayer, advance]);
+    try { player.on('error', () => setLoadError(true)); } catch { /* ignore */ }
+  }, [destroyPlayer]);
 
   useEffect(() => () => destroyPlayer(), [destroyPlayer]);
 
@@ -112,24 +92,9 @@ export default function JMAtvLivePage() {
     try { const r = player.requestFullscreen(); if (r && r.catch) r.catch(native); } catch { native(); }
   };
 
-  if (!current) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-6 text-center">
-        <div>
-          <h1 className="text-2xl font-black mb-3">Nothing on air yet</h1>
-          <button
-            data-testid="jmatv-live-notfound-back"
-            className="mt-2 px-4 py-2 rounded-full bg-yellow-400 text-gray-900 font-black"
-            onClick={() => navigate('/jmatv')}
-          >
-            Back to JMAtv
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const iframeSrc = `https://player.vimeo.com/video/${current.vimeoId}?app_id=122963&autoplay=1&muted=1&title=0&byline=0&portrait=0&dnt=1`;
+  // autoplay + loop (loop keeps the channel "always on"); muted=1 guarantees the
+  // initial autoplay even before we unmute in the ready handler above.
+  const iframeSrc = `https://player.vimeo.com/video/${LIVE_VARIETY.vimeoId}?app_id=122963&autoplay=1&loop=1&muted=1&title=0&byline=0&portrait=0&dnt=1`;
 
   return (
     <div
@@ -166,10 +131,10 @@ export default function JMAtvLivePage() {
           className="font-black font-display leading-none text-center"
           style={{ fontSize: 'clamp(18px, 2.6vw, 30px)', color: 'white' }}
         >
-          {current.title}
+          {LIVE_VARIETY.title}
         </h1>
-        <p className="text-xs md:text-sm font-bold mt-1" style={{ color: current.color || '#FFE7C2' }}>
-          {current.channelTitle}
+        <p className="text-xs md:text-sm font-bold mt-1" style={{ color: '#FFE7C2' }}>
+          Always on — sit back and watch!
         </p>
       </motion.div>
 
@@ -194,9 +159,8 @@ export default function JMAtvLivePage() {
             style={{ background: '#000', border: '4px solid #1F2937', boxShadow: 'inset 0 0 18px rgba(0,0,0,0.8)', paddingBottom: '56.25%', height: 0 }}
           >
             <iframe
-              key={current.vimeoId}
               ref={iframeRef}
-              title={current.title}
+              title={LIVE_VARIETY.title}
               src={iframeSrc}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
@@ -229,7 +193,7 @@ export default function JMAtvLivePage() {
                   onClick={handleUnmute}
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
-                  style={{ background: 'radial-gradient(ellipse at center, rgba(10,37,64,0.55) 0%, rgba(10,37,64,0.85) 100%)', color: 'white', zIndex: 6, border: 0 }}
+                  style={{ background: 'radial-gradient(ellipse at center, rgba(10,37,64,0.5) 0%, rgba(10,37,64,0.82) 100%)', color: 'white', zIndex: 6, border: 0 }}
                   aria-label="Tap to unmute"
                 >
                   <motion.div
@@ -257,14 +221,14 @@ export default function JMAtvLivePage() {
               >
                 <div className="text-5xl mb-2">📡</div>
                 <h3 className="text-xl md:text-2xl font-black font-display mb-1">Signal dropped</h3>
-                <p className="text-sm md:text-base font-bold opacity-90 max-w-md">Tap “Next Show” to keep watching.</p>
+                <p className="text-sm md:text-base font-bold opacity-90 max-w-md">Couldn’t reach the channel. Try again in a bit.</p>
                 <button
-                  onClick={advance}
+                  onClick={() => navigate('/jmatv')}
                   className="mt-4 px-4 py-2 rounded-full font-black border-3"
                   style={{ backgroundColor: '#FFCC00', color: 'var(--jma-dark)', borderColor: 'white', boxShadow: '0 4px 0 0 rgba(0,0,0,0.4)' }}
-                  data-testid="jmatv-live-skip-error"
+                  data-testid="jmatv-live-error-back"
                 >
-                  Next Show
+                  Back to JMAtv
                 </button>
               </div>
             )}
@@ -289,14 +253,6 @@ export default function JMAtvLivePage() {
       {/* Action row */}
       <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-3">
         <button
-          data-testid="jmatv-live-skip"
-          onClick={advance}
-          className="px-3 py-1.5 rounded-full font-black text-sm border-2 flex items-center gap-1.5"
-          style={{ backgroundColor: 'white', color: 'var(--jma-dark)', borderColor: 'var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
-        >
-          <SkipForward className="w-4 h-4" /> Next Show
-        </button>
-        <button
           data-testid="jmatv-live-fullscreen"
           onClick={handleFullscreen}
           className="px-3 py-1.5 rounded-full font-black text-sm border-2 flex items-center gap-1.5"
@@ -305,18 +261,6 @@ export default function JMAtvLivePage() {
           <Maximize2 className="w-4 h-4" /> Fullscreen
         </button>
       </div>
-
-      {/* Up next ticker */}
-      {next && (
-        <div className="relative z-10 mt-6 w-full max-w-4xl text-center">
-          <span className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: '#FFE7C2' }}>
-            Up Next:
-          </span>{' '}
-          <span data-testid="jmatv-live-upnext" className="text-xs md:text-sm font-black" style={{ color: 'white' }}>
-            {next.title} <span style={{ color: next.color, opacity: 0.9 }}>· {next.channelTitle}</span>
-          </span>
-        </div>
-      )}
     </div>
   );
 }

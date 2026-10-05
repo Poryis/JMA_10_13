@@ -119,11 +119,17 @@ export function pickFeaturedEpisode() {
 }
 
 // ---- JMAtv LIVE ----------------------------------------------------------
-// One never-ending, interleaved feed built from every channel that has
-// episodes. We round-robin across channels (music → pun → fun fact → …) so
-// the LIVE channel always feels like a variety stream rather than a block of
-// one show. Order is deterministic (same for everyone) so the clock-based
-// "tune in mid-stream" logic in JMAtvLivePage is stable.
+// The LIVE channel is one continuously-running produced "variety show" video.
+// We join it mid-stream by the wall-clock and loop it, so it feels like a TV
+// channel that's always on — and because it's a SINGLE video, sound only has
+// to be turned on once (no tap-for-sound on every clip).
+export const LIVE_VARIETY = {
+  vimeoId: '1233079709',
+  title: 'The JOTMC Variety Show',
+  durationSec: 928,
+};
+
+
 export function buildLivePlaylist() {
   const playable = JMATV_CHANNELS.filter((c) => c.episodes.length > 0);
   const queues = playable.map((c) => ({

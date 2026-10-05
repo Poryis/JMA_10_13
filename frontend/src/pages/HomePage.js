@@ -292,8 +292,8 @@ function JmatvCrtMobile({ navigate }) {
     <motion.button
       type="button"
       data-testid="home-card-jmatv"
-      onClick={() => navigate('/jmatv/live')}
-      aria-label="Open JMAtv Live"
+      onClick={() => navigate('/jmatv')}
+      aria-label="Open JMAtv"
       className="relative w-full bg-transparent border-0 p-0 cursor-pointer block text-left"
       initial={{ y: 50, opacity: 0, scale: 0.95 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}

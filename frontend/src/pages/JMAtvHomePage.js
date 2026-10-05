@@ -241,7 +241,7 @@ export default function JMAtvHomePage() {
               JMAtv Live Channel
             </div>
             <div className="text-[11px] md:text-xs font-bold text-white/90 truncate">
-              Always on — music videos, puns &amp; fun facts, back to back
+              Always on — one nonstop variety show
             </div>
           </div>
           <span className="relative flex-shrink-0 text-white font-black text-lg" aria-hidden="true">▶</span>

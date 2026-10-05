@@ -343,7 +343,7 @@ export default function NoteMatchPage() {
                     style={{ background: 'radial-gradient(circle at 50% 30%, #2A6DAB 0%, var(--jma-dark) 80%)' }}
                   >
                     <img
-                      src="assets/ui/jma-stylized-logo.png"
+                      src="assets/ui/jma-stylized-logo-white.png"
                       alt=""
                       draggable={false}
                       className="w-3/4 h-3/4 object-contain opacity-90 pointer-events-none"

@@ -59,18 +59,12 @@ export default function JMAtvPlayerPage() {
     try {
       player.ready()
         .then(async () => {
-          // We navigated here from a tap, so try to start WITH sound right
-          // away — no tap-for-sound friction in the common case. Only if the
-          // browser blocks unmuted autoplay do we fall back to the overlay.
+          // Ask the player whether it's currently muted (iOS Safari
+          // almost always is on autoplay). If so, show the overlay.
           try {
-            await player.setMuted(false);
-            await player.setVolume(1);
-            await player.play();
-            setNeedsUnmute(false);
-          } catch {
-            try { await player.setMuted(true); await player.play(); } catch { /* ignore */ }
-            setNeedsUnmute(true);
-          }
+            const muted = await player.getMuted();
+            setNeedsUnmute(!!muted);
+          } catch { /* no-op */ }
         })
         .catch(() => setLoadError(true));
     } catch { /* ignore */ }

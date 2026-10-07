@@ -1,5 +1,20 @@
 # Changelog
 
+## Shred Legend guitar — release now stops the note (no more overlap) (Jun 2026)
+
+**User report**: "Now the sustain is overlapping. Every note I play rings to its full length even if I stop pressing."
+
+**Cause**: `GuitarInstrument.js` `stopNote` was intentionally letting plucked notes ring out their full ~4.6s and never released the audio voice — so rapidly played notes stacked and overlapped. The drawn-strings `onArtUp` also only released voices in chords mode, letting notes ring.
+
+### `components/GuitarInstrument.js`
+- `stopNote(idx)`: now calls `voice.release()` (fast ~0.15s fade) and deletes the voice from `activeVoicesRef` on finger-up. Clears `bendTargetsRef`. Chosen behavior (user picked option a): hold = sustain, release = stop.
+- `onArtUp`: now always calls `releaseGuitarVoices()` (both notes and chords) so lifting off the drawn strings stops the sounding note.
+
+### QA
+- Frontend compiles clean (only pre-existing exhaustive-deps warning in ShredLegendPage.js).
+- Audio feel (sustain while held, quick fade on release, no overlap) needs the user's ear to confirm — cannot be verified in a screenshot.
+
+
 ## Home JMAtv card — logo above the CRT on phones (Feb 2026)
 
 **User request**: On the home page's JMAtv card, when the layout collapses to vertical, the JMAtv logo should be ABOVE the TV (currently sits below).

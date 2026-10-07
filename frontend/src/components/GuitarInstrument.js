@@ -370,9 +370,11 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
 
   const stopNote = useCallback((idx) => {
     const id = `note-${idx}`;
-    // Let the plucked note RING OUT (don't cut it) — only clear the held/visual
-    // state so the pad pops up and the meter's "held" signal releases. The
-    // voice keeps sounding and stays bendable until it naturally fades.
+    // Hold = sustain, release = stop: when the finger lifts, fade the note out
+    // fast (~0.15s) so notes don't pile up and ring over each other.
+    const voices = activeVoicesRef.current.get(id);
+    if (voices) { voices.forEach(v => v.release()); activeVoicesRef.current.delete(id); }
+    bendTargetsRef.current = [];
     setHeldIds(prev => { if (!prev.has(id)) return prev; const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
@@ -467,7 +469,8 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     setPick(null);
     setGuitarHeld(null);
     bendTargetsRef.current = [];
-    if (modeRef.current === 'chords') releaseGuitarVoices();
+    // Release whatever's sounding (notes or chords) the moment the finger lifts.
+    releaseGuitarVoices();
   }, [setGuitarHeld, releaseGuitarVoices]);
 
   const onKnobTap = useCallback((knob) => {

@@ -2170,3 +2170,11 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - **Warmer bass**: synth bass reworked to sine-sub + triangle through a plucked lowpass (rounder upright/electric tone) instead of raw sawtooth. (Kept synth = zero licensing, offline-safe; no upload needed.)
 - **Guitar BEND (Notes mode)** in GuitarInstrument: hold a note + hold the BEND bar (or key 'b') to bend UP to the next pentatonic note; top A (880) bends to High C (1046.5). `makeVoice.bendTo()` ramps playbackRate; pointer-capture added to note/chord pads so sustained holds don't release early. Available in Jam Session too.
 - Known pre-existing warnings (unrelated): FreePlayPage `<audio src="">` empty-string warning; app-wide duplicate-key warning.
+
+## June 2026 — Shred Legend round 3 (verified: iteration_27, 100%)
+- **Logo → their world**: replaced the generated circular badge with the punk-frog **charlie-punk.png** (mohawk + leather + white electric) as the game's face in intro, result, PLAY tile, and the shred_legend sticker.
+- **Crowd**: Jazzy 0.80→0.88, Lou 0.82→0.90; anti-glitch — CrowdRow now buckets `energy` (Math.round(e*3)/3) so jump params don't re-target every render (fixes Finn/Lou jitter when celebrating), plus transformOrigin:bottom + willChange:transform. Verified 7 distinct imgs, heights 123-140px.
+- **Meter tuned down again**: onset +3 (+2 on-beat), sustain 0.6/100ms (~6/sec), decay 1.1/100ms. 2.5s hold ≈ 19.6% (was 27%).
+- **Drums = app's OWN samples**: useShredBand.preload() fetches+decodes Bass drum/Snare/Hi-Hat/Crash; per-song `kit` ('samples' for most, 'synth' kept for 'Giant Stomp'). **Bass** now voiced from guitar-clean/A3.mp3 pitched down (rootFreq*2 / 220) through a lowpass — warm, real, license-free.
+- **5 songs + RANDOM order** (no more always-Surf-Riot): Garage Stomp (rock), Surf Riot (surf), Giant Stomp (halftime, synth kit), **Kindie Riot (punk, 168bpm)**, Alley Cat Strut (rock). Random on mount; 'New Song' picks a different random.
+- **Visual pop**: new StageLights layer (sweeping colored beams + energy-reactive center glow, mix-blend screen).

@@ -68,11 +68,20 @@ function CrowdRow({ energy }) {
   );
 }
 
-function StageLights({ energy }) {
+const LIGHT_PALETTES = {
+  // per song STYLE: beam colors + glow + how fast/strobe-y
+  punk:     { beams: ['rgba(255,40,40,0.40)', 'rgba(255,255,255,0.32)', 'rgba(255,40,40,0.40)'], glow: 'rgba(255,60,60,0.26)', strobe: true,  speed: 0.6 },
+  surf:     { beams: ['rgba(15,180,190,0.34)', 'rgba(255,140,0,0.30)',  'rgba(15,180,190,0.34)'], glow: 'rgba(255,150,0,0.22)',  strobe: false, speed: 1.0 },
+  halftime: { beams: ['rgba(120,90,255,0.34)', 'rgba(60,120,255,0.30)', 'rgba(170,80,255,0.32)'], glow: 'rgba(130,90,255,0.22)', strobe: false, speed: 1.3 },
+  rock:     { beams: ['rgba(255,80,80,0.30)', 'rgba(255,204,0,0.28)',  'rgba(15,163,177,0.30)'], glow: 'rgba(255,204,0,0.22)',  strobe: false, speed: 1.0 },
+};
+
+function StageLights({ energy, style = 'rock' }) {
+  const pal = LIGHT_PALETTES[style] || LIGHT_PALETTES.rock;
   const beams = [
-    { color: 'rgba(255,80,80,0.30)',  x: '18%', delay: 0 },
-    { color: 'rgba(255,204,0,0.28)',  x: '50%', delay: 0.6 },
-    { color: 'rgba(15,163,177,0.30)', x: '82%', delay: 1.2 },
+    { color: pal.beams[0], x: '18%', delay: 0 },
+    { color: pal.beams[1], x: '50%', delay: pal.strobe ? 0.12 : 0.6 },
+    { color: pal.beams[2], x: '82%', delay: pal.strobe ? 0.06 : 1.2 },
   ];
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 2, mixBlendMode: 'screen' }}>
@@ -88,15 +97,19 @@ function StageLights({ energy }) {
             background: `linear-gradient(180deg, ${b.color} 0%, rgba(0,0,0,0) 72%)`,
             filter: 'blur(6px)',
           }}
-          animate={{ rotate: [i % 2 === 0 ? -16 : 16, i % 2 === 0 ? 16 : -16, i % 2 === 0 ? -16 : 16] }}
-          transition={{ repeat: Infinity, duration: Math.max(2.4, 5 - energy * 2.4), delay: b.delay, ease: 'easeInOut' }}
+          animate={pal.strobe
+            ? { opacity: [0.2, 1, 0.2], rotate: i % 2 === 0 ? -12 : 12 }
+            : { rotate: [i % 2 === 0 ? -16 : 16, i % 2 === 0 ? 16 : -16, i % 2 === 0 ? -16 : 16] }}
+          transition={pal.strobe
+            ? { repeat: Infinity, duration: Math.max(0.16, (0.4 - energy * 0.2) * pal.speed), delay: b.delay, ease: 'linear' }
+            : { repeat: Infinity, duration: Math.max(2.4, (5 - energy * 2.4) * pal.speed), delay: b.delay, ease: 'easeInOut' }}
         />
       ))}
       <motion.div
         className="absolute left-1/2 top-[20%]"
         style={{
           width: '70vw', height: '55vh', transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at center, rgba(255,204,0,0.22) 0%, rgba(255,204,0,0) 65%)',
+          background: `radial-gradient(ellipse at center, ${pal.glow} 0%, rgba(0,0,0,0) 65%)`,
         }}
         animate={{ opacity: [0.35 + energy * 0.5, 0.6 + energy * 0.4, 0.35 + energy * 0.5] }}
         transition={{ repeat: Infinity, duration: Math.max(0.5, 1.2 - energy), ease: 'easeInOut' }}
@@ -288,7 +301,7 @@ export default function ShredLegendPage() {
     >
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,20,32,0) 0%, rgba(10,20,32,0) 55%, rgba(10,20,32,0.35) 100%)' }} />
 
-      {(screen === 'playing' || screen === 'ready') && <StageLights energy={energy} />}
+      {(screen === 'playing' || screen === 'ready') && <StageLights energy={energy} style={SONGS[songIndex].style} />}
 
       <GameHeader title="SHRED LEGEND" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <FullscreenButton />

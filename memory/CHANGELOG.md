@@ -2178,3 +2178,11 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - **Drums = app's OWN samples**: useShredBand.preload() fetches+decodes Bass drum/Snare/Hi-Hat/Crash; per-song `kit` ('samples' for most, 'synth' kept for 'Giant Stomp'). **Bass** now voiced from guitar-clean/A3.mp3 pitched down (rootFreq*2 / 220) through a lowpass — warm, real, license-free.
 - **5 songs + RANDOM order** (no more always-Surf-Riot): Garage Stomp (rock), Surf Riot (surf), Giant Stomp (halftime, synth kit), **Kindie Riot (punk, 168bpm)**, Alley Cat Strut (rock). Random on mount; 'New Song' picks a different random.
 - **Visual pop**: new StageLights layer (sweeping colored beams + energy-reactive center glow, mix-blend screen).
+
+## June 2026 — Shred Legend round 4 (verified: iteration_28, 100%)
+- **Song Picker on intro**: lists all 5 songs (with BPM) + "Surprise Me!" (random). Result card now has Random / Pick Song / Back. startSong(idx|random) replaces the rotate logic.
+- **Real bass samples**: user uploaded bass notes (A2,B2,C3,D3,E3,F3,G3,A3) -> assets/audio/bass/. useShredBand now loads them (bass_<name>) and plays the matching recorded note per chord root (roots changed to NOTE NAMES). Synth bass kept as fallback.
+- **Clipping fix**: useAudio master chain now masterGain(0.9) -> DynamicsCompressor limiter -> destination (app-wide, prevents summed band+guitar distortion). Verified no errors under 100 rapid presses.
+- **Bend reliability fix**: guitar note voices now RING OUT (ring 2.2-2.6s) and are NOT released on pointerup (stopNote only clears held/visual state) — so BEND works after a tap, not just while holding. Bend target persists; bendTo guarded when released. (Behavior change: guitar notes now sustain/ring everywhere incl. Jam Session — more guitar-authentic.)
+- **Vibrato**: makeVoice adds an optional LFO->detune (~±20 cents, blooms in over 0.5s) on note voices, so sustained notes get a gentle wobble while quick taps stay clean.
+- NOTE: audio tone (bass sound, vibrato, clipping gone) can't be asserted by automation — confirmed no load/runtime errors; user to confirm by ear.

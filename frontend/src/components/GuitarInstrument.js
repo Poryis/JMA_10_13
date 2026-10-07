@@ -58,6 +58,11 @@ const NOTES = [
   { label: 'A', freq: 880.00, key: '-' },
 ];
 const NOTE_COLORS = ['#E74C3C', '#E67E22', '#F1C40F', '#27AE60', '#0FA3B1', '#3498DB', '#5E60CE', '#9B59B6', '#C71585', '#E74C3C', '#E67E22'];
+// A bend pushes a note UP to the next rung of the A-minor pentatonic. The
+// top A (880) bends up to the High C above it (1046.50) — the next pentatonic
+// note past our strip.
+const HIGH_C_FREQ = 1046.50;
+const nextPentaFreq = (idx) => (idx < NOTES.length - 1 ? NOTES[idx + 1].freq : HIGH_C_FREQ);
 // ---------------------------------------------------------------
 // Sample cache + voice
 // ---------------------------------------------------------------
@@ -97,7 +102,18 @@ function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, rin
   src.start(t0);
   src.stop(t0 + ring + 0.05);
   return {
+    src,
+    sampleFreq: s.freq,
     released: false,
+    // Smoothly bend the voice's pitch to `freq` (used for guitar bends).
+    bendTo(freq, dur = 0.14) {
+      const now = ctx.currentTime;
+      try {
+        src.playbackRate.cancelScheduledValues(now);
+        src.playbackRate.setValueAtTime(src.playbackRate.value, now);
+        src.playbackRate.linearRampToValueAtTime(freq / s.freq, now + dur);
+      } catch (_) { /* no-op */ }
+    },
     release() {
       if (this.released) return;
       this.released = true;
@@ -238,6 +254,10 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
   const [pick, setPick] = useState(null);
   const [sweepId, setSweepId] = useState(0);
   const [twist, setTwist] = useState({ knob: -1, id: 0 });
+  const [bending, setBending] = useState(false);
+
+  const bendActiveRef = useRef(false);
+  const bendTargetsRef = useRef([]);   // [{ voice, baseFreq, nextFreq }]
 
   const toneRef = useRef(tone); toneRef.current = tone;
   const modeRef = useRef(mode); modeRef.current = mode;
@@ -304,6 +324,14 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     setHeldIds(prev => { if (!prev.has(chordId)) return prev; const n = new Set(prev); n.delete(chordId); return n; });
   }, []);
 
+  const applyBend = useCallback((active) => {
+    bendActiveRef.current = active;
+    setBending(active);
+    bendTargetsRef.current.forEach((tt) => {
+      if (tt.voice && !tt.voice.released) tt.voice.bendTo(active ? tt.nextFreq : tt.baseFreq);
+    });
+  }, []);
+
   const startNote = useCallback((note, idx) => {
     const graph = graphOrNull();
     if (!graph) return;
@@ -313,6 +341,9 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90 });
     if (!voice) return;
     activeVoicesRef.current.set(id, [voice]);
+    // This note is now the bend target; if a bend is already held, bend it up.
+    bendTargetsRef.current = [{ voice, baseFreq: note.freq, nextFreq: nextPentaFreq(idx) }];
+    if (bendActiveRef.current) voice.bendTo(nextPentaFreq(idx));
     setHeldIds(prev => new Set(prev).add(id));
     triggerStrings();
     if (onPlay) onPlay({ type: 'guitar-note', note: note.label });
@@ -322,6 +353,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const id = `note-${idx}`;
     const voices = activeVoicesRef.current.get(id);
     if (voices) { voices.forEach(v => v.release()); activeVoicesRef.current.delete(id); }
+    bendTargetsRef.current = [];
     setHeldIds(prev => { if (!prev.has(id)) return prev; const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
@@ -364,6 +396,8 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       guitarVoicesRef.current = v ? [v] : [];
       label = note.label;
       heldId = `note-${zone}`;
+      bendTargetsRef.current = v ? [{ voice: v, baseFreq: note.freq, nextFreq: nextPentaFreq(zone) }] : [];
+      if (bendActiveRef.current && v) v.bendTo(nextPentaFreq(zone));
       if (onPlay) onPlay({ type: 'guitar-note', note: note.label });
     }
     setGuitarHeld(heldId);
@@ -413,6 +447,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     dragRef.current = { active: false, last: null };
     setPick(null);
     setGuitarHeld(null);
+    bendTargetsRef.current = [];
     if (modeRef.current === 'chords') releaseGuitarVoices();
   }, [setGuitarHeld, releaseGuitarVoices]);
 
@@ -439,11 +474,13 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       if (k === 'w') { setTone('crunch'); return; }
       if (k === 'z') { setMode('chords'); return; }
       if (k === 'x') { setMode('notes'); return; }
+      if (k === 'b') { if (modeRef.current === 'notes') applyBend(true); return; }
       if (modeRef.current === 'chords' && chordByKey[k]) startChord(chordByKey[k]);
       else if (modeRef.current === 'notes' && noteByKey[k]) startNote(noteByKey[k].note, noteByKey[k].idx);
     };
     const onKeyUp = (e) => {
       const k = e.key.toLowerCase();
+      if (k === 'b') { applyBend(false); return; }
       if (chordByKey[k]) stopChord(chordByKey[k].id);
       if (noteByKey[k]) stopNote(noteByKey[k].idx);
     };
@@ -453,7 +490,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [startChord, stopChord, startNote, stopNote]);
+  }, [startChord, stopChord, startNote, stopNote, applyBend]);
 
   const loadingLabel = !ready.crunch ? 'loading…' : null;
   const isCrunch = tone === 'crunch';
@@ -524,32 +561,56 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
           })}
         </div>
       ) : (
-        <div data-testid="guitar-note-strip" className="grid grid-cols-6 md:grid-cols-11 gap-1.5 md:gap-2">
-          {NOTES.map((note, idx) => {
-            const held = heldIds.has(`note-${idx}`);
-            return (
-              <motion.button
-                key={idx}
-                type="button"
-                data-testid={`guitar-note-${idx}`}
-                onPointerDown={(e) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} startNote(note, idx); }}
-                onPointerUp={() => stopNote(idx)}
-                onPointerLeave={() => stopNote(idx)}
-                onPointerCancel={() => stopNote(idx)}
-                className="relative rounded-xl flex items-center justify-center py-3 md:py-5 border-2 touch-manipulation select-none"
-                style={{
-                  background: `linear-gradient(180deg, ${NOTE_COLORS[idx]} 0%, ${NOTE_COLORS[idx]}CC 100%)`,
-                  borderColor: '#000',
-                  boxShadow: held ? '0 1px 0 0 #000' : '0 3px 0 0 #000',
-                  color: 'white',
-                }}
-                animate={{ scale: held ? 0.94 : 1, y: held ? 2 : 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-              >
-                <span className="font-black text-lg md:text-2xl leading-none">{note.label}</span>
-              </motion.button>
-            );
-          })}
+        <div className="flex flex-col gap-1.5 md:gap-2">
+          <div data-testid="guitar-note-strip" className="grid grid-cols-6 md:grid-cols-11 gap-1.5 md:gap-2">
+            {NOTES.map((note, idx) => {
+              const held = heldIds.has(`note-${idx}`);
+              return (
+                <motion.button
+                  key={idx}
+                  type="button"
+                  data-testid={`guitar-note-${idx}`}
+                  onPointerDown={(e) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} startNote(note, idx); }}
+                  onPointerUp={() => stopNote(idx)}
+                  onPointerLeave={() => stopNote(idx)}
+                  onPointerCancel={() => stopNote(idx)}
+                  className="relative rounded-xl flex items-center justify-center py-3 md:py-5 border-2 touch-manipulation select-none"
+                  style={{
+                    background: `linear-gradient(180deg, ${NOTE_COLORS[idx]} 0%, ${NOTE_COLORS[idx]}CC 100%)`,
+                    borderColor: '#000',
+                    boxShadow: held ? '0 1px 0 0 #000' : '0 3px 0 0 #000',
+                    color: 'white',
+                  }}
+                  animate={{ scale: held ? 0.94 : 1, y: held ? 2 : 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                >
+                  <span className="font-black text-lg md:text-2xl leading-none">{note.label}</span>
+                </motion.button>
+              );
+            })}
+          </div>
+          {/* BEND bar — hold a note, then hold BEND to bend UP into the next
+              pentatonic note (the top A bends up to High C). */}
+          <motion.button
+            type="button"
+            data-testid="guitar-bend"
+            onPointerDown={(e) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} applyBend(true); }}
+            onPointerUp={() => applyBend(false)}
+            onPointerLeave={() => applyBend(false)}
+            onPointerCancel={() => applyBend(false)}
+            className="w-full rounded-xl flex items-center justify-center gap-2 py-2.5 md:py-3 border-2 touch-manipulation select-none font-black uppercase tracking-widest text-sm md:text-base"
+            style={{
+              background: bending
+                ? 'linear-gradient(180deg, #FFE07A 0%, #FFCC00 100%)'
+                : 'linear-gradient(180deg, #2A2A3A 0%, #1B1B24 100%)',
+              borderColor: '#000',
+              color: bending ? '#1B1B24' : '#FFCC00',
+              boxShadow: bending ? '0 1px 0 0 #000' : '0 3px 0 0 #000',
+            }}
+            animate={{ y: bending ? 2 : 0 }}
+          >
+            BEND <span style={{ fontSize: '1.2em', lineHeight: 1 }}>↗</span>
+          </motion.button>
         </div>
       )}
     </div>

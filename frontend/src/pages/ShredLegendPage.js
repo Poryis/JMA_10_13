@@ -5,7 +5,7 @@ import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import GuitarInstrument from '../components/GuitarInstrument';
 import useAudio from '../hooks/useAudio';
-import useShredBand from '../hooks/useShredBand';
+import useShredBand, { SONGS } from '../hooks/useShredBand';
 import useGamePaused from '../hooks/useGamePause';
 import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { useNavigate } from 'react-router-dom';
@@ -26,42 +26,35 @@ function tierFor(meter) {
   return t;
 }
 
-// The crowd is built from the JMA band's own characters so it's 100% in the
-// app's hand-drawn style. They bob to the music and go wild as the Crowd
-// Meter climbs (higher + faster jumps, more head-bang tilt with energy).
+// The crowd is built from the JMA band's own characters (one each — no dupes)
+// so it's 100% in the app's hand-drawn style. Per-character `scale` balances
+// the wildly different source-PNG proportions so nobody towers over everyone.
 const CROWD_MEMBERS = [
-  'assets/characters/finn-danger.png',
-  'assets/characters/chunk.png',
-  'assets/characters/jazzy.png',
-  'assets/characters/charlie.png',
-  'assets/characters/stew.png',
-  'assets/characters/lou.png',
-  'assets/characters/sharky-hiphop.png',
-  'assets/characters/dr-jellybone.png',
-  'assets/characters/shark.png',
+  { src: 'assets/characters/finn-danger.png', scale: 0.92 },
+  { src: 'assets/characters/chunk.png',        scale: 1.00 },
+  { src: 'assets/characters/jazzy.png',        scale: 0.80 },
+  { src: 'assets/characters/charlie.png',      scale: 0.96 },
+  { src: 'assets/characters/lou.png',          scale: 0.82 },
+  { src: 'assets/characters/stew.png',         scale: 0.98 },
+  { src: 'assets/characters/dr-jellybone.png', scale: 1.00 },
 ];
 
 function CrowdRow({ energy }) {
   return (
-    <div className="w-full h-full flex items-end justify-center gap-0 md:gap-1 pointer-events-none select-none">
-      {CROWD_MEMBERS.map((src, i) => {
+    <div className="w-full h-full flex items-end justify-center gap-1 md:gap-3 pointer-events-none select-none">
+      {CROWD_MEMBERS.map((m, i) => {
         const delay = (i % 4) * 0.07;
-        const lift = 6 + energy * 42;                 // jump height
+        const lift = 6 + energy * 42;                     // jump height
         const dur = Math.max(0.26, 0.72 - energy * 0.42); // jump speed
         const tilt = energy * 6 * (i % 2 === 0 ? 1 : -1); // head-bang
         return (
           <motion.img
             key={i}
-            src={src}
+            src={m.src}
             alt=""
             draggable={false}
-            className="object-contain object-bottom drop-none"
-            style={{
-              width: 'clamp(42px, 10vw, 104px)',
-              height: '100%',
-              marginLeft: i === 0 ? 0 : '-1.5%',
-              filter: 'drop-shadow(0 -2px 0 rgba(0,0,0,0.15))',
-            }}
+            className="object-contain object-bottom"
+            style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%` }}
             animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
             transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
           />
@@ -83,6 +76,7 @@ export default function ShredLegendPage() {
   const [timeLeft, setTimeLeft] = useState(SONG_SECONDS);
   const [floats, setFloats] = useState([]);         // floating feedback words
   const [readyCount, setReadyCount] = useState(3);
+  const [songIndex, setSongIndex] = useState(0);    // which backing track
 
   const meterRef = useRef(0);
   const comboRef = useRef(0);
@@ -134,7 +128,7 @@ export default function ShredLegendPage() {
     setCombo(comboRef.current);
 
     // Base energy for any hit, plus an on-beat sparkle bonus. Never negative.
-    const add = 6 + (onBeat ? 4 : 0);
+    const add = 4 + (onBeat ? 3 : 0);
     bumpMeter(add);
     if (onBeat) pushFloat(off <= 70 ? 'PERFECT!' : 'NICE!', off <= 70 ? '#FFCC00' : '#0FA3B1');
   }, [screen, band, pushFloat]);
@@ -170,12 +164,12 @@ export default function ShredLegendPage() {
       const now = performance.now();
       const recentlyPlayed = now - lastOnsetRef.current < 350;
       if (holdingRef.current) {
-        // Sustained soaring note → crowd keeps rising. This is the fix for
-        // "holding a note felt bad" — now it's rewarded.
-        bumpMeter(1.4);          // ~14/sec
+        // Sustained soaring note → crowd keeps rising (tuned so it takes
+        // real, steady playing to max out — not a quick fill).
+        bumpMeter(0.8);          // ~8/sec
       } else if (!recentlyPlayed) {
         // Only drift down when the kid has actually gone quiet.
-        meterRef.current = Math.max(0, meterRef.current - 0.8); // ~8/sec
+        meterRef.current = Math.max(0, meterRef.current - 1.0); // ~10/sec
         setMeter(meterRef.current);
       }
     }, 100);
@@ -190,8 +184,9 @@ export default function ShredLegendPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
-  const beginReady = useCallback(() => {
+  const beginReady = useCallback((rotate = false) => {
     initAudioContext();
+    if (rotate) setSongIndex((s) => (s + 1) % SONGS.length);
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0;
@@ -203,13 +198,13 @@ export default function ShredLegendPage() {
   useEffect(() => {
     if (screen !== 'ready') return;
     if (readyCount <= 0) {
-      band.start();
+      band.start(songIndex);
       setScreen('playing');
       return;
     }
     const t = setTimeout(() => setReadyCount((c) => c - 1), 650);
     return () => clearTimeout(t);
-  }, [screen, readyCount, band]);
+  }, [screen, readyCount, band, songIndex]);
 
   const endSong = useCallback(() => {
     band.stop();
@@ -319,7 +314,9 @@ export default function ShredLegendPage() {
             {/* Crowd meter */}
             <div className="w-full max-w-[640px]" data-testid="shred-crowd-meter">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-black uppercase tracking-widest text-white/90">Crowd Meter</span>
+                <span className="text-xs font-black uppercase tracking-widest text-white/90" data-testid="shred-song-name">
+                  ♪ {SONGS[songIndex].name}
+                </span>
                 <span className="text-sm font-black uppercase tracking-wider" style={{ color: currentTier.color }} data-testid="shred-tier-label">
                   {currentTier.label}
                 </span>
@@ -344,9 +341,14 @@ export default function ShredLegendPage() {
               )}
             </div>
 
-            {/* Reacting crowd (their own band characters) — fills the space
-                between the meter and the guitar so it's always visible. */}
-            <div className="flex-1 w-full min-h-[90px] flex items-end justify-center" data-testid="shred-crowd">
+            {/* Reacting crowd (their own band characters) — fixed-height band
+                pushed to sit right above the guitar so sizes stay consistent
+                and nobody balloons while the guitar samples load. */}
+            <div
+              className="w-full mt-auto flex items-end justify-center"
+              style={{ height: 'clamp(84px, 17vh, 140px)' }}
+              data-testid="shred-crowd"
+            >
               <CrowdRow energy={energy} />
             </div>
 
@@ -387,11 +389,11 @@ export default function ShredLegendPage() {
               <div className="flex items-center justify-center gap-2">
                 <button
                   data-testid="shred-again-btn"
-                  onClick={beginReady}
+                  onClick={() => beginReady(true)}
                   className="chunky-btn text-[var(--jma-dark)] px-5 py-3 flex items-center gap-2 font-black touch-manipulation"
                   style={{ backgroundColor: '#FFCC00' }}
                 >
-                  <RotateCcw className="w-5 h-5" /> Encore!
+                  <RotateCcw className="w-5 h-5" /> New Song
                 </button>
                 <button
                   data-testid="shred-back-btn"

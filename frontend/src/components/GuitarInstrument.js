@@ -229,7 +229,7 @@ function GuitarArt({ frame, pick, sweepId, twist, onKnobTap, svgRef, onPointerDo
 // ---------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------
-export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPlay }) {
+export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPlay, onActiveChange }) {
   const [mode, setMode] = useState('notes');
   const [tone, setTone] = useState('crunch');
   const [ready, setReady] = useState({ clean: false, crunch: false });
@@ -241,6 +241,12 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
 
   const toneRef = useRef(tone); toneRef.current = tone;
   const modeRef = useRef(mode); modeRef.current = mode;
+
+  // Tell the parent whenever a note/chord is actively held (sounding) vs
+  // silent — lets games reward sustained notes, not just taps.
+  useEffect(() => {
+    if (onActiveChange) onActiveChange(heldIds.size > 0);
+  }, [heldIds, onActiveChange]);
 
   const activeVoicesRef = useRef(new Map());
   const guitarVoicesRef = useRef([]);
@@ -498,7 +504,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
                 key={chord.id}
                 type="button"
                 data-testid={`guitar-chord-${chord.id}`}
-                onPointerDown={(e) => { e.preventDefault(); startChord(chord); }}
+                onPointerDown={(e) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} startChord(chord); }}
                 onPointerUp={() => stopChord(chord.id)}
                 onPointerLeave={() => stopChord(chord.id)}
                 onPointerCancel={() => stopChord(chord.id)}
@@ -526,7 +532,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
                 key={idx}
                 type="button"
                 data-testid={`guitar-note-${idx}`}
-                onPointerDown={(e) => { e.preventDefault(); startNote(note, idx); }}
+                onPointerDown={(e) => { e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} startNote(note, idx); }}
                 onPointerUp={() => stopNote(idx)}
                 onPointerLeave={() => stopNote(idx)}
                 onPointerCancel={() => stopNote(idx)}

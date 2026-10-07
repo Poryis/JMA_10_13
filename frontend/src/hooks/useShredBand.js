@@ -161,5 +161,16 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
 
   useEffect(() => () => stop(), [stop]);
 
-  return { start, stop, nearestEighthOffsetMs, isPlaying: () => playingRef.current, bpm: BPM };
+  // Return a STABLE object (same identity across renders) so consumers can
+  // safely put `band` in effect dependency arrays without the effect
+  // re-running every render — a new object literal here used to make a
+  // cleanup effect call stop() on every re-render and kill the groove.
+  const apiRef = useRef(null);
+  if (!apiRef.current) apiRef.current = {};
+  Object.assign(apiRef.current, {
+    start, stop, nearestEighthOffsetMs,
+    isPlaying: () => playingRef.current,
+    bpm: BPM,
+  });
+  return apiRef.current;
 }

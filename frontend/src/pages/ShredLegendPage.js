@@ -11,7 +11,6 @@ import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
-const DECAY_PER_SEC = 7;
 
 // Crowd/rank tiers keyed off the Crowd Meter (0-100).
 const TIERS = [
@@ -27,30 +26,45 @@ function tierFor(meter) {
   return t;
 }
 
-// A row of bouncing cartoon crowd silhouettes. `energy` (0-1) drives how
-// high and fast they jump.
+// The crowd is built from the JMA band's own characters so it's 100% in the
+// app's hand-drawn style. They bob to the music and go wild as the Crowd
+// Meter climbs (higher + faster jumps, more head-bang tilt with energy).
+const CROWD_MEMBERS = [
+  'assets/characters/finn-danger.png',
+  'assets/characters/chunk.png',
+  'assets/characters/jazzy.png',
+  'assets/characters/charlie.png',
+  'assets/characters/stew.png',
+  'assets/characters/lou.png',
+  'assets/characters/sharky-hiphop.png',
+  'assets/characters/dr-jellybone.png',
+  'assets/characters/shark.png',
+];
+
 function CrowdRow({ energy }) {
-  const heads = 14;
   return (
-    <div className="absolute left-0 right-0 bottom-0 flex items-end justify-center gap-1 md:gap-2 pointer-events-none" style={{ zIndex: 5 }}>
-      {Array.from({ length: heads }).map((_, i) => {
-        const delay = (i % 5) * 0.05;
-        const lift = 2 + energy * 16;
+    <div className="w-full h-full flex items-end justify-center gap-0 md:gap-1 pointer-events-none select-none">
+      {CROWD_MEMBERS.map((src, i) => {
+        const delay = (i % 4) * 0.07;
+        const lift = 6 + energy * 42;                 // jump height
+        const dur = Math.max(0.26, 0.72 - energy * 0.42); // jump speed
+        const tilt = energy * 6 * (i % 2 === 0 ? 1 : -1); // head-bang
         return (
-          <motion.svg
+          <motion.img
             key={i}
-            width="34" height="54" viewBox="0 0 34 54"
-            className="w-6 h-10 md:w-9 md:h-14"
-            animate={{ y: [0, -lift, 0] }}
-            transition={{ repeat: Infinity, duration: Math.max(0.28, 0.7 - energy * 0.4), delay, ease: 'easeInOut' }}
-          >
-            {/* raised arms */}
-            <path d={`M8 34 L3 ${18 - energy * 8}`} stroke="#0A1420" strokeWidth="4" strokeLinecap="round" />
-            <path d={`M26 34 L31 ${18 - energy * 8}`} stroke="#0A1420" strokeWidth="4" strokeLinecap="round" />
-            {/* body + head */}
-            <rect x="7" y="30" width="20" height="24" rx="8" fill="#0A1420" />
-            <circle cx="17" cy="20" r="9" fill="#0A1420" />
-          </motion.svg>
+            src={src}
+            alt=""
+            draggable={false}
+            className="object-contain object-bottom drop-none"
+            style={{
+              width: 'clamp(42px, 10vw, 104px)',
+              height: '100%',
+              marginLeft: i === 0 ? 0 : '-1.5%',
+              filter: 'drop-shadow(0 -2px 0 rgba(0,0,0,0.15))',
+            }}
+            animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
+            transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
+          />
         );
       })}
     </div>
@@ -76,6 +90,8 @@ export default function ShredLegendPage() {
   const inPocketRef = useRef(0);
   const reachedLegendRef = useRef(false);
   const lastTierRef = useRef('Garage Band');
+  const holdingRef = useRef(false);          // a note is being sustained
+  const lastOnsetRef = useRef(0);            // time of last note hit (ms)
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
 
@@ -106,29 +122,28 @@ export default function ShredLegendPage() {
     setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 750);
   }, []);
 
-  // ---- guitar hit → score against the band grid ----
+  // ---- guitar NOTE HIT (onset) → always adds energy; a little extra sparkle
+  // if it lands on the beat. The crowd just loves that you're PLAYING. ----
   const onGuitarPlay = useCallback(() => {
     if (screen !== 'playing' || pausedRef.current) return;
+    lastOnsetRef.current = performance.now();
     const off = band.nearestEighthOffsetMs();
-    let add, text, color;
-    if (off <= 70) { add = 9; text = 'PERFECT!'; color = '#FFCC00'; }
-    else if (off <= 140) { add = 5; text = 'NICE'; color = '#0FA3B1'; }
-    else { add = 1.5; text = ''; color = '#9DA3A8'; }
-
-    if (off <= 140) {
-      comboRef.current += 1;
-      inPocketRef.current += 1;
-    } else {
-      comboRef.current = 0;
-    }
+    const onBeat = off <= 140;
+    comboRef.current = onBeat ? comboRef.current + 1 : 0;
+    if (onBeat) inPocketRef.current += 1;
     setCombo(comboRef.current);
-    const mult = 1 + Math.min(comboRef.current, 10) * 0.08;
-    meterRef.current = Math.min(100, meterRef.current + add * mult);
+
+    // Base energy for any hit, plus an on-beat sparkle bonus. Never negative.
+    const add = 6 + (onBeat ? 4 : 0);
+    bumpMeter(add);
+    if (onBeat) pushFloat(off <= 70 ? 'PERFECT!' : 'NICE!', off <= 70 ? '#FFCC00' : '#0FA3B1');
+  }, [screen, band, pushFloat]);
+
+  // Shared meter-raise + tier/cheer handling.
+  const bumpMeter = useCallback((amount) => {
+    meterRef.current = Math.min(100, meterRef.current + amount);
     setMeter(meterRef.current);
     if (meterRef.current > peakRef.current) peakRef.current = meterRef.current;
-    if (text) pushFloat(text + (comboRef.current > 3 ? ` x${comboRef.current}` : ''), color);
-
-    // Tier-crossing cheers
     const tier = tierFor(meterRef.current).label;
     if (tier !== lastTierRef.current) {
       const prevIdx = TIERS.findIndex((t) => t.label === lastTierRef.current);
@@ -140,16 +155,29 @@ export default function ShredLegendPage() {
       reachedLegendRef.current = true;
       cheer(true);
     }
-  }, [screen, band, cheer, pushFloat]);
+  }, [cheer]);
 
-  // ---- song loop: countdown timer + meter decay ----
+  // Parent gets told when a note is held (sustained) vs released.
+  const onGuitarActive = useCallback((active) => {
+    holdingRef.current = active;
+  }, []);
+
+  // ---- song loop: countdown timer + sustain fill / idle decay ----
   useEffect(() => {
     if (screen !== 'playing') return;
     const iv = setInterval(() => {
       if (pausedRef.current) return;
-      // decay
-      meterRef.current = Math.max(0, meterRef.current - DECAY_PER_SEC * 0.1);
-      setMeter(meterRef.current);
+      const now = performance.now();
+      const recentlyPlayed = now - lastOnsetRef.current < 350;
+      if (holdingRef.current) {
+        // Sustained soaring note → crowd keeps rising. This is the fix for
+        // "holding a note felt bad" — now it's rewarded.
+        bumpMeter(1.4);          // ~14/sec
+      } else if (!recentlyPlayed) {
+        // Only drift down when the kid has actually gone quiet.
+        meterRef.current = Math.max(0, meterRef.current - 0.8); // ~8/sec
+        setMeter(meterRef.current);
+      }
     }, 100);
     const sec = setInterval(() => {
       if (pausedRef.current) return;
@@ -166,6 +194,7 @@ export default function ShredLegendPage() {
     initAudioContext();
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
+    holdingRef.current = false; lastOnsetRef.current = 0;
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
@@ -204,18 +233,23 @@ export default function ShredLegendPage() {
       className="min-h-screen flex flex-col relative overflow-hidden"
       data-testid="shred-legend-page"
       style={{
-        backgroundImage: 'url(assets/backgrounds/shred-stage.jpg)',
+        backgroundImage: 'url(assets/backgrounds/jelly-stage.png)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center top',
+        backgroundColor: '#8A8F96',
       }}
     >
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,20,32,0.35) 0%, rgba(10,20,32,0.15) 40%, rgba(10,20,32,0.6) 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,20,32,0) 0%, rgba(10,20,32,0) 55%, rgba(10,20,32,0.35) 100%)' }} />
 
       <GameHeader title="SHRED LEGEND" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <FullscreenButton />
 
-      {/* Crowd */}
-      {(screen === 'playing' || screen === 'ready') && <CrowdRow energy={energy} />}
+      {/* Crowd during the 3-2-1 countdown (sits on stage, bottom layer) */}
+      {screen === 'ready' && (
+        <div className="absolute left-0 right-0 bottom-0" style={{ height: '38vh', maxHeight: 300, zIndex: 6 }}>
+          <CrowdRow energy={0.15} />
+        </div>
+      )}
 
       {/* Floating feedback */}
       <AnimatePresence>
@@ -279,9 +313,9 @@ export default function ShredLegendPage() {
           </div>
         )}
 
-        {/* PLAYING HUD + guitar */}
+        {/* PLAYING HUD + crowd + guitar */}
         {(screen === 'playing') && (
-          <div className="w-full max-w-[900px] flex flex-col items-center gap-2">
+          <div className="w-full max-w-[900px] flex-1 flex flex-col items-center gap-2">
             {/* Crowd meter */}
             <div className="w-full max-w-[640px]" data-testid="shred-crowd-meter">
               <div className="flex items-center justify-between mb-1">
@@ -305,9 +339,15 @@ export default function ShredLegendPage() {
               </div>
               {combo > 3 && (
                 <div className="text-center mt-1 text-xs font-black" style={{ color: '#FFCC00' }} data-testid="shred-combo">
-                  🔥 {combo} in a row!
+                  {combo} IN A ROW!
                 </div>
               )}
+            </div>
+
+            {/* Reacting crowd (their own band characters) — fills the space
+                between the meter and the guitar so it's always visible. */}
+            <div className="flex-1 w-full min-h-[90px] flex items-end justify-center" data-testid="shred-crowd">
+              <CrowdRow energy={energy} />
             </div>
 
             {/* Guitar */}
@@ -315,6 +355,7 @@ export default function ShredLegendPage() {
               initAudioContext={initAudioContext}
               getAudioGraph={getAudioGraph}
               onPlay={onGuitarPlay}
+              onActiveChange={onGuitarActive}
             />
           </div>
         )}

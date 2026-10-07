@@ -272,12 +272,22 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
     return Math.abs(elapsed - nearest) * 1000;
   }, []);
 
+  // Which 8th-note of the groove we're nearest to (integer index). Used to
+  // cap scoring at one hit per beat so button-mashing can't fill the meter.
+  const nearestEighthIndex = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (!ctx || !playingRef.current) return -1;
+    const eighth = stepSecRef.current * 2;
+    const elapsed = ctx.currentTime - startTimeRef.current;
+    return Math.round(elapsed / eighth);
+  }, []);
+
   useEffect(() => () => stop(), [stop]);
 
   const apiRef = useRef(null);
   if (!apiRef.current) apiRef.current = {};
   Object.assign(apiRef.current, {
-    start, stop, preload, nearestEighthOffsetMs,
+    start, stop, preload, nearestEighthOffsetMs, nearestEighthIndex,
     isPlaying: () => playingRef.current,
     songs: SONGS,
   });

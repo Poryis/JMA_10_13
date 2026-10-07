@@ -67,7 +67,7 @@ const PLAY_TILES = [
     id: 'shred-legend',
     title: 'SHRED LEGEND',
     path: '/shred-legend',
-    bg: 'assets/backgrounds/jelly-stage.png',
+    bg: 'assets/backgrounds/shred-stage-jma.png',
     bgPosition: 'center top',
     color: '#FFCC00',
     accent: '#C0392B',

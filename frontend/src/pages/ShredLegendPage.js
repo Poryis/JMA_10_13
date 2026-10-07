@@ -33,7 +33,7 @@ const CROWD_MEMBERS = [
   { src: 'assets/characters/finn-danger.png', scale: 0.92 },
   { src: 'assets/characters/chunk.png',        scale: 1.00 },
   { src: 'assets/characters/jazzy.png',        scale: 0.88 },
-  { src: 'assets/characters/charlie.png',      scale: 0.96 },
+  { src: 'assets/characters/charlie-punk.png', scale: 0.96 },
   { src: 'assets/characters/lou.png',          scale: 0.90 },
   { src: 'assets/characters/stew.png',         scale: 0.98 },
   { src: 'assets/characters/dr-jellybone.png', scale: 1.00 },
@@ -127,6 +127,7 @@ export default function ShredLegendPage() {
   const lastTierRef = useRef('Garage Band');
   const holdingRef = useRef(false);          // a note is being sustained
   const lastOnsetRef = useRef(0);            // time of last note hit (ms)
+  const lastScoredRef = useRef(0);           // time of last hit that EARNED meter (ms)
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
 
@@ -164,17 +165,26 @@ export default function ShredLegendPage() {
   // if it lands on the beat. The crowd just loves that you're PLAYING. ----
   const onGuitarPlay = useCallback(() => {
     if (screen !== 'playing' || pausedRef.current) return;
-    lastOnsetRef.current = performance.now();
+    const now = performance.now();
+    lastOnsetRef.current = now;
     const off = band.nearestEighthOffsetMs();
-    const onBeat = off <= 140;
-    comboRef.current = onBeat ? comboRef.current + 1 : 0;
-    if (onBeat) inPocketRef.current += 1;
+    const beatIdx = band.nearestEighthIndex();
+    const onBeat = off <= 110;
+    if (onBeat) { comboRef.current += 1; inPocketRef.current += 1; }
+    else comboRef.current = 0;
     setCombo(comboRef.current);
 
-    // Base energy for any hit, plus an on-beat sparkle bonus. Never negative.
-    const add = 3 + (onBeat ? 2 : 0);
+    // ONE score per beat: mashing many notes inside the same 8th-note earns
+    // nothing extra, so the meter can only climb as fast as you actually play
+    // IN TIME. Tight hits are worth much more than sloppy ones.
+    if (beatIdx === lastScoredRef.current) {
+      if (onBeat) pushFloat(off <= 65 ? 'PERFECT!' : 'NICE!', off <= 65 ? '#FFCC00' : '#0FA3B1');
+      return;
+    }
+    lastScoredRef.current = beatIdx;
+    const add = off <= 65 ? 4 : (off <= 130 ? 2 : 0.8);
     bumpMeter(add);
-    if (onBeat) pushFloat(off <= 70 ? 'PERFECT!' : 'NICE!', off <= 70 ? '#FFCC00' : '#0FA3B1');
+    if (onBeat) pushFloat(off <= 65 ? 'PERFECT!' : 'NICE!', off <= 65 ? '#FFCC00' : '#0FA3B1');
   }, [screen, band, pushFloat]);
 
   // Shared meter-raise + tier/cheer handling.
@@ -231,7 +241,7 @@ export default function ShredLegendPage() {
     setSongIndex(chosen);
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
-    holdingRef.current = false; lastOnsetRef.current = 0;
+    holdingRef.current = false; lastOnsetRef.current = 0; lastScoredRef.current = -1;
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
@@ -270,7 +280,7 @@ export default function ShredLegendPage() {
       className="min-h-screen flex flex-col relative overflow-hidden"
       data-testid="shred-legend-page"
       style={{
-        backgroundImage: 'url(assets/backgrounds/jelly-stage.png)',
+        backgroundImage: 'url(assets/backgrounds/shred-stage-jma.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
         backgroundColor: '#8A8F96',

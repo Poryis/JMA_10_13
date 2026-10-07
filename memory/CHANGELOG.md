@@ -2186,3 +2186,9 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - **Bend reliability fix**: guitar note voices now RING OUT (ring 2.2-2.6s) and are NOT released on pointerup (stopNote only clears held/visual state) — so BEND works after a tap, not just while holding. Bend target persists; bendTo guarded when released. (Behavior change: guitar notes now sustain/ring everywhere incl. Jam Session — more guitar-authentic.)
 - **Vibrato**: makeVoice adds an optional LFO->detune (~±20 cents, blooms in over 0.5s) on note voices, so sustained notes get a gentle wobble while quick taps stay clean.
 - NOTE: audio tone (bass sound, vibrato, clipping gone) can't be asserted by automation — confirmed no load/runtime errors; user to confirm by ear.
+
+## June 2026 — Shred Legend round 5 (verified: iteration_29, 100%)
+- **New stage art in JMA style**: generated assets/backgrounds/shred-stage-jma.png (flat, heavy black outlines, red curtains, colored light cans, amp stacks + floor wedge monitors, drum riser). Used on the game bg + PLAY tile (replaced jelly-stage.png there).
+- **Mohawk Charlie** (charlie-punk.png) now the hero in the crowd too (replaced plain charlie.png); still the intro/result/tile/sticker face.
+- **Anti button-mash (meter)**: scoring is now capped to ONE hit per 8th-note beat via band.nearestEighthIndex() + lastScoredRef=beatIdx. Mashing many notes in the same beat earns nothing; you can only fill as fast as you play IN TIME. Timing-weighted: off<=65ms +4, <=130 +2, else +0.8. Verified ~1.5s fast mash => 23% (was ~60%).
+- **Vibrato removed** (per user) — notes play clean (vibrato flag no longer passed; makeVoice code left in, default off).

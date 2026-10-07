@@ -63,6 +63,19 @@ const PLAY_TILES = [
     decoration: 'clouds',
     sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
+  {
+    id: 'shred-legend',
+    title: 'SHRED LEGEND',
+    path: '/shred-legend',
+    bg: 'assets/backgrounds/shred-stage.jpg',
+    bgPosition: 'center',
+    color: '#FFCC00',
+    accent: '#C0392B',
+    character: 'assets/stickers/shred-legend-badge.png',
+    charWidthPct: 30,
+    decoration: 'notes',
+    sfx: 'assets/audio/sfx-rhythm-fill.mp3',
+  },
 ];
 
 export default function PlayMenuPage() {

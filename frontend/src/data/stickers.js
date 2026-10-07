@@ -132,7 +132,7 @@ export const COLLECTION_STICKERS = [
 
   // ---- Fun milestones (silly / playful collection — NOT skill-gating) ----
   { id: 'ach_first_note',    name: 'First Note!',        category: 'milestones', icon: 'assets/characters/finn-danger.png',     color: '#FFCC00', hint: 'Play your very first note' },
-  { id: 'shred_legend',      name: 'Shred Legend',       category: 'milestones', icon: 'assets/stickers/shred-legend-badge.png', color: '#FFCC00', hint: 'Max out the Crowd Meter in Shred Legend' },
+  { id: 'shred_legend',      name: 'Shred Legend',       category: 'milestones', icon: 'assets/characters/charlie-punk.png', color: '#FFCC00', hint: 'Max out the Crowd Meter in Shred Legend' },
   { id: 'ach_one_kid_band',  name: 'One-Kid Band',       category: 'milestones', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Play all 4 instruments in Jam Hall' },
   { id: 'ach_streak_10',     name: 'Streak of 10!',      category: 'milestones', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Hit 10 notes in a row' },
   { id: 'ach_streak_25',     name: 'Streak of 25!',      category: 'milestones', icon: 'assets/characters/jazzy.png',            color: '#FF3B30', hint: 'Hit 25 notes in a row' },

@@ -32,21 +32,25 @@ function tierFor(meter) {
 const CROWD_MEMBERS = [
   { src: 'assets/characters/finn-danger.png', scale: 0.92 },
   { src: 'assets/characters/chunk.png',        scale: 1.00 },
-  { src: 'assets/characters/jazzy.png',        scale: 0.80 },
+  { src: 'assets/characters/jazzy.png',        scale: 0.88 },
   { src: 'assets/characters/charlie.png',      scale: 0.96 },
-  { src: 'assets/characters/lou.png',          scale: 0.82 },
+  { src: 'assets/characters/lou.png',          scale: 0.90 },
   { src: 'assets/characters/stew.png',         scale: 0.98 },
   { src: 'assets/characters/dr-jellybone.png', scale: 1.00 },
 ];
 
 function CrowdRow({ energy }) {
+  // Bucket the energy so the jump height/speed only change at a few
+  // thresholds — continuously-changing framer targets caused the taller
+  // sprites (Finn, Lou) to jitter/glitch while celebrating.
+  const e = Math.round(energy * 3) / 3;
+  const lift = 6 + e * 42;
+  const dur = Math.max(0.28, 0.72 - e * 0.4);
   return (
     <div className="w-full h-full flex items-end justify-center gap-1 md:gap-3 pointer-events-none select-none">
       {CROWD_MEMBERS.map((m, i) => {
         const delay = (i % 4) * 0.07;
-        const lift = 6 + energy * 42;                     // jump height
-        const dur = Math.max(0.26, 0.72 - energy * 0.42); // jump speed
-        const tilt = energy * 6 * (i % 2 === 0 ? 1 : -1); // head-bang
+        const tilt = e * 5 * (i % 2 === 0 ? 1 : -1);
         return (
           <motion.img
             key={i}
@@ -54,12 +58,49 @@ function CrowdRow({ energy }) {
             alt=""
             draggable={false}
             className="object-contain object-bottom"
-            style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%` }}
+            style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', willChange: 'transform' }}
             animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
             transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
           />
         );
       })}
+    </div>
+  );
+}
+
+function StageLights({ energy }) {
+  const beams = [
+    { color: 'rgba(255,80,80,0.30)',  x: '18%', delay: 0 },
+    { color: 'rgba(255,204,0,0.28)',  x: '50%', delay: 0.6 },
+    { color: 'rgba(15,163,177,0.30)', x: '82%', delay: 1.2 },
+  ];
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 2, mixBlendMode: 'screen' }}>
+      {beams.map((b, i) => (
+        <motion.div
+          key={i}
+          className="absolute top-[-10%]"
+          style={{
+            left: b.x,
+            width: '42vw',
+            height: '120%',
+            transformOrigin: 'top center',
+            background: `linear-gradient(180deg, ${b.color} 0%, rgba(0,0,0,0) 72%)`,
+            filter: 'blur(6px)',
+          }}
+          animate={{ rotate: [i % 2 === 0 ? -16 : 16, i % 2 === 0 ? 16 : -16, i % 2 === 0 ? -16 : 16] }}
+          transition={{ repeat: Infinity, duration: Math.max(2.4, 5 - energy * 2.4), delay: b.delay, ease: 'easeInOut' }}
+        />
+      ))}
+      <motion.div
+        className="absolute left-1/2 top-[20%]"
+        style={{
+          width: '70vw', height: '55vh', transform: 'translateX(-50%)',
+          background: 'radial-gradient(ellipse at center, rgba(255,204,0,0.22) 0%, rgba(255,204,0,0) 65%)',
+        }}
+        animate={{ opacity: [0.35 + energy * 0.5, 0.6 + energy * 0.4, 0.35 + energy * 0.5] }}
+        transition={{ repeat: Infinity, duration: Math.max(0.5, 1.2 - energy), ease: 'easeInOut' }}
+      />
     </div>
   );
 }
@@ -76,7 +117,7 @@ export default function ShredLegendPage() {
   const [timeLeft, setTimeLeft] = useState(SONG_SECONDS);
   const [floats, setFloats] = useState([]);         // floating feedback words
   const [readyCount, setReadyCount] = useState(3);
-  const [songIndex, setSongIndex] = useState(0);    // which backing track
+  const [songIndex, setSongIndex] = useState(() => Math.floor(Math.random() * SONGS.length));
 
   const meterRef = useRef(0);
   const comboRef = useRef(0);
@@ -88,6 +129,9 @@ export default function ShredLegendPage() {
   const lastOnsetRef = useRef(0);            // time of last note hit (ms)
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
+
+  // Preload the app's drum + bass samples up front so the groove is ready.
+  useEffect(() => { band.preload(); }, [band]);
 
   // ---- crowd cheer SFX (synth noise swell) ----
   const cheer = useCallback((big = false) => {
@@ -128,7 +172,7 @@ export default function ShredLegendPage() {
     setCombo(comboRef.current);
 
     // Base energy for any hit, plus an on-beat sparkle bonus. Never negative.
-    const add = 4 + (onBeat ? 3 : 0);
+    const add = 3 + (onBeat ? 2 : 0);
     bumpMeter(add);
     if (onBeat) pushFloat(off <= 70 ? 'PERFECT!' : 'NICE!', off <= 70 ? '#FFCC00' : '#0FA3B1');
   }, [screen, band, pushFloat]);
@@ -164,12 +208,9 @@ export default function ShredLegendPage() {
       const now = performance.now();
       const recentlyPlayed = now - lastOnsetRef.current < 350;
       if (holdingRef.current) {
-        // Sustained soaring note → crowd keeps rising (tuned so it takes
-        // real, steady playing to max out — not a quick fill).
-        bumpMeter(0.8);          // ~8/sec
+        bumpMeter(0.6);          // ~6/sec sustained
       } else if (!recentlyPlayed) {
-        // Only drift down when the kid has actually gone quiet.
-        meterRef.current = Math.max(0, meterRef.current - 1.0); // ~10/sec
+        meterRef.current = Math.max(0, meterRef.current - 1.1); // ~11/sec idle
         setMeter(meterRef.current);
       }
     }, 100);
@@ -186,7 +227,15 @@ export default function ShredLegendPage() {
 
   const beginReady = useCallback((rotate = false) => {
     initAudioContext();
-    if (rotate) setSongIndex((s) => (s + 1) % SONGS.length);
+    if (rotate) {
+      // Pick a fresh RANDOM song (different from the one just played).
+      setSongIndex((cur) => {
+        if (SONGS.length < 2) return cur;
+        let n = cur;
+        while (n === cur) n = Math.floor(Math.random() * SONGS.length);
+        return n;
+      });
+    }
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0;
@@ -236,6 +285,8 @@ export default function ShredLegendPage() {
     >
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,20,32,0) 0%, rgba(10,20,32,0) 55%, rgba(10,20,32,0.35) 100%)' }} />
 
+      {(screen === 'playing' || screen === 'ready') && <StageLights energy={energy} />}
+
       <GameHeader title="SHRED LEGEND" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <FullscreenButton />
 
@@ -273,7 +324,7 @@ export default function ShredLegendPage() {
               style={{ background: 'rgba(16,24,38,0.92)', border: '4px solid #FFCC00', boxShadow: '0 8px 0 0 #0A1420' }}
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
-              <img src="assets/stickers/shred-legend-badge.png" alt="" className="w-28 h-28 object-contain mx-auto mb-2" />
+              <img src="assets/characters/charlie-punk.png" alt="" className="w-32 h-32 object-contain mx-auto mb-2" />
               <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED LEGEND</h1>
               <p className="text-sm font-bold mb-1" style={{ color: '#FFE7C2' }}>
                 The band's locked in. Grab your axe and <span style={{ color: '#FFCC00' }}>solo</span> over the groove.
@@ -372,7 +423,7 @@ export default function ShredLegendPage() {
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               {reachedLegendRef.current && (
-                <img src="assets/stickers/shred-legend-badge.png" alt="" className="w-28 h-28 object-contain mx-auto mb-1" />
+                <img src="assets/characters/charlie-punk.png" alt="" className="w-32 h-32 object-contain mx-auto mb-1" />
               )}
               <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#9DB4CC' }}>You played the</p>
               <h1 className="font-black font-display text-4xl leading-none mb-2" style={{ color: tierFor(peakRef.current).color }} data-testid="shred-result-tier">

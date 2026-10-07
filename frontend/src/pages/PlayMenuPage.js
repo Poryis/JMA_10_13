@@ -71,7 +71,7 @@ const PLAY_TILES = [
     bgPosition: 'center top',
     color: '#FFCC00',
     accent: '#C0392B',
-    character: 'assets/stickers/shred-legend-badge.png',
+    character: 'assets/characters/charlie-punk.png',
     charWidthPct: 30,
     decoration: 'notes',
     sfx: 'assets/audio/sfx-rhythm-fill.mp3',

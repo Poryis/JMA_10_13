@@ -2162,3 +2162,11 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - **Meter redesign**: was onset-only (rewarded frantic tapping, ignored held notes). Now: any note onset +6 (+4 on-beat sparkle, never negative), SUSTAINED notes fill ~14/sec while held (new `onActiveChange` signal added to GuitarInstrument), gentle decay ~8/sec only when the kid goes quiet (350ms grace). On-beat is a bonus, not a requirement. Verified: a single 2.6s held note fills to ~46% (Opening Act).
 - **Pointer-capture** added to guitar note/chord pads so sustained holds don't release early when the pad press-animates.
 - **Art to match brand**: stage now uses the app's own `jelly-stage.png` (red curtains + light cans, heavy-stroke flat style) instead of the generated painterly stage; PLAY tile too. Crowd rebuilt from the JMA band characters (Finn, Chunk, Jazzy, Charlie, parrot, llama, Sharky, Dr. Jellybone, shark) as a reactive layer that bobs/head-bangs harder as the meter climbs.
+
+## June 2026 — Shred Legend round 2 (verified: iteration_26, 100%)
+- **Crowd bug FIX**: was 3 shark-dupes + wildly inconsistent sizes (Jazzy ~2x). Now 7 DISTINCT band characters (Finn, Chunk, Jazzy, Charlie, Lou, Stew, Dr. Jellybone) with per-character `scale` and a fixed-height band (clamp(84px,17vh,140px)) + mt-auto so nobody balloons (fixed the flex-1 ballooning during guitar load).
+- **Meter tuned down**: onset +4 (+3 on-beat), sustain 0.8/100ms (~8/sec), decay 1.0/100ms. A 2.5s held note now ~27% (was 46%).
+- **3 backing songs** (`SONGS` in useShredBand): Garage Stomp (96, rock), Surf Riot (124, surf), Giant Stomp (82, halftime) — all A-minor. Rotates on 'New Song'; HUD shows song name.
+- **Warmer bass**: synth bass reworked to sine-sub + triangle through a plucked lowpass (rounder upright/electric tone) instead of raw sawtooth. (Kept synth = zero licensing, offline-safe; no upload needed.)
+- **Guitar BEND (Notes mode)** in GuitarInstrument: hold a note + hold the BEND bar (or key 'b') to bend UP to the next pentatonic note; top A (880) bends to High C (1046.5). `makeVoice.bendTo()` ramps playbackRate; pointer-capture added to note/chord pads so sustained holds don't release early. Available in Jam Session too.
+- Known pre-existing warnings (unrelated): FreePlayPage `<audio src="">` empty-string warning; app-wide duplicate-key warning.

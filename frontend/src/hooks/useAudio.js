@@ -64,8 +64,16 @@ export function useAudio() {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       // Master gain - all sounds route through this so a recorder can tap a single node
       masterGainRef.current = audioContextRef.current.createGain();
-      masterGainRef.current.gain.value = 1;
-      masterGainRef.current.connect(audioContextRef.current.destination);
+      masterGainRef.current.gain.value = 0.9;
+      // Gentle limiter so the band + guitar summed together don't clip/distort.
+      const comp = audioContextRef.current.createDynamicsCompressor();
+      comp.threshold.value = -6;
+      comp.knee.value = 24;
+      comp.ratio.value = 4;
+      comp.attack.value = 0.003;
+      comp.release.value = 0.25;
+      masterGainRef.current.connect(comp);
+      comp.connect(audioContextRef.current.destination);
     }
     // Resume if suspended (for autoplay policies)
     if (audioContextRef.current.state === 'suspended') {

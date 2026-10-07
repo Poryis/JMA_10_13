@@ -82,7 +82,7 @@ async function loadSample(ctx, tone, file) {
   }
 }
 
-function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, ring = 3.5 }) {
+function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, ring = 3.5, vibrato = false }) {
   const s = nearestSample(freq);
   const buffer = bufferCache.get(`${tone}:${s.file}`);
   if (!buffer) return null;
@@ -99,14 +99,31 @@ function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, rin
   }
   src.connect(g);
   g.connect(destination);
+  // Gentle vibrato that blooms in over ~0.5s, so only SUSTAINED notes get a
+  // noticeable wobble (quick taps end before it ramps up).
+  let lfo = null;
+  if (vibrato) {
+    try {
+      lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 5.3;
+      const depth = ctx.createGain();
+      depth.gain.setValueAtTime(0, t0);
+      depth.gain.linearRampToValueAtTime(20, t0 + 0.5);  // up to ±20 cents
+      lfo.connect(depth);
+      depth.connect(src.detune);
+      lfo.start(t0);
+      lfo.stop(t0 + ring + 0.05);
+    } catch (_) { lfo = null; }
+  }
   src.start(t0);
   src.stop(t0 + ring + 0.05);
   return {
     src,
     sampleFreq: s.freq,
     released: false,
-    // Smoothly bend the voice's pitch to `freq` (used for guitar bends).
     bendTo(freq, dur = 0.14) {
+      if (this.released) return;
       const now = ctx.currentTime;
       try {
         src.playbackRate.cancelScheduledValues(now);
@@ -122,6 +139,7 @@ function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, rin
       g.gain.setValueAtTime(g.gain.value, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
       try { src.stop(t + 0.15); } catch (_) {}
+      try { if (lfo) lfo.stop(t + 0.15); } catch (_) {}
     },
   };
 }
@@ -338,10 +356,11 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const id = `note-${idx}`;
     const prev = activeVoicesRef.current.get(id);
     if (prev) prev.forEach(v => v.release());
-    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90 });
+    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90, ring: 2.6, vibrato: true });
     if (!voice) return;
     activeVoicesRef.current.set(id, [voice]);
-    // This note is now the bend target; if a bend is already held, bend it up.
+    // This note becomes the bend target and STAYS bendable while it rings out,
+    // so a bend works whether you hold the note or just tapped it.
     bendTargetsRef.current = [{ voice, baseFreq: note.freq, nextFreq: nextPentaFreq(idx) }];
     if (bendActiveRef.current) voice.bendTo(nextPentaFreq(idx));
     setHeldIds(prev => new Set(prev).add(id));
@@ -351,9 +370,9 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
 
   const stopNote = useCallback((idx) => {
     const id = `note-${idx}`;
-    const voices = activeVoicesRef.current.get(id);
-    if (voices) { voices.forEach(v => v.release()); activeVoicesRef.current.delete(id); }
-    bendTargetsRef.current = [];
+    // Let the plucked note RING OUT (don't cut it) — only clear the held/visual
+    // state so the pad pops up and the meter's "held" signal releases. The
+    // voice keeps sounding and stays bendable until it naturally fades.
     setHeldIds(prev => { if (!prev.has(id)) return prev; const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
@@ -392,7 +411,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       if (onPlay) onPlay({ type: 'guitar-chord', chord: chord.id });
     } else {
       const note = NOTES[zone];
-      const v = makeVoice({ ...common, freq: note.freq, level: 0.85, ring: 1.6 });
+      const v = makeVoice({ ...common, freq: note.freq, level: 0.85, ring: 2.2, vibrato: true });
       guitarVoicesRef.current = v ? [v] : [];
       label = note.label;
       heldId = `note-${zone}`;

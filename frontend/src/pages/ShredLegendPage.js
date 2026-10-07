@@ -225,17 +225,10 @@ export default function ShredLegendPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
-  const beginReady = useCallback((rotate = false) => {
+  const startSong = useCallback((idx) => {
     initAudioContext();
-    if (rotate) {
-      // Pick a fresh RANDOM song (different from the one just played).
-      setSongIndex((cur) => {
-        if (SONGS.length < 2) return cur;
-        let n = cur;
-        while (n === cur) n = Math.floor(Math.random() * SONGS.length);
-        return n;
-      });
-    }
+    const chosen = (typeof idx === 'number') ? idx : Math.floor(Math.random() * SONGS.length);
+    setSongIndex(chosen);
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0;
@@ -324,21 +317,32 @@ export default function ShredLegendPage() {
               style={{ background: 'rgba(16,24,38,0.92)', border: '4px solid #FFCC00', boxShadow: '0 8px 0 0 #0A1420' }}
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
-              <img src="assets/characters/charlie-punk.png" alt="" className="w-32 h-32 object-contain mx-auto mb-2" />
+              <img src="assets/characters/charlie-punk.png" alt="" className="w-28 h-28 object-contain mx-auto mb-1" />
               <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED LEGEND</h1>
-              <p className="text-sm font-bold mb-1" style={{ color: '#FFE7C2' }}>
-                The band's locked in. Grab your axe and <span style={{ color: '#FFCC00' }}>solo</span> over the groove.
+              <p className="text-xs mb-3" style={{ color: '#9DB4CC' }}>
+                Pick your jam, then <span style={{ color: '#FFCC00' }}>solo</span> on the strip (no wrong notes!) and play in time to fill the <b>Crowd Meter</b>.
               </p>
-              <p className="text-xs mb-4" style={{ color: '#9DB4CC' }}>
-                Play in time with the beat to fill the <b>Crowd Meter</b>. On the pentatonic strip there are no wrong notes — just shred!
-              </p>
+              <div className="grid grid-cols-1 gap-2 mb-2" data-testid="shred-song-picker">
+                {SONGS.map((s, i) => (
+                  <button
+                    key={s.name}
+                    data-testid={`shred-song-${i}`}
+                    onClick={() => startSong(i)}
+                    className="w-full rounded-xl px-4 py-2.5 flex items-center justify-between font-black touch-manipulation border-2"
+                    style={{ background: '#243854', borderColor: '#FFCC00', color: '#E8F4FF' }}
+                  >
+                    <span className="flex items-center gap-2"><Play className="w-4 h-4 fill-current" style={{ color: '#FFCC00' }} /> {s.name}</span>
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: '#9DB4CC' }}>{s.bpm} bpm</span>
+                  </button>
+                ))}
+              </div>
               <button
                 data-testid="shred-start-btn"
-                onClick={beginReady}
-                className="chunky-btn text-[var(--jma-dark)] px-6 py-3 flex items-center gap-2 text-lg font-black mx-auto touch-manipulation"
+                onClick={() => startSong()}
+                className="chunky-btn text-[var(--jma-dark)] w-full px-6 py-3 flex items-center justify-center gap-2 text-lg font-black touch-manipulation"
                 style={{ backgroundColor: '#FFCC00' }}
               >
-                <Play className="w-5 h-5 fill-current" /> Take the Stage
+                <Play className="w-5 h-5 fill-current" /> Surprise Me!
               </button>
             </motion.div>
           </div>
@@ -437,14 +441,21 @@ export default function ShredLegendPage() {
               <p className="text-xs mb-4" style={{ color: '#9DB4CC' }}>
                 {reachedLegendRef.current ? 'Shred Legend sticker unlocked!' : 'Keep the beat longer to fill the meter all the way!'}
               </p>
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 <button
                   data-testid="shred-again-btn"
-                  onClick={() => beginReady(true)}
+                  onClick={() => startSong()}
                   className="chunky-btn text-[var(--jma-dark)] px-5 py-3 flex items-center gap-2 font-black touch-manipulation"
                   style={{ backgroundColor: '#FFCC00' }}
                 >
-                  <RotateCcw className="w-5 h-5" /> New Song
+                  <RotateCcw className="w-5 h-5" /> Random
+                </button>
+                <button
+                  data-testid="shred-pick-btn"
+                  onClick={() => setScreen('intro')}
+                  className="chunky-btn bg-white text-[var(--jma-dark)] px-5 py-3 flex items-center gap-2 font-black touch-manipulation"
+                >
+                  <Play className="w-4 h-4 fill-current" /> Pick Song
                 </button>
                 <button
                   data-testid="shred-back-btn"

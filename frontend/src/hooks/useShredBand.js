@@ -13,23 +13,33 @@ const STEPS_PER_BAR = 16;
 const BARS = 4;
 const TOTAL_STEPS = STEPS_PER_BAR * BARS; // 64
 
-// A-minor friendly chord roots (low octave). Am=55, F=43.65, C=65.41, G=49.
+// A-minor friendly chords. Roots are NOTE NAMES mapped to the uploaded bass
+// samples (A2..A3), so the bass is the real recorded instrument — no pitch
+// shifting. Each song cycles 4 chords, one per bar.
 export const SONGS = [
-  { name: 'Garage Stomp',   bpm: 96,  style: 'rock',     kit: 'samples', roots: [55.00, 43.65, 65.41, 49.00] },
-  { name: 'Surf Riot',      bpm: 126, style: 'surf',     kit: 'samples', roots: [55.00, 65.41, 49.00, 43.65] },
-  { name: 'Giant Stomp',    bpm: 82,  style: 'halftime', kit: 'synth',   roots: [55.00, 49.00, 43.65, 49.00] },
-  { name: 'Kindie Riot',    bpm: 168, style: 'punk',     kit: 'samples', roots: [55.00, 55.00, 43.65, 49.00] },
-  { name: 'Alley Cat Strut',bpm: 104, style: 'rock',     kit: 'samples', roots: [55.00, 43.65, 49.00, 65.41] },
+  { name: 'Garage Stomp',    bpm: 96,  style: 'rock',     kit: 'samples', roots: ['A', 'F', 'C', 'G'] },
+  { name: 'Surf Riot',       bpm: 126, style: 'surf',     kit: 'samples', roots: ['A', 'C', 'G', 'F'] },
+  { name: 'Giant Stomp',     bpm: 82,  style: 'halftime', kit: 'synth',   roots: ['A', 'G', 'F', 'G'] },
+  { name: 'Kindie Riot',     bpm: 168, style: 'punk',     kit: 'samples', roots: ['A', 'A', 'F', 'G'] },
+  { name: 'Alley Cat Strut', bpm: 104, style: 'rock',     kit: 'samples', roots: ['A', 'F', 'G', 'C'] },
 ];
 
-const SAMPLE_URLS = {
+const DRUM_URLS = {
   kick:  'assets/audio/Bass drum - kick.mp3',
   snare: 'assets/audio/Snare.mp3',
   hihat: 'assets/audio/Hi Hat closed.mp3',
   crash: 'assets/audio/Crash cymbal.mp3',
-  bass:  'assets/audio/guitar-clean/A3.mp3',   // 220Hz, pitched down for bass
 };
-const BASS_SAMPLE_FREQ = 220.0;
+// Recorded bass notes (one low octave) keyed by note name.
+const BASS_URLS = {
+  A: 'assets/audio/bass/A2.mp3',
+  B: 'assets/audio/bass/B2.mp3',
+  C: 'assets/audio/bass/C3.mp3',
+  D: 'assets/audio/bass/D3.mp3',
+  E: 'assets/audio/bass/E3.mp3',
+  F: 'assets/audio/bass/F3.mp3',
+  G: 'assets/audio/bass/G3.mp3',
+};
 
 function noiseBuffer(ctx) {
   const len = Math.floor(ctx.sampleRate * 0.3);
@@ -59,9 +69,13 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
     const graph = getAudioGraph && getAudioGraph();
     if (!graph) return;
     const ctx = graph.ctx;
+    const all = {
+      ...Object.fromEntries(Object.entries(DRUM_URLS).map(([k, u]) => [`drum_${k}`, u])),
+      ...Object.fromEntries(Object.entries(BASS_URLS).map(([k, u]) => [`bass_${k}`, u])),
+    };
     try {
       const entries = await Promise.all(
-        Object.entries(SAMPLE_URLS).map(async ([k, url]) => {
+        Object.entries(all).map(async ([k, url]) => {
           const res = await fetch(url);
           const arr = await res.arrayBuffer();
           const buf = await ctx.decodeAudioData(arr);
@@ -119,26 +133,26 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
 
   // ---- drum voices route to samples or synth depending on the song's kit ----
   const kick = useCallback((t) => {
-    const b = buffersRef.current.kick;
-    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.95);
+    const b = buffersRef.current.drum_kick;
+    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.9);
     else synthKick(t);
   }, [playSample, synthKick]);
   const snare = useCallback((t) => {
-    const b = buffersRef.current.snare;
-    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.8);
+    const b = buffersRef.current.drum_snare;
+    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.75);
     else synthSnare(t);
   }, [playSample, synthSnare]);
   const hat = useCallback((t, open = false) => {
-    const b = buffersRef.current.hihat;
-    if (songRef.current.kit === 'samples' && b) playSample(b, t, open ? 0.5 : 0.35);
+    const b = buffersRef.current.drum_hihat;
+    if (songRef.current.kit === 'samples' && b) playSample(b, t, open ? 0.45 : 0.3);
     else synthHat(t, open);
   }, [playSample, synthHat]);
   const crash = useCallback((t) => {
-    const b = buffersRef.current.crash;
-    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.5);
+    const b = buffersRef.current.drum_crash;
+    if (songRef.current.kit === 'samples' && b) playSample(b, t, 0.45);
   }, [playSample]);
 
-  // ---- bass: the clean-guitar sample pitched down an octave (warm, real) ----
+  // ---- bass: the uploaded recorded bass notes, played at true pitch ----
   const synthBass = useCallback((t, freq, dur = 0.3) => {
     const ctx = ctxRef.current, out = outRef.current;
     const sub = ctx.createOscillator(); const body = ctx.createOscillator();
@@ -153,24 +167,22 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
     sub.start(t); body.start(t); sub.stop(t + dur + 0.05); body.stop(t + dur + 0.05);
   }, []);
 
-  const bass = useCallback((t, rootFreq, dur = 0.3) => {
-    const b = buffersRef.current.bass;
+  // SYNTH_BASS_FREQ: fallback frequency per note name if samples absent.
+  const SYNTH_FREQ = { A: 110.0, B: 123.47, C: 130.81, D: 146.83, E: 164.81, F: 174.61, G: 196.0 };
+  const bass = useCallback((t, name, dur = 0.3) => {
+    const b = buffersRef.current[`bass_${name}`];
     if (b) {
-      // Play the bass an octave up from the very low root so it sits in a
-      // warm bass-guitar register (root*2), pitched from the 220Hz sample.
-      const target = rootFreq * 2;
       const ctx = ctxRef.current, out = outRef.current;
       const src = ctx.createBufferSource(); src.buffer = b;
-      src.playbackRate.value = target / BASS_SAMPLE_FREQ;
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600; lp.Q.value = 0.7;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0, t); g.gain.linearRampToValueAtTime(0.9, t + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.25);
-      src.connect(lp); lp.connect(g); g.connect(out);
-      src.start(t); try { src.stop(t + dur + 0.3); } catch (_) {}
+      g.gain.setValueAtTime(0.0, t); g.gain.linearRampToValueAtTime(0.95, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.3);
+      src.connect(g); g.connect(out);
+      src.start(t); try { src.stop(t + dur + 0.35); } catch (_) {}
     } else {
-      synthBass(t, rootFreq, dur);
+      synthBass(t, SYNTH_FREQ[name] || 110, dur);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [synthBass]);
 
   const scheduleStep = useCallback((step, t) => {
@@ -186,24 +198,22 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
       if (inBar === 0 || inBar === 8 || inBar === 14) kick(t);
       if (inBar === 4 || inBar === 12) snare(t);
       if (step === 0) crash(t);
-      if (inBar === 0) bass(t, root, 0.26);
-      if (inBar === 8) bass(t, root, 0.26);
+      if (inBar === 0 || inBar === 8) bass(t, root, 0.26);
       if (inBar === 4 || inBar === 12) bass(t, root, 0.2);
     } else if (song.style === 'surf') {
       hat(t, inBar === 8);
       if (inBar === 0 || inBar === 8 || inBar === 2 || inBar === 10) kick(t);
       if (inBar === 4 || inBar === 12) snare(t);
       if (step === 0) crash(t);
-      if (inBar === 0) bass(t, root, 0.3);
-      if (inBar === 8) bass(t, root, 0.3);
-      if (inBar === 6 || inBar === 14) bass(t, root * 1.5, 0.18);
+      if (inBar === 0 || inBar === 8) bass(t, root, 0.3);
+      if (inBar === 6 || inBar === 14) bass(t, root, 0.18);
     } else if (song.style === 'halftime') {
       if (inBar % 2 === 0) hat(t, inBar === 8);
       if (inBar === 0 || inBar === 10) kick(t);
       if (inBar === 8) snare(t);
       if (inBar === 0) bass(t, root, 0.55);
       if (inBar === 8) bass(t, root, 0.4);
-      if (inBar === 12) bass(t, root * 1.5, 0.22);
+      if (inBar === 12) bass(t, root, 0.22);
     } else {
       // rock
       if (inBar % 2 === 0) hat(t, inBar === 8);
@@ -211,8 +221,8 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
       if (inBar === 4 || inBar === 12) snare(t);
       if (inBar === 0) bass(t, root, 0.4);
       if (inBar === 8) bass(t, root, 0.3);
-      if (inBar === 11) bass(t, root * 1.5, 0.2);
-      if (inBar === 14) bass(t, root * 2, 0.2);
+      if (inBar === 11) bass(t, root, 0.2);
+      if (inBar === 14) bass(t, root, 0.2);
     }
   }, [hat, kick, snare, crash, bass]);
 

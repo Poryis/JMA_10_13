@@ -356,7 +356,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const id = `note-${idx}`;
     const prev = activeVoicesRef.current.get(id);
     if (prev) prev.forEach(v => v.release());
-    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90, ring: 2.6, vibrato: true });
+    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90, ring: 2.6 });
     if (!voice) return;
     activeVoicesRef.current.set(id, [voice]);
     // This note becomes the bend target and STAYS bendable while it rings out,
@@ -411,7 +411,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       if (onPlay) onPlay({ type: 'guitar-chord', chord: chord.id });
     } else {
       const note = NOTES[zone];
-      const v = makeVoice({ ...common, freq: note.freq, level: 0.85, ring: 2.2, vibrato: true });
+      const v = makeVoice({ ...common, freq: note.freq, level: 0.85, ring: 2.2 });
       guitarVoicesRef.current = v ? [v] : [];
       label = note.label;
       heldId = `note-${zone}`;

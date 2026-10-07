@@ -2192,3 +2192,8 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - **Mohawk Charlie** (charlie-punk.png) now the hero in the crowd too (replaced plain charlie.png); still the intro/result/tile/sticker face.
 - **Anti button-mash (meter)**: scoring is now capped to ONE hit per 8th-note beat via band.nearestEighthIndex() + lastScoredRef=beatIdx. Mashing many notes in the same beat earns nothing; you can only fill as fast as you play IN TIME. Timing-weighted: off<=65ms +4, <=130 +2, else +0.8. Verified ~1.5s fast mash => 23% (was ~60%).
 - **Vibrato removed** (per user) — notes play clean (vibrato flag no longer passed; makeVoice code left in, default off).
+
+## June 2026 — Shred Legend round 6 (verified: iteration_30, 100%)
+- **Sustain regression FIX**: earlier ring-out set note ring to 2.6s which (being <3.5) triggered makeVoice's forced fade-out envelope, SHORTENING sustain. Restored ring to 4.6 (pads) / 4.2 (strings) so notes ring their full natural length (no forced decay) + still ring-out. (Audio duration not auto-assertable — user to confirm by ear.)
+- **Per-song stage light colors**: StageLights now takes a `style` prop with LIGHT_PALETTES — punk=red/white strobe (fast flash), surf=teal/orange, halftime=purple/blue, rock=red/yellow/teal. Driven by SONGS[songIndex].style.
+- **PLAY tile title legibility**: Shred Legend tile bgPosition -> 'center bottom' so the bright light cans aren't behind the "SHRED LEGEND" title (now reads over the darker amp/stage area).

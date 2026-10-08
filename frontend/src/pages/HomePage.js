@@ -40,6 +40,7 @@ const CARDS = [
   {
     id: 'play',
     title: 'PLAY',
+    subtitle: 'Games & Puzzles',
     path: '/play',
     icon: 'assets/home/play/boombox.png',
     iconAlt: 'Boombox',
@@ -73,6 +74,7 @@ const CARDS = [
   {
     id: 'learn',
     title: 'LEARN',
+    subtitle: 'Lessons & Training',
     path: '/learn',
     icon: 'assets/home/learn/storybook no accents.png',
     iconAlt: 'Storybook',
@@ -107,6 +109,7 @@ const CARDS = [
   {
     id: 'create',
     title: 'CREATE',
+    subtitle: 'Recording Studio',
     path: '/create',
     icon: 'assets/home/create/beat pad.png',
     iconAlt: 'Beat Pad',
@@ -231,8 +234,9 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
           style={{ background: 'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.32) 0%, transparent 50%)', zIndex: 0 }}
         />
 
-        {/* Decorative accents — skipped in wide/banner mode to keep it clean */}
-        {!wide && card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
+        {/* Decorative accents — shown in both square and wide/banner layouts
+            so the phone Create banner keeps its fun elements too. */}
+        {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
 
         {/* HUGE primary icon (off-center, per-card sized via iconWidthPct) */}
         <motion.img
@@ -263,20 +267,35 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
           }
         />
 
-        {/* Title */}
-        <h2
-          className="relative font-black font-display leading-none text-center"
-          style={{
-            fontSize: wide ? 'clamp(36px, 10vw, 60px)' : 'clamp(28px, 5.2vw, 56px)',
-            color: card.titleColor,
-            WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
-            paintOrder: 'stroke fill',
-            letterSpacing: '0.02em',
-            zIndex: 30,
-          }}
-        >
-          {card.title}
-        </h2>
+        {/* Title + subtitle stack */}
+        <div className="relative flex flex-col items-center" style={{ zIndex: 30 }}>
+          <h2
+            className="font-black font-display leading-none text-center"
+            style={{
+              fontSize: wide ? 'clamp(36px, 10vw, 60px)' : 'clamp(28px, 5.2vw, 56px)',
+              color: card.titleColor,
+              WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
+              paintOrder: 'stroke fill',
+              letterSpacing: '0.02em',
+            }}
+          >
+            {card.title}
+          </h2>
+          {card.subtitle && (
+            <span
+              className="font-black font-display uppercase text-center leading-none mt-1"
+              style={{
+                fontSize: wide ? 'clamp(10px, 2.6vw, 16px)' : 'clamp(8px, 1.5vw, 13px)',
+                color: card.titleColor,
+                letterSpacing: '0.04em',
+                textShadow: '0 1px 0 rgba(255,255,255,0.65)',
+                opacity: 0.92,
+              }}
+            >
+              {card.subtitle}
+            </span>
+          )}
+        </div>
       </div>
     </motion.button>
   );

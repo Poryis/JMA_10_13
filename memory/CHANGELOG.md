@@ -1,5 +1,19 @@
 # Changelog
 
+## Home cards — subtitles + Create banner accents on phone (Jun 2026)
+
+**User requests**: (1) Add sub-headers under the three main Home cards — Play: "Games & Puzzles", Learn: "Lessons & Training", Create: "Recording Studio". (2) On phone, the Create card had lost all its fun accent elements.
+
+### `pages/HomePage.js`
+- Added a `subtitle` field to each card in `CARDS` and rendered a title+subtitle stack inside `PrimaryCard` (wraps the `<h2>` and a new subtitle `<span>`, stacked and centered for both square and wide/banner layouts).
+- Accents fix: `PrimaryCard` previously skipped accents in `wide` mode (`{!wide && card.accents...}`), which stripped the phone Create banner of its notes/stars/heartbeat. Now accents render in both layouts, so the phone Create banner shows its fun elements again.
+
+### QA
+- Verified on preview at 402px (phone: Play+Learn 2-up, Create full-width banner) and 1280px (desktop 3-across). All three cards show subtitles; Create banner now has accents on phone. Clean compile.
+
+**Reminder noted**: User wants a full code review run before launch.
+
+
 ## Shred Legend guitar — release now stops the note (no more overlap) (Jun 2026)
 
 **User report**: "Now the sustain is overlapping. Every note I play rings to its full length even if I stop pressing."

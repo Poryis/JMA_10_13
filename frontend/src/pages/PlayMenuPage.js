@@ -76,6 +76,20 @@ const PLAY_TILES = [
     decoration: 'notes',
     sfx: 'assets/audio/sfx-rhythm-fill.mp3',
   },
+  {
+    id: 'robot-boogie',
+    title: 'ROBOT BOOGIE',
+    path: '/robot-boogie',
+    bg: 'assets/backgrounds/robot-boogie-card.svg',
+    color: '#5A2989',
+    accent: '#3B1F5C',
+    character: 'assets/robot-boogie/robot1-card-hero.png',
+    charWidthPct: 45,
+    decoration: 'sparkles',
+    // No SFX preview on this card — the source stem is an 8-s loop and
+    // even a short-capped preview reads as "a second of music that cuts
+    // out." Card click just navigates.
+  },
 ];
 
 export default function PlayMenuPage() {

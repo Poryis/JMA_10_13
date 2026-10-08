@@ -162,11 +162,12 @@ const LOOP_PRESETS = {
     hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Rock Power': {
-    'guitar:Em': P('x...............'),
-    'guitar:C':  P('........x.......'),
-    kick:  P('x...x...x...x...'),
-    snare: P('....x.......x...'),
-    crash: P('x...............'),
+    // 2 bars, one power chord per bar so they don't rush: Em then C
+    'guitar:Em': H(32, [0]),
+    'guitar:C':  H(32, [16]),
+    kick:  H(32, [0, 4, 8, 12, 16, 20, 24, 28]),
+    snare: H(32, [4, 12, 20, 28]),
+    crash: H(32, [0]),
   },
   'Scratch Jam': {
     push:     P('x...x...x...x...'),

@@ -1,6 +1,16 @@
 # Changelog
 
-## Beat Lab — bari sax default, poly melody, full-measure guitar (Jun 2026)
+## Beat Lab — playback render perf (Jun 2026)
+
+Beta report of lag. Root cause (code side): the moving playhead forced a full page re-render every tick, and empty lanes received a fresh `new Array().fill(0)` each render — defeating `StepRow`'s memo so every empty row re-rendered on every tick (up to 64 cells × lanes).
+
+Fixes in `LoopStudioPage.js`:
+- Stable `zeros` array (useMemo on totalSteps) for empty lanes → rows keep their memo.
+- Memoized preset pills, label column, and lane rows (rebuild only on actual changes, not on tick).
+- Beat-marker dots are now static (position shown by the playhead), so they don't rebuild per tick.
+- Result: per-tick work is just the STEP readout + 1 playhead element. Loop clock verified still advancing, no errors. (Remaining lag, if any, is likely the tester's device.)
+
+
 
 - **Sax register**: default octave switched to LOW (bari style) and every sax preset (Sax Hook, Sax & Bass, Smooth Jazz, Do-Mi-So) moved down to the C3–B3 octave — fixes the "corny" bright tone.
 - **Polyphony**: removed sax & bass from the MONO set (only guitar stays mono). Kids can now place two notes on the same step and hear both. Note length still legato-overlaps via each note's tail.

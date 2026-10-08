@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight, Eraser } from 'lucide-react';
@@ -481,12 +481,60 @@ function LoopStudioPage() {
   // Which lanes are visible for the active tab.
   const instCfg = INSTRUMENTS[melodyInst];
   const octIdx = Math.min(octaves[melodyInst] || 0, (instCfg.windows.length - 1));
-  const visibleKeys = tab === 'drums'
+  const visibleKeys = useMemo(() => (tab === 'drums'
     ? DRUMS.map((d) => d.key)
-    : [...instCfg.windows[octIdx]].reverse().map((n) => `${melodyInst}:${n}`);
+    : [...instCfg.windows[octIdx]].reverse().map((n) => `${melodyInst}:${n}`)),
+    [tab, melodyInst, octIdx, instCfg]);
 
   const scroll = totalSteps > 16;
   const playheadPct = currentStep >= 0 ? (currentStep / totalSteps) * 100 : 0;
+
+  // Stable empty-lane array so unused StepRows keep their memo (don't re-render
+  // every tick just because `new Array().fill(0)` made a fresh reference).
+  const zeros = useMemo(() => new Array(totalSteps).fill(0), [totalSteps]);
+
+  // Preset pills never change — build once.
+  const presetButtons = useMemo(() => Object.keys(LOOP_PRESETS).map((name, i) => {
+    const colors = ['#FFCC00', '#FF6B6B', '#4CD964', '#61E8DA', '#FF9500', '#AF52DE'];
+    const bg = colors[i % colors.length];
+    const rot = ((i * 37) % 5) - 2;
+    return (
+      <button key={name} data-testid={`preset-${name.replace(/\s/g, '-')}`} className="px-3 py-1.5 rounded-full text-xs font-black" style={{ background: bg, color: '#0A1626', border: '2px solid #0A1626', boxShadow: '0 2px 0 rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.4)', transform: `rotate(${rot}deg)` }} onClick={() => loadPreset(name)}>{name}</button>
+    );
+  }), [loadPreset]);
+
+  // Static beat-marker dots (position is shown by the moving playhead, so these
+  // don't depend on currentStep and never rebuild during playback).
+  const stepDots = useMemo(() => (
+    <div className="flex h-3 items-center">
+      {Array.from({ length: totalSteps }, (_, i) => (
+        <div key={i} style={{ flex: scroll ? 'none' : 1, width: scroll ? 32 : undefined, marginLeft: i % 4 === 0 && i > 0 ? 5 : 1 }} className="flex justify-center">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: i % 4 === 0 ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.14)' }} />
+        </div>
+      ))}
+    </div>
+  ), [totalSteps, scroll]);
+
+  // Label column rebuilds only when lanes/mutes change, not on every tick.
+  const labelColumn = useMemo(() => visibleKeys.map((key) => {
+    const info = laneInfo(key);
+    const isMuted = muted.has(key);
+    return (
+      <div key={`lbl-${key}`} className="flex items-center gap-1.5" style={{ height: 'var(--lane-h)' }} data-testid={`track-label-${key}`}>
+        <button className="w-6 h-6 rounded-full flex-shrink-0" style={{ background: info.color, boxShadow: isMuted ? 'inset 0 0 6px rgba(0,0,0,0.7)' : `0 0 10px ${info.color}`, opacity: isMuted ? 0.4 : 1, border: '1.5px solid rgba(0,0,0,0.7)' }} onPointerDown={(e) => { e.preventDefault(); playVoice(key); }} data-testid={`preview-${key}`} title={`Preview ${info.label}`} />
+        <button className="flex-1 min-w-0 px-1.5 py-1 rounded-lg text-left leading-none" style={{ background: isMuted ? '#131F30' : '#243854', border: `2px solid ${info.color}` }} onClick={() => toggleMute(key)} data-testid={`mute-${key}`}>
+          <span className="block font-black truncate" style={{ color: isMuted ? '#5E7899' : '#E8F4FF', fontSize: 13 }}>{info.label}</span>
+          {info.sub && <span className="block font-bold truncate" style={{ color: isMuted ? '#43566e' : info.color, fontSize: 9 }}>{info.sub}</span>}
+        </button>
+      </div>
+    );
+  }), [visibleKeys, muted, playVoice, toggleMute]);
+
+  // Lane rows rebuild only when the pattern/lanes/mutes change (grid updates on
+  // tap, not on tick), so playback does no per-cell work.
+  const laneRows = useMemo(() => visibleKeys.map((key) => (
+    <StepRow key={`row-${key}`} voiceKey={key} color={laneInfo(key).color} steps={grid[key] || zeros} totalSteps={totalSteps} muted={muted.has(key)} scroll={scroll} onToggle={toggleCell} />
+  )), [visibleKeys, grid, muted, totalSteps, scroll, toggleCell, zeros]);
 
   return (
     <div
@@ -591,14 +639,7 @@ function LoopStudioPage() {
 
           {/* PRESETS */}
           <div className="mt-2.5 flex gap-2 flex-wrap justify-center">
-            {Object.keys(LOOP_PRESETS).map((name, i) => {
-              const colors = ['#FFCC00', '#FF6B6B', '#4CD964', '#61E8DA', '#FF9500', '#AF52DE'];
-              const bg = colors[i % colors.length];
-              const rot = ((i * 37) % 5) - 2;
-              return (
-                <button key={name} data-testid={`preset-${name.replace(/\s/g, '-')}`} className="px-3 py-1.5 rounded-full text-xs font-black" style={{ background: bg, color: '#0A1626', border: '2px solid #0A1626', boxShadow: '0 2px 0 rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.4)', transform: `rotate(${rot}deg)` }} onClick={() => loadPreset(name)}>{name}</button>
-              );
-            })}
+            {presetButtons}
           </div>
 
           {/* TAB BAR */}
@@ -643,37 +684,17 @@ function LoopStudioPage() {
               {/* Frozen label column */}
               <div className="flex-shrink-0 flex flex-col gap-1" style={{ width: 'clamp(76px, 22vw, 116px)' }}>
                 <div className="h-3" aria-hidden="true" />
-                {visibleKeys.map((key) => {
-                  const info = laneInfo(key);
-                  const isMuted = muted.has(key);
-                  return (
-                    <div key={`lbl-${key}`} className="flex items-center gap-1.5" style={{ height: 'var(--lane-h)' }} data-testid={`track-label-${key}`}>
-                      <button className="w-6 h-6 rounded-full flex-shrink-0" style={{ background: info.color, boxShadow: isMuted ? 'inset 0 0 6px rgba(0,0,0,0.7)' : `0 0 10px ${info.color}`, opacity: isMuted ? 0.4 : 1, border: '1.5px solid rgba(0,0,0,0.7)' }} onPointerDown={(e) => { e.preventDefault(); playVoice(key); }} data-testid={`preview-${key}`} title={`Preview ${info.label}`} />
-                      <button className="flex-1 min-w-0 px-1.5 py-1 rounded-lg text-left leading-none" style={{ background: isMuted ? '#131F30' : '#243854', border: `2px solid ${info.color}` }} onClick={() => toggleMute(key)} data-testid={`mute-${key}`}>
-                        <span className="block font-black truncate" style={{ color: isMuted ? '#5E7899' : '#E8F4FF', fontSize: 13 }}>{info.label}</span>
-                        {info.sub && <span className="block font-bold truncate" style={{ color: isMuted ? '#43566e' : info.color, fontSize: 9 }}>{info.sub}</span>}
-                      </button>
-                    </div>
-                  );
-                })}
+                {labelColumn}
               </div>
 
               {/* Steps (scrolls only when > 1 bar) */}
               <div className={`flex-1 min-w-0 ${scroll ? 'overflow-x-auto beatlab-scroll' : ''}`}>
                 <div className="relative" style={{ minWidth: scroll ? `${totalSteps * 37}px` : '100%' }}>
-                  {/* Step indicator dots */}
-                  <div className="flex h-3 items-center">
-                    {Array.from({ length: totalSteps }, (_, i) => (
-                      <div key={i} style={{ flex: scroll ? 'none' : 1, width: scroll ? 32 : undefined, marginLeft: i % 4 === 0 && i > 0 ? 5 : 1 }} className="flex justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: currentStep === i && isPlaying ? '#FFCC00' : 'rgba(255,255,255,0.18)', boxShadow: currentStep === i && isPlaying ? '0 0 8px #FFCC00' : 'none' }} />
-                      </div>
-                    ))}
-                  </div>
+                  {/* Static beat-marker dots */}
+                  {stepDots}
                   {/* Lane rows */}
                   <div className="flex flex-col gap-1 mt-1 relative">
-                    {visibleKeys.map((key) => (
-                      <StepRow key={`row-${key}`} voiceKey={key} color={laneInfo(key).color} steps={grid[key] || new Array(totalSteps).fill(0)} totalSteps={totalSteps} muted={muted.has(key)} scroll={scroll} onToggle={toggleCell} />
-                    ))}
+                    {laneRows}
                     {/* Playhead overlay — one element that moves, so cells don't re-render each tick */}
                     {isPlaying && currentStep >= 0 && (
                       <div className="absolute top-0 bottom-0 pointer-events-none" style={{ left: `${playheadPct}%`, width: `${100 / totalSteps}%`, background: 'rgba(255,204,0,0.14)', borderLeft: '2px solid rgba(255,204,0,0.65)', borderRadius: 4 }} />

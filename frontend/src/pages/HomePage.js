@@ -148,15 +148,20 @@ const ANIMS = {
   pulse:   { scale: [1, 1.06, 1] },
 };
 
-function Accent({ a }) {
+function Accent({ a, wide }) {
+  // The wide (phone Create banner) card is much wider/shorter than the square
+  // cards, so the same width-% blows the art up. Shrink it there, and force
+  // every accent BEHIND the icon (z:1) so none float over the hero.
+  const w = wide ? a.w * 0.4 : a.w;
+  const z = wide ? 1 : (a.z ?? 1);
   return (
     <motion.img
       src={a.src} alt="" draggable={false} loading="lazy"
       className="absolute pointer-events-none select-none"
       style={{
-        top: `${a.top}%`, left: `${a.left}%`, width: `${a.w}%`,
+        top: `${a.top}%`, left: `${a.left}%`, width: `${w}%`,
         filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.22))',
-        zIndex: a.z ?? 1,
+        zIndex: z,
         opacity: a.opacity ?? 1,
         rotate: `${a.rot || 0}deg`,
       }}
@@ -236,7 +241,7 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
 
         {/* Decorative accents — shown in both square and wide/banner layouts
             so the phone Create banner keeps its fun elements too. */}
-        {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
+        {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} wide={wide} />)}
 
         {/* HUGE primary icon (off-center, per-card sized via iconWidthPct) */}
         <motion.img

@@ -6,7 +6,7 @@
 
 ### `pages/HomePage.js`
 - Added a `subtitle` field to each card in `CARDS` and rendered a title+subtitle stack inside `PrimaryCard` (wraps the `<h2>` and a new subtitle `<span>`, stacked and centered for both square and wide/banner layouts).
-- Accents fix: `PrimaryCard` previously skipped accents in `wide` mode (`{!wide && card.accents...}`), which stripped the phone Create banner of its notes/stars/heartbeat. Now accents render in both layouts, so the phone Create banner shows its fun elements again.
+- Accents fix: `PrimaryCard` previously skipped accents in `wide` mode (`{!wide && card.accents...}`), which stripped the phone Create banner of its notes/stars/heartbeat. Now accents render in both layouts. In wide mode they are scaled to 40% and forced to z:1 (behind the icon) so they match the other cards' sizing and never float over the hero beat-pad.
 
 ### QA
 - Verified on preview at 402px (phone: Play+Learn 2-up, Create full-width banner) and 1280px (desktop 3-across). All three cards show subtitles; Create banner now has accents on phone. Clean compile.

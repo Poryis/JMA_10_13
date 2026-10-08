@@ -60,14 +60,10 @@ const MELODY_ORDER = ['sax', 'bass', 'piano', 'guitar'];
 // 16-char strings -> step arrays ('x' = hit).
 const P = (s) => s.split('').map((c) => (c === 'x' ? 1 : 0));
 
-// Steps until this lane's NEXT hit (wrapping the loop). Returns `total` when the
-// lane never hits again, so the caller decides how long a lone note holds.
+// Steps until the next hit of ANY of the instrument's lanes (wrapping the loop).
+// Returns `total` when the instrument never hits again, so a lone note/chord can
+// be held for the whole measure. Drives note length for all melodic voices.
 const NOTE_CAP_STEPS = 8;
-function stepsUntilNext(steps, from, total) {
-  for (let d = 1; d <= total; d++) { if (steps[(from + d) % total]) return d; }
-  return total;
-}
-// Gap to the next hit of ANY of the instrument's lanes (wrapping the loop).
 function stepsUntilNextForInstrument(gridObj, inst, from, total) {
   const prefix = `${inst}:`;
   for (let d = 1; d <= total; d++) {
@@ -95,35 +91,63 @@ const LOOP_PRESETS = {
     push:  P('..............x.'),
   },
   'Sax Hook': {
-    'sax:C3': P('x.......x.......'),
-    'sax:E3': P('..x.......x.....'),
-    'sax:G3': P('....x.......x...'),
-    'sax:A3': P('......x.........'),
+    // Syncopated C-pentatonic lick (no corny F/B): G A G E G E D
+    'sax:G3': P('x.....x...x.....'),
+    'sax:A3': P('...x............'),
+    'sax:E3': P('........x...x...'),
+    'sax:D3': P('..............x.'),
     kick:  P('x...x...x...x...'),
     snare: P('....x.......x...'),
+    hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Sax & Bass': {
-    'sax:G3': P('x.......x.......'),
-    'sax:E3': P('....x.......x...'),
-    'bass:C3': P('x.......x.......'),
-    'bass:G3': P('....x.......x...'),
+    // Laid-back pentatonic sax over a two-note walking bass
+    'sax:E3': P('x.......x.......'),
+    'sax:G3': P('..x.......x.....'),
+    'sax:A3': P('....x...........'),
+    'sax:D3': P('............x...'),
+    'bass:C3': P('x...x...x...x...'),
+    'bass:E3': P('..x...x...x...x.'),
     kick:  P('x...x...x...x...'),
     hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Smooth Jazz': {
-    'sax:A3': P('x.....x.........'),
-    'sax:F3': P('......x...x.....'),
-    'sax:D3': P('..........x.....'),
-    'piano:C4': P('x.......x.......'),
-    'piano:E4': P('x.......x.......'),
-    'piano:G4': P('x.......x.......'),
+    // I-vi-ii-V turnaround with real 7th chords: Cmaj7 - Am7 - Dm7 - G7
+    'piano:C4': P('x...............'),
+    'piano:E4': P('x...............'),
+    'piano:G4': P('x...........x...'),
+    'piano:B4': P('x...........x...'),
+    'piano:A4': P('....x...x.......'),
+    'piano:C5': P('....x...x.......'),
+    'piano:E5': P('....x...........'),
+    'piano:G5': P('....x...........'),
+    'piano:D4': P('........x.......'),
+    'piano:F4': P('........x.......'),
+    'piano:D5': P('............x...'),
+    'piano:F5': P('............x...'),
+    // walking upright bass through the changes: C E A C D F G B
+    'bass:C3': P('x.....x.........'),
+    'bass:E3': P('..x.............'),
+    'bass:A2': P('....x...........'),
+    'bass:D3': P('........x.......'),
+    'bass:F3': P('..........x.....'),
+    'bass:G3': P('............x...'),
+    'bass:B3': P('..............x.'),
+    // breathy bari-sax guide line: G A F D
+    'sax:G3': P('x...............'),
+    'sax:A3': P('....x...........'),
+    'sax:F3': P('........x.......'),
+    'sax:D3': P('............x...'),
     kick:  P('x.......x.......'),
-    hihat: P('..x...x...x...x.'),
+    hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Funky Bass': {
-    'bass:C3': P('x..x..x...x..x..'),
+    'bass:C3': P('x..x....x..x....'),
     'bass:E3': P('......x.........'),
+    'bass:G3': P('............x...'),
+    'bass:A3': P('..............x.'),
     kick:  P('x..x....x..x....'),
+    snare: P('....x.......x...'),
     hihat: P('x.x.x.x.x.x.x.x.'),
     pushpull: P('..............x.'),
   },
@@ -281,12 +305,9 @@ function LoopStudioPage() {
       if (key.includes(':')) {
         const [inst, note] = key.split(':');
         const total = totalStepsRef.current;
-        // Piano uses its own lane's gap (so chords sustain per-note); sax/bass/
-        // guitar use the gap to the next note of the whole instrument.
-        const gap = inst === 'piano'
-          ? stepsUntilNext(steps, step, total)
-          : stepsUntilNextForInstrument(g, inst, step, total);
-        // Guitar: a lone chord rings the whole measure; others cap at 2 beats.
+        // Every melodic note rings until the instrument's next hit; guitar lets
+        // a lone chord fill the whole measure, others cap at 2 beats.
+        const gap = stepsUntilNextForInstrument(g, inst, step, total);
         const cap = inst === 'guitar' ? total : NOTE_CAP_STEPS;
         const durationMs = Math.min(gap, cap) * msPerStep;
         lab.playNote(inst, note, durationMs);

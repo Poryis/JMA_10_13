@@ -59,6 +59,8 @@ const MELODY_ORDER = ['sax', 'bass', 'piano', 'guitar'];
 
 // 16-char strings -> step arrays ('x' = hit).
 const P = (s) => s.split('').map((c) => (c === 'x' ? 1 : 0));
+// Build an N-step pattern from hit positions (handy for 2-bar / 32-step presets).
+const H = (len, pos) => Array.from({ length: len }, (_, i) => (pos.includes(i) ? 1 : 0));
 
 // Steps until the next hit of ANY of the instrument's lanes (wrapping the loop).
 // Returns `total` when the instrument never hits again, so a lone note/chord can
@@ -85,10 +87,10 @@ const LOOP_PRESETS = {
     hihat: P('..x...x...x...x.'),
   },
   'Hip Hop': {
-    kick:  P('x.....x...x.....'),
-    snare: P('....x.......x...'),
-    hihat: P('x.x.x.x.x.x.x.x.'),
-    push:  P('..............x.'),
+    kick:  H(32, [0, 6, 16, 19, 22]),
+    snare: H(32, [4, 12, 20, 28]),
+    hihat: H(32, [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]),
+    push:  H(32, [31]),
   },
   'Sax Hook': {
     // Syncopated C-pentatonic lick (no corny F/B): G A G E G E D
@@ -112,34 +114,34 @@ const LOOP_PRESETS = {
     hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Smooth Jazz': {
-    // I-vi-ii-V turnaround with real 7th chords: Cmaj7 - Am7 - Dm7 - G7
-    'piano:C4': P('x...............'),
-    'piano:E4': P('x...............'),
-    'piano:G4': P('x...........x...'),
-    'piano:B4': P('x...........x...'),
-    'piano:A4': P('....x...x.......'),
-    'piano:C5': P('....x...x.......'),
-    'piano:E5': P('....x...........'),
-    'piano:G5': P('....x...........'),
-    'piano:D4': P('........x.......'),
-    'piano:F4': P('........x.......'),
-    'piano:D5': P('............x...'),
-    'piano:F5': P('............x...'),
-    // walking upright bass through the changes: C E A C D F G B
-    'bass:C3': P('x.....x.........'),
-    'bass:E3': P('..x.............'),
-    'bass:A2': P('....x...........'),
-    'bass:D3': P('........x.......'),
-    'bass:F3': P('..........x.....'),
-    'bass:G3': P('............x...'),
-    'bass:B3': P('..............x.'),
-    // breathy bari-sax guide line: G A F D
-    'sax:G3': P('x...............'),
-    'sax:A3': P('....x...........'),
-    'sax:F3': P('........x.......'),
-    'sax:D3': P('............x...'),
-    kick:  P('x.......x.......'),
-    hihat: P('x.x.x.x.x.x.x.x.'),
+    // 2-bar I-vi-ii-V turnaround, each 7th chord held 2 beats
+    'piano:C4': H(32, [0]),
+    'piano:E4': H(32, [0]),
+    'piano:G4': H(32, [0, 24]),
+    'piano:B4': H(32, [0, 24]),
+    'piano:A4': H(32, [8, 16]),
+    'piano:C5': H(32, [8, 16]),
+    'piano:E5': H(32, [8]),
+    'piano:G5': H(32, [8]),
+    'piano:D4': H(32, [16]),
+    'piano:F4': H(32, [16]),
+    'piano:D5': H(32, [24]),
+    'piano:F5': H(32, [24]),
+    // walking upright bass: C E A C D F G B
+    'bass:C3': H(32, [0, 12]),
+    'bass:E3': H(32, [4]),
+    'bass:A2': H(32, [8]),
+    'bass:D3': H(32, [16]),
+    'bass:F3': H(32, [20]),
+    'bass:G3': H(32, [24]),
+    'bass:B3': H(32, [28]),
+    // breathy bari-sax guide line
+    'sax:G3': H(32, [0]),
+    'sax:A3': H(32, [8]),
+    'sax:F3': H(32, [16]),
+    'sax:D3': H(32, [24]),
+    kick:  H(32, [0, 16]),
+    hihat: H(32, [0, 4, 8, 12, 16, 20, 24, 28]),
   },
   'Funky Bass': {
     'bass:C3': P('x..x....x..x....'),
@@ -435,16 +437,21 @@ function LoopStudioPage() {
     // Preload any instruments the preset touches.
     new Set(Object.keys(preset).filter((k) => k.includes(':')).map((k) => k.split(':')[0]))
       .forEach((inst) => lab.preloadInstrument(inst));
+    // Grow the grid to fit the preset (e.g. a 32-step preset switches to 2 bars).
+    const longest = Math.max(16, ...Object.values(preset).map((s) => s.length));
+    const target = longest > 32 ? 64 : longest > 16 ? 32 : 16;
+    if (isPlaying) { clearInterval(intervalRef.current); setIsPlaying(false); setCurrentStep(-1); }
+    setTotalSteps(target);
     setGrid(() => {
       const next = {};
       Object.entries(preset).forEach(([key, steps]) => {
         const extended = [];
-        for (let i = 0; i < totalStepsRef.current; i++) extended.push(steps[i % steps.length]);
+        for (let i = 0; i < target; i++) extended.push(steps[i % steps.length]);
         next[key] = extended;
       });
       return next;
     });
-  }, [lab]);
+  }, [lab, isPlaying]);
 
   // First visit — start with Basic Beat so the grid isn't empty.
   useEffect(() => {
@@ -515,7 +522,7 @@ function LoopStudioPage() {
         }}
       />
 
-      <main className="relative pt-20 md:pt-24 pb-6 px-2 md:px-4" style={{ '--lane-h': '40px' }}>
+      <main className="relative pt-20 md:pt-24 pb-6 px-2 md:px-4 beatlab-deck">
         <div
           className="max-w-5xl mx-auto rounded-[28px] border-[3px] p-2.5 md:p-4 relative"
           style={{

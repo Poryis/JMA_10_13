@@ -608,6 +608,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Beat Lab (overhauled) — chunky rounded step cells + tidy scrollbar */
+.beatlab-deck { --lane-h: 28px; }
+@media (min-width: 640px) { .beatlab-deck { --lane-h: 36px; } }
+@media (min-width: 1024px) { .beatlab-deck { --lane-h: 44px; } }
 .beatlab-cell {
   height: var(--lane-h, 40px);
   border-radius: 8px;

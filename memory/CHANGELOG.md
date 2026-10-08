@@ -1,6 +1,12 @@
 # Changelog
 
-## Beat Lab — smoother sax, slower guitar presets, per-page clear (Jun 2026)
+## Beat Lab — real legato fix (full-sustain notes) (Jun 2026)
+
+**Problem**: Sax got MORE staccato after the last change. Root cause: every note scheduled an internal release (fade) partway through its own duration, so it decayed to silence *before* the next note began — a gap on every note. Lengthening that release made it worse.
+
+**Fix** (`useBeatLabAudio.js` `startVoice`): notes now hold at FULL gain for their whole duration (no mid-note fade); the next note's `cutVoice` 140ms cross-fade ends them, so a line overlaps note-to-note (legato). Only the last note of a phrase gets a gentle tail. Sax attack dialed back to 30ms. Verified clean playback.
+
+
 
 - **Sax smoother**: `useBeatLabAudio` sax attack 35ms→60ms, mono cross-fade 80ms→140ms, release cap 0.12→0.18s — a more connected, one-breath legato line.
 - **Guitar presets**: Rock Power now holds each power chord half a bar (Em → C) instead of a new chord every beat, which sounded harsh.

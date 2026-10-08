@@ -107,15 +107,17 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     const g = ctx.createGain();
     const t = ctx.currentTime + startAt;
     const dur = Math.max(0.12, durationMs / 1000);
-    const atk = Math.min(attack, dur * 0.45);
-    const rel = Math.min(0.18, dur * 0.55);
+    const atk = Math.min(attack, dur * 0.4);
+    const tail = 0.22; // only fades at the very END (last note); mid-line notes are cut by the next note's cross-fade
     g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(gain, t + atk);
-    g.gain.setValueAtTime(gain, t + Math.max(atk + 0.001, dur - rel));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    // Hold FULL volume through the whole note so a line stays connected — the
+    // next note's cross-fade (cutVoice) takes over before this ever decays.
+    g.gain.setValueAtTime(gain, t + dur + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05 + tail);
     src.connect(g); g.connect(masterNode);
     src.start(t);
-    try { src.stop(t + dur + 0.03); } catch (_) {}
+    try { src.stop(t + dur + 0.05 + tail + 0.03); } catch (_) {}
     return { src, g };
   }, []);
 
@@ -170,7 +172,7 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
       // Softer onsets on wind/keys so a mono line flows like one breath
       // instead of each note sounding re-tongued.
       const gainMap = { sax: 0.8, bass: 0.95, piano: 0.75 };
-      const attackMap = { sax: 0.06, bass: 0.016, piano: 0.006 };
+      const attackMap = { sax: 0.03, bass: 0.012, piano: 0.004 };
       const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs, attack: attackMap[inst] ?? 0.01 });
       if (v) created.push(v);
     }

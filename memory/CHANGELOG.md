@@ -1,6 +1,11 @@
 # Changelog
 
-## Beat Lab — real legato fix (full-sustain notes) (Jun 2026)
+## Beat Lab — more legato + full bass octave (Jun 2026)
+
+- **Bass**: added user's B3 + C4 samples to `audio/bass/`; `BASS_NOTES` and the bass window now span a full octave C3→C4 (8 lanes).
+- **More legato sax**: with the mid-note fade already removed, pushed the overlap further — mono cross-fade 140ms→200ms and sax attack 30ms→55ms so the incoming note swells in under the outgoing one (true crossfade through the note change). Verified full bass octave renders + previews, clean playback.
+
+
 
 **Problem**: Sax got MORE staccato after the last change. Root cause: every note scheduled an internal release (fade) partway through its own duration, so it decayed to silence *before* the next note began — a gap on every note. Lengthening that release made it worse.
 

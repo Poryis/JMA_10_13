@@ -22,7 +22,7 @@ const DRUM_FILES = {
 };
 
 const SAX_NOTES = ['C3','D3','E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5'];
-const BASS_NOTES = ['A2','B2','C3','D3','E3','F3','G3','A3'];
+const BASS_NOTES = ['A2','B2','C3','D3','E3','F3','G3','A3','B3','C4'];
 const PIANO_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6'];
 
 const MELODY_FILES = {
@@ -128,8 +128,8 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     try {
       v.g.gain.cancelScheduledValues(now);
       v.g.gain.setValueAtTime(Math.max(0.0001, v.g.gain.value), now);
-      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
-      v.src.stop(now + 0.16);
+      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+      v.src.stop(now + 0.22);
     } catch (_) {}
   }, []);
 
@@ -172,7 +172,7 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
       // Softer onsets on wind/keys so a mono line flows like one breath
       // instead of each note sounding re-tongued.
       const gainMap = { sax: 0.8, bass: 0.95, piano: 0.75 };
-      const attackMap = { sax: 0.03, bass: 0.012, piano: 0.004 };
+      const attackMap = { sax: 0.055, bass: 0.014, piano: 0.004 };
       const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs, attack: attackMap[inst] ?? 0.01 });
       if (v) created.push(v);
     }

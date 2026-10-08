@@ -38,7 +38,7 @@ const INSTRUMENTS = {
   },
   bass: {
     label: 'Bass', color: '#8E44AD',
-    windows: [['C3', 'D3', 'E3', 'F3', 'G3', 'A3']],
+    windows: [['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4']],
     winLabels: [''],
   },
   piano: {

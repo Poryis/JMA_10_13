@@ -607,6 +607,42 @@ h1, h2, h3, h4, h5, h6 {
     inset 0 2px 0 rgba(255, 255, 255, 0.5);
 }
 
+/* Beat Lab (overhauled) — chunky rounded step cells + tidy scrollbar */
+.beatlab-cell {
+  height: var(--lane-h, 40px);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s ease, box-shadow 0.12s ease, transform 0.06s ease;
+}
+.beatlab-cell:active {
+  transform: scale(0.92);
+}
+@media (hover: hover) {
+  .beatlab-cell:hover {
+    filter: brightness(1.15);
+  }
+}
+.beatlab-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #61E8DA #0F1A2E;
+  scroll-snap-type: x proximity;
+  padding-bottom: 6px;
+}
+.beatlab-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.beatlab-scroll::-webkit-scrollbar-track {
+  background: #0F1A2E;
+  border-radius: 6px;
+}
+.beatlab-scroll::-webkit-scrollbar-thumb {
+  background: #61E8DA;
+  border-radius: 6px;
+}
+
+
 /* Streak fire */
 .streak-fire {
   color: #FF9500;

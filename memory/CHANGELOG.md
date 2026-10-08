@@ -1,5 +1,29 @@
 # Changelog
 
+## Beat Lab overhaul — Sax + melodic instruments, two-tab layout (Jun 2026)
+
+**User request**: Replace jelly bells with Sax (user uploaded 2-octave concert-pitch sax samples). Remove the visual drum kit + turntable + mascots but keep them as sequencer voices. Add Bass. Turntable: drop "pull", keep Push + Push/Pull. Include Guitar power chords. Rebuild presets. Make it immersive, phone/iPad friendly, not overwhelming for 6-7 yr olds (buttons were getting tiny, scroll felt unpolished).
+
+### New: `hooks/useBeatLabAudio.js`
+- Self-contained Beat Lab sample engine. Loads/plays drums (kick/snare/hat/crash) + scratch FX (push, push/pull), and melodic banks Sax, Bass, Piano, and Guitar power chords. Routes every voice through the shared `getAudioGraph().masterNode` so the MP3 recorder still captures everything. Lazy-loads per instrument; guitar power chords built by stacking 3 real guitar-crunch samples (root/fifth/octave).
+
+### Assets
+- Copied user sax samples to `public/assets/audio/sax/` (C3–C5, 15 diatonic notes).
+- Piano uses existing chromatic root samples (C4–C6); Bass uses existing `audio/bass/` samples.
+
+### Rewrite: `pages/LoopStudioPage.js`
+- Removed `DrumKitVisual`, `TurntableVisual`, `RoomCharacters`, and the Charlie/Sharky mascots → reclaimed the whole lower half for the play area.
+- **Two tabs**: DRUMS (fixed 6 lanes: Kick, Snare, Hat, Crash, Push, Push/Pull) and MELODY (instrument picker Sax/Bass/Piano/Guitar + octave up/down toggle; one octave of ~7-8 note lanes at a time). All voices keep their own patterns and layer together on PLAY; you edit one lane-set at a time.
+- Melody lanes show solfège (Do/Re/Mi) + small letter/octave. Guitar lanes = power chords (Em, F, G, Am, C, Dm).
+- Bigger touch cells (40px lanes, chunky rounded), beat-grouped every 4, styled horizontal scroll only at 2/4 bars, and a single playhead overlay (so cells don't re-render every tick — perf win).
+- 11 fresh presets across the new palette (Basic Beat, Four on Floor, Hip Hop, Sax Hook, Sax & Bass, Smooth Jazz, Funky Bass, Piano Pop, Rock Power, Scratch Jam, Do-Mi-So).
+- REC/MP3 + "save beat → Jam Session" preserved. Saved-beat tracks map melody→bell letters for Jam's in-app re-player (best-effort; MP3 captures true audio).
+
+### QA
+- Verified desktop (1280) + phone (402) both tabs render; instrument switch, octave toggle, presets, cell toggles, and PLAY all work (playback ran, rank-up fired, no console errors from the page). Clean compile.
+- NOTE: actual instrument *sound* quality needs the user's ear to confirm.
+
+
 ## Home card icon tuning — Play/Learn hero sizing (Jun 2026)
 
 **User request**: Play boombox cropped at top on phone → scale down ~5%. Learn book → scale up ~5% and move up ~10% (desktop).

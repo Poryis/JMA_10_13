@@ -50,7 +50,7 @@ const CARDS = [
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
     iconShift: { x: -4, y: 2, rot: -3 },
-    iconWidthPct: 95,
+    iconWidthPct: 90,
     // Watercolor blobs (behind everything)
     blobs: [
       { color: '#FFB300', top: -10, left: -8,  size: 55, opacity: 0.55 },
@@ -85,8 +85,8 @@ const CARDS = [
     titleStroke: '#FFFFFF',
     // Storybook art has more padding around the subject — boost width AND
     // remove the upward y-shift so it visually centers like the boombox/beat-pad.
-    iconShift: { x: 3, y: 0, rot: 2 },
-    iconWidthPct: 118,
+    iconShift: { x: 3, y: -10, rot: 2 },
+    iconWidthPct: 124,
     blobs: [
       { color: '#7B4FE0', top: -8,  left: 60,  size: 55, opacity: 0.45 },
       { color: '#E6D5FF', top: 35,  left: -15, size: 60, opacity: 0.6 },

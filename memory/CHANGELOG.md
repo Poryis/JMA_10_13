@@ -1,5 +1,15 @@
 # Changelog
 
+## Home card icon tuning — Play/Learn hero sizing (Jun 2026)
+
+**User request**: Play boombox cropped at top on phone → scale down ~5%. Learn book → scale up ~5% and move up ~10% (desktop).
+
+### `pages/HomePage.js` (CARDS)
+- Play: `iconWidthPct` 95 → 90.
+- Learn: `iconWidthPct` 118 → 124; `iconShift.y` 0 → -10.
+- Verified phone (402px) and desktop (1280px): Play no longer clips at top, Learn sits higher/larger, both balanced.
+
+
 ## Home cards — subtitles + Create banner accents on phone (Jun 2026)
 
 **User requests**: (1) Add sub-headers under the three main Home cards — Play: "Games & Puzzles", Learn: "Lessons & Training", Create: "Recording Studio". (2) On phone, the Create card had lost all its fun accent elements.

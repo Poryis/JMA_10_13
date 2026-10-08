@@ -1,5 +1,21 @@
 # Changelog
 
+## Beat Lab — legato melodic feel + flipped note order (Jun 2026)
+
+**User feedback**: (1) Sax felt disconnected/"tongued" — wanted a connected, one-breath legato line. (2) Melody lanes were upside down — low was on top.
+
+### `hooks/useBeatLabAudio.js`
+- `startVoice` now takes an `attack` param; melodic onsets are softened (sax 35ms, bass 14ms, piano 6ms, guitar 8ms) so a line flows instead of re-tonguing each note.
+- Mono cross-fade (`cutVoice`) lengthened 30ms → 80ms so the outgoing note overlaps the incoming one (legato) instead of a hard cut.
+
+### `pages/LoopStudioPage.js`
+- Mono instruments (sax/bass/guitar) now length each note by the gap to the next hit of the WHOLE instrument (`stepsUntilNextForInstrument`), so consecutive notes connect with no hole. Piano keeps per-lane length (chords sustain).
+- Melody lanes rendered high→low (reversed window) so the highest note sits at the top, lowest at the bottom (piano-roll convention). Drums order unchanged.
+
+### QA
+- Confirmed lane order top→bottom = C5,B4,A4,G4,F4,E4,D4,C4. Playback clean, no console/Web-Audio errors. Legato feel best confirmed by ear.
+
+
 ## Beat Lab — gated note lengths + monophonic melodic voices (Jun 2026)
 
 **User problem**: Every melodic note played its full audio-sample length (notes never stopped, and sax could overlap itself). Wanted musical, varied note lengths (not all a fixed quarter) and no two-note overlap on single-voice instruments.

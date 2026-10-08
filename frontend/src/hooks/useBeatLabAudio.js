@@ -99,7 +99,7 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
 
   // A pitched note with a gain envelope: quick attack, hold, then a short
   // release so the note lasts ~durationMs instead of the whole sample.
-  const startVoice = useCallback((ctx, masterNode, buffer, { rate = 1, gain = 0.8, durationMs = 600, startAt = 0 }) => {
+  const startVoice = useCallback((ctx, masterNode, buffer, { rate = 1, gain = 0.8, durationMs = 600, startAt = 0, attack = 0.006 }) => {
     if (!buffer) return null;
     const src = ctx.createBufferSource();
     src.buffer = buffer;
@@ -107,10 +107,11 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     const g = ctx.createGain();
     const t = ctx.currentTime + startAt;
     const dur = Math.max(0.12, durationMs / 1000);
-    const rel = Math.min(0.1, dur * 0.5);
+    const atk = Math.min(attack, dur * 0.4);
+    const rel = Math.min(0.12, dur * 0.5);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(gain, t + 0.006);
-    g.gain.setValueAtTime(gain, t + Math.max(0.007, dur - rel));
+    g.gain.linearRampToValueAtTime(gain, t + atk);
+    g.gain.setValueAtTime(gain, t + Math.max(atk + 0.001, dur - rel));
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     src.connect(g); g.connect(masterNode);
     src.start(t);
@@ -118,14 +119,15 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     return { src, g };
   }, []);
 
+  // Fast-fade a mono voice so a new note overlaps it (legato), not a hard cut.
   const cutVoice = useCallback((ctx, v) => {
     if (!v) return;
     const now = ctx.currentTime;
     try {
       v.g.gain.cancelScheduledValues(now);
       v.g.gain.setValueAtTime(Math.max(0.0001, v.g.gain.value), now);
-      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
-      v.src.stop(now + 0.05);
+      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      v.src.stop(now + 0.1);
     } catch (_) {}
   }, []);
 
@@ -161,12 +163,15 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
       if (!freqs) return;
       freqs.forEach((f, i) => {
         const s = nearestGuitar(f);
-        const v = startVoice(ctx, masterNode, buffersRef.current[`gtr:${s.file.replace('.mp3', '')}`], { rate: f / s.freq, gain: 0.5 - i * 0.03, durationMs, startAt: i * 0.015 });
+        const v = startVoice(ctx, masterNode, buffersRef.current[`gtr:${s.file.replace('.mp3', '')}`], { rate: f / s.freq, gain: 0.5 - i * 0.03, durationMs, startAt: i * 0.015, attack: 0.008 });
         if (v) created.push(v);
       });
     } else {
+      // Softer onsets on wind/keys so a mono line flows like one breath
+      // instead of each note sounding re-tongued.
       const gainMap = { sax: 0.8, bass: 0.95, piano: 0.75 };
-      const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs });
+      const attackMap = { sax: 0.035, bass: 0.014, piano: 0.006 };
+      const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs, attack: attackMap[inst] ?? 0.01 });
       if (v) created.push(v);
     }
     if (mono) activeRef.current[inst] = created;

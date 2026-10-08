@@ -67,6 +67,16 @@ function stepsUntilNext(steps, from, total) {
   for (let d = 1; d <= total; d++) { if (steps[(from + d) % total]) return d; }
   return NOTE_CAP_STEPS;
 }
+// For a MONO instrument, length = gap to the next hit of ANY of its lanes, so a
+// line flows note-to-note (legato, "one breath") with no holes between notes.
+function stepsUntilNextForInstrument(gridObj, inst, from, total) {
+  const prefix = `${inst}:`;
+  for (let d = 1; d <= total; d++) {
+    const s = (from + d) % total;
+    for (const k in gridObj) { if (k.startsWith(prefix) && gridObj[k][s]) return d; }
+  }
+  return NOTE_CAP_STEPS;
+}
 
 const LOOP_PRESETS = {
   'Basic Beat': {
@@ -273,7 +283,12 @@ function LoopStudioPage() {
       if (!steps[step]) return;
       if (key.includes(':')) {
         const [inst, note] = key.split(':');
-        const durationMs = Math.min(stepsUntilNext(steps, step, totalStepsRef.current), NOTE_CAP_STEPS) * msPerStep;
+        // Piano is polyphonic (per-lane length so chords sustain); mono winds
+        // use the whole-instrument gap so the line connects note-to-note.
+        const gap = inst === 'piano'
+          ? stepsUntilNext(steps, step, totalStepsRef.current)
+          : stepsUntilNextForInstrument(g, inst, step, totalStepsRef.current);
+        const durationMs = Math.min(gap, NOTE_CAP_STEPS) * msPerStep;
         lab.playNote(inst, note, durationMs);
       } else {
         lab.playDrum(key);
@@ -443,7 +458,7 @@ function LoopStudioPage() {
   const octIdx = Math.min(octaves[melodyInst] || 0, (instCfg.windows.length - 1));
   const visibleKeys = tab === 'drums'
     ? DRUMS.map((d) => d.key)
-    : instCfg.windows[octIdx].map((n) => `${melodyInst}:${n}`);
+    : [...instCfg.windows[octIdx]].reverse().map((n) => `${melodyInst}:${n}`);
 
   const scroll = totalSteps > 16;
   const playheadPct = currentStep >= 0 ? (currentStep / totalSteps) * 100 : 0;

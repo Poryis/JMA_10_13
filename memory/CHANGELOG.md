@@ -1,5 +1,22 @@
 # Changelog
 
+## Beat Lab — gated note lengths + monophonic melodic voices (Jun 2026)
+
+**User problem**: Every melodic note played its full audio-sample length (notes never stopped, and sax could overlap itself). Wanted musical, varied note lengths (not all a fixed quarter) and no two-note overlap on single-voice instruments.
+
+### `hooks/useBeatLabAudio.js`
+- `playNote(inst, note, durationMs)` now wraps each pitched note in a gain envelope (quick attack, hold, short release) so it lasts ~`durationMs` instead of the whole sample.
+- Monophony: sax/bass/guitar track their current voice; a new note fast-fades (30ms) the previous one so they never stack. Piano stays polyphonic (chords). Drums/scratch remain full one-shots.
+- Added `releaseAll()` to cut sustained voices when playback stops.
+
+### `pages/LoopStudioPage.js`
+- Playback computes each note's length from `stepsUntilNext()` — the gap (in steps) to that lane's next hit, wrapping the loop, capped at 8 steps — × ms-per-step (from a live `bpmRef`). So sparse notes ring longer, dense runs are short; lengths follow the pattern.
+- `stopPlayback()` calls `releaseAll()`.
+
+### QA
+- Verified playback of Sax Hook (mono sax line) + Rock Power (mono guitar chords) with no console/Web-Audio errors. Tone/length feel still best confirmed by ear.
+
+
 ## Beat Lab overhaul — Sax + melodic instruments, two-tab layout (Jun 2026)
 
 **User request**: Replace jelly bells with Sax (user uploaded 2-octave concert-pitch sax samples). Remove the visual drum kit + turntable + mascots but keep them as sequencer voices. Add Bass. Turntable: drop "pull", keep Push + Push/Pull. Include Guitar power chords. Rebuild presets. Make it immersive, phone/iPad friendly, not overwhelming for 6-7 yr olds (buttons were getting tiny, scroll felt unpolished).

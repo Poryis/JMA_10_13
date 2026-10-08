@@ -60,6 +60,14 @@ const MELODY_ORDER = ['sax', 'bass', 'piano', 'guitar'];
 // 16-char strings -> step arrays ('x' = hit).
 const P = (s) => s.split('').map((c) => (c === 'x' ? 1 : 0));
 
+// Steps until this lane's NEXT hit (wrapping the loop). Drives note length so
+// notes last as long as the gap to their next hit instead of the full sample.
+const NOTE_CAP_STEPS = 8;
+function stepsUntilNext(steps, from, total) {
+  for (let d = 1; d <= total; d++) { if (steps[(from + d) % total]) return d; }
+  return NOTE_CAP_STEPS;
+}
+
 const LOOP_PRESETS = {
   'Basic Beat': {
     kick:  P('x...x...x...x...'),
@@ -232,9 +240,11 @@ function LoopStudioPage() {
   const gridRef = useRef(grid);
   const mutedRef = useRef(muted);
   const totalStepsRef = useRef(totalSteps);
+  const bpmRef = useRef(bpm);
   useEffect(() => { gridRef.current = grid; }, [grid]);
   useEffect(() => { mutedRef.current = muted; }, [muted]);
   useEffect(() => { totalStepsRef.current = totalSteps; }, [totalSteps]);
+  useEffect(() => { bpmRef.current = bpm; }, [bpm]);
 
   // Preload samples: drums + sax immediately, others on demand.
   useEffect(() => { lab.preloadDrums(); lab.preloadInstrument('sax'); }, [lab]);
@@ -257,17 +267,26 @@ function LoopStudioPage() {
   const playStep = useCallback((step) => {
     const g = gridRef.current;
     const m = mutedRef.current;
+    const msPerStep = (60 / bpmRef.current / 4) * 1000;
     Object.entries(g).forEach(([key, steps]) => {
       if (m.has(key)) return;
-      if (steps[step]) playVoice(key);
+      if (!steps[step]) return;
+      if (key.includes(':')) {
+        const [inst, note] = key.split(':');
+        const durationMs = Math.min(stepsUntilNext(steps, step, totalStepsRef.current), NOTE_CAP_STEPS) * msPerStep;
+        lab.playNote(inst, note, durationMs);
+      } else {
+        lab.playDrum(key);
+      }
     });
-  }, [playVoice]);
+  }, [lab]);
 
   const stopPlayback = useCallback(() => {
     clearInterval(intervalRef.current);
+    lab.releaseAll();
     setIsPlaying(false);
     setCurrentStep(-1);
-  }, []);
+  }, [lab]);
 
   const startPlayback = useCallback(() => {
     initAudioContext();

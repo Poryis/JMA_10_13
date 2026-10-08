@@ -1,13 +1,17 @@
 // Beat Lab audio engine — loads & plays every Beat Lab voice (drums, scratch
 // FX, and the melodic instruments: sax, bass, piano, guitar power chords).
-// Everything routes through the shared master node from useAudio so the MP3
-// recorder captures it. Samples are lazy-loaded per instrument the first time
-// they're needed and cached for the life of the page.
+//
+// Melodic notes are GATED: each note gets a gain envelope whose length is
+// passed in by the sequencer (derived from the gap to the note's next hit),
+// so notes don't ring their full sample length. Single-voice instruments
+// (sax, bass, guitar) are MONOPHONIC — a new note fast-fades the previous one
+// so they never stack two notes. Piano is polyphonic (chords allowed). Drums
+// stay full one-shots. Everything routes through the shared master node so the
+// MP3 recorder captures it.
 import { useCallback, useRef } from 'react';
 
 const noteFreq = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
 
-// --- one-shot percussion / FX (reuse existing samples) ---
 const DRUM_FILES = {
   kick: 'assets/audio/Bass drum - kick.mp3',
   snare: 'assets/audio/Snare.mp3',
@@ -17,7 +21,6 @@ const DRUM_FILES = {
   pushpull: 'assets/audio/scratch-push-pull.mp3',
 };
 
-// --- melodic sample banks (one file per note) ---
 const SAX_NOTES = ['C3','D3','E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5'];
 const BASS_NOTES = ['A2','B2','C3','D3','E3','F3','G3','A3'];
 const PIANO_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6'];
@@ -28,7 +31,6 @@ const MELODY_FILES = {
   piano: PIANO_NOTES.reduce((m, n) => { m[n] = `assets/audio/${n}.mp3`; return m; }, {}),
 };
 
-// --- guitar power chords (built by stacking 3 real guitar samples) ---
 const GUITAR_SEMITONES = [
   { midi: 48, file: 'C3.mp3' },  { midi: 49, file: 'Db3.mp3' }, { midi: 50, file: 'D3.mp3' },
   { midi: 51, file: 'Eb3.mp3' }, { midi: 52, file: 'E3.mp3' },  { midi: 53, file: 'F3.mp3' },
@@ -59,9 +61,13 @@ function nearestGuitar(freq) {
   return best;
 }
 
+// Instruments that play one note at a time (a new note cuts the previous).
+const MONO = new Set(['sax', 'bass', 'guitar']);
+
 export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
-  const buffersRef = useRef({});          // key -> AudioBuffer
-  const loadedRef = useRef(new Set());    // which banks are loaded
+  const buffersRef = useRef({});
+  const loadedRef = useRef(new Set());
+  const activeRef = useRef({});   // inst -> [{ src, g }] currently sounding (mono voices)
 
   const decode = useCallback(async (ctx, url) => {
     const resp = await fetch(url);
@@ -91,40 +97,89 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     return Promise.resolve();
   }, [loadMap]);
 
-  const voice = useCallback((buffer, { rate = 1, gain = 0.8, startAt = 0 } = {}) => {
-    const graph = getAudioGraph && getAudioGraph();
-    if (!graph || !buffer) return;
-    const { ctx, masterNode } = graph;
+  // A pitched note with a gain envelope: quick attack, hold, then a short
+  // release so the note lasts ~durationMs instead of the whole sample.
+  const startVoice = useCallback((ctx, masterNode, buffer, { rate = 1, gain = 0.8, durationMs = 600, startAt = 0 }) => {
+    if (!buffer) return null;
     const src = ctx.createBufferSource();
-    const g = ctx.createGain();
     src.buffer = buffer;
     src.playbackRate.value = rate;
+    const g = ctx.createGain();
     const t = ctx.currentTime + startAt;
-    g.gain.setValueAtTime(gain, t);
+    const dur = Math.max(0.12, durationMs / 1000);
+    const rel = Math.min(0.1, dur * 0.5);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(gain, t + 0.006);
+    g.gain.setValueAtTime(gain, t + Math.max(0.007, dur - rel));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     src.connect(g); g.connect(masterNode);
     src.start(t);
-  }, [getAudioGraph]);
+    try { src.stop(t + dur + 0.03); } catch (_) {}
+    return { src, g };
+  }, []);
+
+  const cutVoice = useCallback((ctx, v) => {
+    if (!v) return;
+    const now = ctx.currentTime;
+    try {
+      v.g.gain.cancelScheduledValues(now);
+      v.g.gain.setValueAtTime(Math.max(0.0001, v.g.gain.value), now);
+      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+      v.src.stop(now + 0.05);
+    } catch (_) {}
+  }, []);
 
   const playDrum = useCallback((id) => {
     if (initAudioContext) initAudioContext();
+    const graph = getAudioGraph && getAudioGraph();
+    if (!graph) return;
+    const buffer = buffersRef.current[`drum:${id}`];
+    if (!buffer) return;
+    const { ctx, masterNode } = graph;
     const gainMap = { kick: 0.95, snare: 0.85, hihat: 0.7, crash: 0.7, push: 0.8, pushpull: 0.8 };
-    voice(buffersRef.current[`drum:${id}`], { gain: gainMap[id] ?? 0.8 });
-  }, [voice, initAudioContext]);
+    const src = ctx.createBufferSource();
+    const g = ctx.createGain();
+    src.buffer = buffer;
+    g.gain.setValueAtTime(gainMap[id] ?? 0.8, ctx.currentTime);
+    src.connect(g); g.connect(masterNode);
+    src.start(0);
+  }, [getAudioGraph, initAudioContext]);
 
-  const playNote = useCallback((inst, note) => {
+  const playNote = useCallback((inst, note, durationMs = 600) => {
     if (initAudioContext) initAudioContext();
+    const graph = getAudioGraph && getAudioGraph();
+    if (!graph) return;
+    const { ctx, masterNode } = graph;
+    const mono = MONO.has(inst);
+    if (mono && activeRef.current[inst]) {
+      activeRef.current[inst].forEach((v) => cutVoice(ctx, v));
+      activeRef.current[inst] = [];
+    }
+    const created = [];
     if (inst === 'guitar') {
       const freqs = GUITAR_CHORDS[note];
       if (!freqs) return;
       freqs.forEach((f, i) => {
         const s = nearestGuitar(f);
-        voice(buffersRef.current[`gtr:${s.file.replace('.mp3', '')}`], { rate: f / s.freq, gain: 0.5 - i * 0.03, startAt: i * 0.02 });
+        const v = startVoice(ctx, masterNode, buffersRef.current[`gtr:${s.file.replace('.mp3', '')}`], { rate: f / s.freq, gain: 0.5 - i * 0.03, durationMs, startAt: i * 0.015 });
+        if (v) created.push(v);
       });
-      return;
+    } else {
+      const gainMap = { sax: 0.8, bass: 0.95, piano: 0.75 };
+      const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs });
+      if (v) created.push(v);
     }
-    const gainMap = { sax: 0.75, bass: 0.9, piano: 0.7 };
-    voice(buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8 });
-  }, [voice, initAudioContext]);
+    if (mono) activeRef.current[inst] = created;
+  }, [getAudioGraph, initAudioContext, startVoice, cutVoice]);
 
-  return { preloadDrums, preloadInstrument, playDrum, playNote };
+  // Cut any still-sounding mono voices (called when the loop stops).
+  const releaseAll = useCallback(() => {
+    const graph = getAudioGraph && getAudioGraph();
+    if (!graph) return;
+    const { ctx } = graph;
+    Object.values(activeRef.current).forEach((arr) => (arr || []).forEach((v) => cutVoice(ctx, v)));
+    activeRef.current = {};
+  }, [getAudioGraph, cutVoice]);
+
+  return { preloadDrums, preloadInstrument, playDrum, playNote, releaseAll };
 }

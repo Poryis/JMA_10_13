@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight, Eraser } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
@@ -138,9 +138,7 @@ const LOOP_PRESETS = {
   },
   'Rock Power': {
     'guitar:Em': P('x...............'),
-    'guitar:G':  P('....x...........'),
     'guitar:C':  P('........x.......'),
-    'guitar:Dm': P('............x...'),
     kick:  P('x...x...x...x...'),
     snare: P('....x.......x...'),
     crash: P('x...............'),
@@ -435,6 +433,19 @@ function LoopStudioPage() {
 
   const clearAll = useCallback(() => setGrid({}), []);
 
+  // Clear only the lanes shown on the current tab (all drums, or the current
+  // melodic instrument's notes). The big top Clear still wipes everything.
+  const clearPage = useCallback(() => {
+    setGrid((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((k) => {
+        const keep = tab === 'drums' ? !k.includes(':') : k.startsWith(`${melodyInst}:`);
+        if (keep) delete next[k];
+      });
+      return next;
+    });
+  }, [tab, melodyInst]);
+
   const toggleMute = useCallback((key) => {
     setMuted((prev) => { const s = new Set(prev); if (s.has(key)) s.delete(key); else s.add(key); return s; });
   }, []);
@@ -603,7 +614,17 @@ function LoopStudioPage() {
           )}
 
           {/* SEQUENCER */}
-          <div className="mt-3 rounded-2xl border-2 p-2 md:p-2.5" style={{ background: 'linear-gradient(180deg, #0F1A2E 0%, #0A1424 100%)', borderColor: '#000', boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.35)' }}>
+          <div className="mt-2 flex justify-end">
+            <button
+              data-testid="clear-page"
+              onClick={clearPage}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider"
+              style={{ background: 'transparent', color: '#9DB4CC', border: '2px solid #3E5471' }}
+            >
+              <Eraser className="w-3.5 h-3.5" /> Clear {tab === 'drums' ? 'Drums' : INSTRUMENTS[melodyInst].label}
+            </button>
+          </div>
+          <div className="mt-1.5 rounded-2xl border-2 p-2 md:p-2.5" style={{ background: 'linear-gradient(180deg, #0F1A2E 0%, #0A1424 100%)', borderColor: '#000', boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.35)' }}>
             <div className="flex gap-1.5">
               {/* Frozen label column */}
               <div className="flex-shrink-0 flex flex-col gap-1" style={{ width: 'clamp(76px, 22vw, 116px)' }}>

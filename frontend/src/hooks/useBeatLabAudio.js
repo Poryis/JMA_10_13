@@ -107,8 +107,8 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     const g = ctx.createGain();
     const t = ctx.currentTime + startAt;
     const dur = Math.max(0.12, durationMs / 1000);
-    const atk = Math.min(attack, dur * 0.4);
-    const rel = Math.min(0.12, dur * 0.5);
+    const atk = Math.min(attack, dur * 0.45);
+    const rel = Math.min(0.18, dur * 0.55);
     g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(gain, t + atk);
     g.gain.setValueAtTime(gain, t + Math.max(atk + 0.001, dur - rel));
@@ -126,8 +126,8 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
     try {
       v.g.gain.cancelScheduledValues(now);
       v.g.gain.setValueAtTime(Math.max(0.0001, v.g.gain.value), now);
-      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-      v.src.stop(now + 0.1);
+      v.g.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+      v.src.stop(now + 0.16);
     } catch (_) {}
   }, []);
 
@@ -170,7 +170,7 @@ export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
       // Softer onsets on wind/keys so a mono line flows like one breath
       // instead of each note sounding re-tongued.
       const gainMap = { sax: 0.8, bass: 0.95, piano: 0.75 };
-      const attackMap = { sax: 0.035, bass: 0.014, piano: 0.006 };
+      const attackMap = { sax: 0.06, bass: 0.016, piano: 0.006 };
       const v = startVoice(ctx, masterNode, buffersRef.current[`${inst}:${note}`], { gain: gainMap[inst] ?? 0.8, durationMs, attack: attackMap[inst] ?? 0.01 });
       if (v) created.push(v);
     }

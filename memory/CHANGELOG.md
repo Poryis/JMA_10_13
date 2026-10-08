@@ -1,5 +1,13 @@
 # Changelog
 
+## Beat Lab — smoother sax, slower guitar presets, per-page clear (Jun 2026)
+
+- **Sax smoother**: `useBeatLabAudio` sax attack 35ms→60ms, mono cross-fade 80ms→140ms, release cap 0.12→0.18s — a more connected, one-breath legato line.
+- **Guitar presets**: Rock Power now holds each power chord half a bar (Em → C) instead of a new chord every beat, which sounded harsh.
+- **Per-page clear**: `LoopStudioPage` adds a `clearPage()` + "Clear Drums / Clear {Instrument}" button above the sequencer that wipes only the current tab's lanes. The big top Clear still wipes the whole grid.
+- Verified both clears, dynamic label, and clean playback (no console errors).
+
+
 ## Beat Lab — legato melodic feel + flipped note order (Jun 2026)
 
 **User feedback**: (1) Sax felt disconnected/"tongued" — wanted a connected, one-breath legato line. (2) Melody lanes were upside down — low was on top.

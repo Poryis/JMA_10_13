@@ -102,17 +102,6 @@ const LOOP_PRESETS = {
     snare: P('....x.......x...'),
     hihat: P('x.x.x.x.x.x.x.x.'),
   },
-  'Sax & Bass': {
-    // Laid-back pentatonic sax over a two-note walking bass
-    'sax:E3': P('x.......x.......'),
-    'sax:G3': P('..x.......x.....'),
-    'sax:A3': P('....x...........'),
-    'sax:D3': P('............x...'),
-    'bass:C3': P('x...x...x...x...'),
-    'bass:E3': P('..x...x...x...x.'),
-    kick:  P('x...x...x...x...'),
-    hihat: P('x.x.x.x.x.x.x.x.'),
-  },
   'Smooth Jazz': {
     // 2-bar I-vi-ii-V turnaround, each 7th chord held 2 beats
     'piano:C4': H(32, [0]),
@@ -175,12 +164,6 @@ const LOOP_PRESETS = {
     kick:     P('x.......x.......'),
     hihat:    P('x.x.x.x.x.x.x.x.'),
     'bass:C3': P('x.......x.......'),
-  },
-  'Do-Mi-So': {
-    'sax:C3': P('x.......x.......'),
-    'sax:E3': P('..x.......x.....'),
-    'sax:G3': P('....x.......x...'),
-    kick:  P('x...x...x...x...'),
   },
 };
 

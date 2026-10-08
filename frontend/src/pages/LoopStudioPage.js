@@ -142,14 +142,6 @@ const LOOP_PRESETS = {
     hihat: P('x.x.x.x.x.x.x.x.'),
     pushpull: P('..............x.'),
   },
-  'Piano Pop': {
-    'piano:C4': P('x...x...x...x...'),
-    'piano:E4': P('..x...x...x...x.'),
-    'piano:G4': P('....x.......x...'),
-    kick:  P('x...x...x...x...'),
-    snare: P('....x.......x...'),
-    hihat: P('x.x.x.x.x.x.x.x.'),
-  },
   'Rock Power': {
     // 2 bars, one power chord per bar so they don't rush: Em then C
     'guitar:Em': H(32, [0]),

@@ -1,6 +1,13 @@
 # Changelog
 
-## Beat Lab — more legato + full bass octave (Jun 2026)
+## Beat Lab — bari sax default, poly melody, full-measure guitar (Jun 2026)
+
+- **Sax register**: default octave switched to LOW (bari style) and every sax preset (Sax Hook, Sax & Bass, Smooth Jazz, Do-Mi-So) moved down to the C3–B3 octave — fixes the "corny" bright tone.
+- **Polyphony**: removed sax & bass from the MONO set (only guitar stays mono). Kids can now place two notes on the same step and hear both. Note length still legato-overlaps via each note's tail.
+- **Guitar sustain**: `stepsUntilNext*` now return `total` when a lane has no further hit; guitar's length cap is the full measure (`totalSteps`) instead of 8, so a lone power chord rings the whole bar. Other instruments still cap at 2 beats.
+- Verified: sax default = LOW, Sax Hook loads on low lanes, clean playback, no console errors.
+
+
 
 - **Bass**: added user's B3 + C4 samples to `audio/bass/`; `BASS_NOTES` and the bass window now span a full octave C3→C4 (8 lanes).
 - **More legato sax**: with the mid-note fade already removed, pushed the overlap further — mono cross-fade 140ms→200ms and sax attack 30ms→55ms so the incoming note swells in under the outgoing one (true crossfade through the note change). Verified full bass octave renders + previews, clean playback.

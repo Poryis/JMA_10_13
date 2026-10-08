@@ -61,8 +61,10 @@ function nearestGuitar(freq) {
   return best;
 }
 
-// Instruments that play one note at a time (a new note cuts the previous).
-const MONO = new Set(['sax', 'bass', 'guitar']);
+// Instruments that play one note/chord at a time (a new one cuts the previous).
+// Only guitar is mono — stacking two power chords sounds muddy. Sax/bass/piano
+// are polyphonic so kids can play notes two-at-a-time.
+const MONO = new Set(['guitar']);
 
 export default function useBeatLabAudio(getAudioGraph, initAudioContext) {
   const buffersRef = useRef({});

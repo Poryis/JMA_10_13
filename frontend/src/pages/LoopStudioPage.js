@@ -60,22 +60,21 @@ const MELODY_ORDER = ['sax', 'bass', 'piano', 'guitar'];
 // 16-char strings -> step arrays ('x' = hit).
 const P = (s) => s.split('').map((c) => (c === 'x' ? 1 : 0));
 
-// Steps until this lane's NEXT hit (wrapping the loop). Drives note length so
-// notes last as long as the gap to their next hit instead of the full sample.
+// Steps until this lane's NEXT hit (wrapping the loop). Returns `total` when the
+// lane never hits again, so the caller decides how long a lone note holds.
 const NOTE_CAP_STEPS = 8;
 function stepsUntilNext(steps, from, total) {
   for (let d = 1; d <= total; d++) { if (steps[(from + d) % total]) return d; }
-  return NOTE_CAP_STEPS;
+  return total;
 }
-// For a MONO instrument, length = gap to the next hit of ANY of its lanes, so a
-// line flows note-to-note (legato, "one breath") with no holes between notes.
+// Gap to the next hit of ANY of the instrument's lanes (wrapping the loop).
 function stepsUntilNextForInstrument(gridObj, inst, from, total) {
   const prefix = `${inst}:`;
   for (let d = 1; d <= total; d++) {
     const s = (from + d) % total;
     for (const k in gridObj) { if (k.startsWith(prefix) && gridObj[k][s]) return d; }
   }
-  return NOTE_CAP_STEPS;
+  return total;
 }
 
 const LOOP_PRESETS = {
@@ -96,25 +95,25 @@ const LOOP_PRESETS = {
     push:  P('..............x.'),
   },
   'Sax Hook': {
-    'sax:C4': P('x.......x.......'),
-    'sax:E4': P('..x.......x.....'),
-    'sax:G4': P('....x.......x...'),
-    'sax:A4': P('......x.........'),
+    'sax:C3': P('x.......x.......'),
+    'sax:E3': P('..x.......x.....'),
+    'sax:G3': P('....x.......x...'),
+    'sax:A3': P('......x.........'),
     kick:  P('x...x...x...x...'),
     snare: P('....x.......x...'),
   },
   'Sax & Bass': {
-    'sax:G4': P('x.......x.......'),
-    'sax:E4': P('....x.......x...'),
+    'sax:G3': P('x.......x.......'),
+    'sax:E3': P('....x.......x...'),
     'bass:C3': P('x.......x.......'),
     'bass:G3': P('....x.......x...'),
     kick:  P('x...x...x...x...'),
     hihat: P('x.x.x.x.x.x.x.x.'),
   },
   'Smooth Jazz': {
-    'sax:A4': P('x.....x.........'),
-    'sax:F4': P('......x...x.....'),
-    'sax:D4': P('..........x.....'),
+    'sax:A3': P('x.....x.........'),
+    'sax:F3': P('......x...x.....'),
+    'sax:D3': P('..........x.....'),
     'piano:C4': P('x.......x.......'),
     'piano:E4': P('x.......x.......'),
     'piano:G4': P('x.......x.......'),
@@ -151,9 +150,9 @@ const LOOP_PRESETS = {
     'bass:C3': P('x.......x.......'),
   },
   'Do-Mi-So': {
-    'sax:C4': P('x.......x.......'),
-    'sax:E4': P('..x.......x.....'),
-    'sax:G4': P('....x.......x...'),
+    'sax:C3': P('x.......x.......'),
+    'sax:E3': P('..x.......x.....'),
+    'sax:G3': P('....x.......x...'),
     kick:  P('x...x...x...x...'),
   },
 };
@@ -235,7 +234,7 @@ function LoopStudioPage() {
 
   const [tab, setTab] = useState('drums');
   const [melodyInst, setMelodyInst] = useState('sax');
-  const [octaves, setOctaves] = useState({ sax: 1, bass: 0, piano: 0, guitar: 0 });
+  const [octaves, setOctaves] = useState({ sax: 0, bass: 0, piano: 0, guitar: 0 });
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -281,12 +280,15 @@ function LoopStudioPage() {
       if (!steps[step]) return;
       if (key.includes(':')) {
         const [inst, note] = key.split(':');
-        // Piano is polyphonic (per-lane length so chords sustain); mono winds
-        // use the whole-instrument gap so the line connects note-to-note.
+        const total = totalStepsRef.current;
+        // Piano uses its own lane's gap (so chords sustain per-note); sax/bass/
+        // guitar use the gap to the next note of the whole instrument.
         const gap = inst === 'piano'
-          ? stepsUntilNext(steps, step, totalStepsRef.current)
-          : stepsUntilNextForInstrument(g, inst, step, totalStepsRef.current);
-        const durationMs = Math.min(gap, NOTE_CAP_STEPS) * msPerStep;
+          ? stepsUntilNext(steps, step, total)
+          : stepsUntilNextForInstrument(g, inst, step, total);
+        // Guitar: a lone chord rings the whole measure; others cap at 2 beats.
+        const cap = inst === 'guitar' ? total : NOTE_CAP_STEPS;
+        const durationMs = Math.min(gap, cap) * msPerStep;
         lab.playNote(inst, note, durationMs);
       } else {
         lab.playDrum(key);

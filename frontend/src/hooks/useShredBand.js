@@ -258,6 +258,16 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
     tick();
   }, [getAudioGraph, initAudioContext, preload, tick]);
 
+  // Speed the groove up/down mid-song. Re-anchors the start time to the next
+  // scheduled step so the 8th-note grid used for scoring stays aligned.
+  const setTempoScale = useCallback((scale) => {
+    const song = songRef.current;
+    if (!song || !playingRef.current) return;
+    const newStep = SEC(song.bpm * scale) / 4;
+    startTimeRef.current = nextStepTimeRef.current - stepRef.current * newStep;
+    stepSecRef.current = newStep;
+  }, []);
+
   const stop = useCallback(() => {
     playingRef.current = false;
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -289,6 +299,7 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
   Object.assign(apiRef.current, {
     start, stop, preload, nearestEighthOffsetMs, nearestEighthIndex,
     beatMs: () => stepSecRef.current * 4000,
+    setTempoScale,
     isPlaying: () => playingRef.current,
     songs: SONGS,
   });

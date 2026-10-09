@@ -13,6 +13,9 @@ import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
+const ENCORE_SECONDS = 10;
+const ENCORE_TEMPO = 1.2;
+const ENCORE_COLOR = '#FF2D85';
 
 // Crowd/rank tiers keyed off the Crowd Meter (0-100).
 const TIERS = [
@@ -201,21 +204,6 @@ function CrowdExtras({ energy }) {
             transition={{ left: { repeat: Infinity, duration: 7, ease: 'linear' }, y: { repeat: Infinity, duration: 3.5, ease: 'easeInOut' }, rotate: { repeat: Infinity, duration: 3.5, ease: 'linear' }, opacity: { duration: 0.4 } }}
           />
         )}
-        {legend && (
-          <motion.img
-            key="surfer"
-            src="assets/characters/charlie-surf.png"
-            alt=""
-            draggable={false}
-            data-testid="shred-crowd-surfer"
-            className="absolute object-contain"
-            style={{ top: '-24%', height: '62%', width: 'auto', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.45))' }}
-            initial={{ opacity: 0, left: '-14%', rotate: -78 }}
-            animate={{ opacity: 1, left: ['-14%', '104%'], y: [0, -14, 4, -12, 0], rotate: [-78, -88, -70, -84, -78] }}
-            exit={{ opacity: 0 }}
-            transition={{ left: { repeat: Infinity, duration: 6.5, ease: 'linear' }, y: { repeat: Infinity, duration: 1.1, ease: 'easeInOut' }, rotate: { repeat: Infinity, duration: 1.1, ease: 'easeInOut' }, opacity: { duration: 0.4 } }}
-          />
-        )}
         {legend && ['4%', '92%'].map((left, side) => (
           <div key={`pyro-${side}`} className="absolute bottom-0" style={{ left, width: 24, height: 1 }} data-testid="shred-pyro">
             {Array.from({ length: 14 }).map((_, i) => (
@@ -315,6 +303,8 @@ export default function ShredLegendPage() {
   const lastScoredRef = useRef(0);           // time of last hit that EARNED meter (ms)
   const onsetsRef = useRef([]);              // recent onset times (ms) — mash guard
   const holdStartRef = useRef(0);            // when the current sustain began (ms)
+  const timeLeftRef = useRef(SONG_SECONDS);
+  const encoreRef = useRef({ played: false, hits: 0, misses: 0 });
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
 
@@ -359,7 +349,8 @@ export default function ShredLegendPage() {
   // ---- guitar NOTE HIT (onset) → always adds energy; a little extra sparkle
   // if it lands on the beat. The crowd just loves that you're PLAYING. ----
   const onGuitarPlay = useCallback(() => {
-    if (screen !== 'playing' || pausedRef.current) return;
+    if ((screen !== 'playing' && screen !== 'encore') || pausedRef.current) return;
+    const inEncore = screen === 'encore';
     const now = performance.now();
     lastOnsetRef.current = now;
     const beatMs = band.beatMs();
@@ -371,6 +362,7 @@ export default function ShredLegendPage() {
     if (onsetsRef.current.length > 3) {
       comboRef.current = 0; setCombo(0);
       meterRef.current = Math.max(0, meterRef.current - 1.5); setMeter(meterRef.current);
+      if (inEncore) encoreRef.current.misses += 1;
       pushFloat('TOO WILD!', '#FF3B30');
       return;
     }
@@ -381,6 +373,7 @@ export default function ShredLegendPage() {
     const niceWin = Math.max(55, eighthMs * 0.36);
     if (off > niceWin) {
       comboRef.current = 0; setCombo(0);
+      if (inEncore) encoreRef.current.misses += 1;
       pushFloat('OFF BEAT', '#9DA3A8');
       return;
     }
@@ -392,6 +385,7 @@ export default function ShredLegendPage() {
     lastScoredRef.current = beatIdx;
 
     comboRef.current += 1; inPocketRef.current += 1;
+    if (inEncore) encoreRef.current.hits += 1;
     setCombo(comboRef.current);
     const mult = comboRef.current >= 12 ? 2 : comboRef.current >= 6 ? 1.5 : 1;
     bumpMeter((perfect ? 1.2 : 0.6) * mult);
@@ -442,10 +436,11 @@ export default function ShredLegendPage() {
 
   // ---- song loop: countdown timer + sustain fill / idle decay ----
   useEffect(() => {
-    if (screen !== 'playing') return;
+    if (screen !== 'playing' && screen !== 'encore') return;
     if (process.env.NODE_ENV !== 'production') {
       // Dev-only hook so automated tests can drive the Crowd Meter.
       window.__shredSetMeter = (v) => { meterRef.current = Math.max(0, Math.min(100, v)); bumpMeter(0); };
+      window.__shredSetTimeLeft = (v) => { timeLeftRef.current = v; setTimeLeft(v); };
     }
     const iv = setInterval(() => {
       if (pausedRef.current) return;
@@ -462,10 +457,13 @@ export default function ShredLegendPage() {
     }, 100);
     const sec = setInterval(() => {
       if (pausedRef.current) return;
-      setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(sec); endSong(); return 0; }
-        return t - 1;
-      });
+      timeLeftRef.current = Math.max(0, timeLeftRef.current - 1);
+      setTimeLeft(timeLeftRef.current);
+      if (timeLeftRef.current <= 0) {
+        clearInterval(sec);
+        if (screen === 'playing' && reachedLegendRef.current && !encoreRef.current.played) startEncore();
+        else endSong();
+      }
     }, 1000);
     return () => { clearInterval(iv); clearInterval(sec); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -479,9 +477,29 @@ export default function ShredLegendPage() {
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0; lastScoredRef.current = -1;
     onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setBurst(null); setShouts([]); setCrowdBurst(0);
+    encoreRef.current = { played: false, hits: 0, misses: 0 };
+    timeLeftRef.current = SONG_SECONDS;
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
+
+  // The crowd wants MORE: a 10-second encore with the band kicked up a notch.
+  const startEncore = useCallback(() => {
+    encoreRef.current = { played: true, hits: 0, misses: 0 };
+    timeLeftRef.current = ENCORE_SECONDS;
+    setTimeLeft(ENCORE_SECONDS);
+    comboRef.current = 0; setCombo(0);
+    band.setTempoScale(ENCORE_TEMPO);
+    cheer(true);
+    const id = Date.now();
+    setTierFlash({ label: 'ENCORE', color: ENCORE_COLOR, id });
+    setTimeout(() => setTierFlash((f) => (f && f.id === id ? null : f)), 1500);
+    setBurst({ id, mega: true });
+    setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 2600);
+    setCrowdBurst(id);
+    pushShout(CROWD_MEMBERS.length);
+    setScreen('encore');
+  }, [band, cheer, pushShout]);
 
   // ready countdown 3-2-1 then start band + play
   useEffect(() => {
@@ -506,6 +524,9 @@ export default function ShredLegendPage() {
       earnAchievementUpTo('rhythm', 'master');
       earnSticker('shred_legend');
     }
+    // Flawless encore (no OFF BEAT / TOO WILD, at least 8 timed hits) = double stickers.
+    const enc = encoreRef.current;
+    if (enc.played && enc.misses === 0 && enc.hits >= 8) earnSticker('shred_encore');
   }, [band]);
 
   useEffect(() => () => band.stop(), [band]);
@@ -526,7 +547,7 @@ export default function ShredLegendPage() {
     >
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,20,32,0) 0%, rgba(10,20,32,0) 55%, rgba(10,20,32,0.35) 100%)' }} />
 
-      {(screen === 'playing' || screen === 'ready') && <StageLights energy={energy} style={SONGS[songIndex].style} />}
+      {(screen === 'playing' || screen === 'ready' || screen === 'encore') && <StageLights energy={screen === 'encore' ? 1 : energy} style={screen === 'encore' ? 'punk' : SONGS[songIndex].style} />}
 
       <GameHeader title="SHRED CITY" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <FullscreenButton />
@@ -647,18 +668,30 @@ export default function ShredLegendPage() {
         )}
 
         {/* PLAYING HUD + crowd + guitar */}
-        {(screen === 'playing') && (
-          <div className="w-full max-w-[900px] flex-1 flex flex-col items-center gap-2">
+        {(screen === 'playing' || screen === 'encore') && (
+          <div className="w-full max-w-[900px] flex-1 flex flex-col items-center gap-2" data-encore={screen === 'encore' ? 'true' : 'false'}>
             {/* Crowd meter */}
             <div className="w-full max-w-[640px]" data-testid="shred-crowd-meter">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-black uppercase tracking-widest text-white/90" data-testid="shred-song-name">
                   ♪ {SONGS[songIndex].name}
                 </span>
-                <span className="text-sm font-black uppercase tracking-wider" style={{ color: currentTier.color }} data-testid="shred-tier-label">
-                  {currentTier.label}
-                </span>
-                <span className="text-xs font-black text-white/90" data-testid="shred-timeleft">{timeLeft}s</span>
+                {screen === 'encore' ? (
+                  <motion.span
+                    className="text-sm md:text-base font-black uppercase tracking-wider"
+                    style={{ color: ENCORE_COLOR, textShadow: '0 0 12px rgba(255,45,133,0.8)' }}
+                    data-testid="shred-encore-label"
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ repeat: Infinity, duration: 0.5 }}
+                  >
+                    ENCORE! {encoreRef.current.misses === 0 ? 'FLAWLESS' : ''}
+                  </motion.span>
+                ) : (
+                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: currentTier.color }} data-testid="shred-tier-label">
+                    {currentTier.label}
+                  </span>
+                )}
+                <span className="text-xs font-black" style={{ color: screen === 'encore' ? ENCORE_COLOR : 'rgba(255,255,255,0.9)' }} data-testid="shred-timeleft">{timeLeft}s</span>
               </div>
               <motion.div
                 className="relative w-full h-6 rounded-full overflow-hidden"
@@ -674,7 +707,7 @@ export default function ShredLegendPage() {
               >
                 <motion.div
                   className="h-full rounded-full relative overflow-hidden"
-                  style={{ background: `linear-gradient(90deg, #0FA3B1, #FF9500, #FFCC00)` }}
+                  style={{ background: screen === 'encore' ? `linear-gradient(90deg, #FF2D85, #FF6B9D, #FFCC00)` : `linear-gradient(90deg, #0FA3B1, #FF9500, #FFCC00)` }}
                   animate={{ width: `${meter}%` }}
                   transition={{ duration: 0.12 }}
                   data-testid="shred-meter-fill"
@@ -776,8 +809,17 @@ export default function ShredLegendPage() {
                   ? 'You maxed the Crowd Meter — the place went NUTS!'
                   : `${inPocketRef.current} notes right in the pocket.`}
               </p>
+              {encoreRef.current.played && (
+                <p className="text-sm font-black mb-1" style={{ color: ENCORE_COLOR }} data-testid="shred-result-encore">
+                  {encoreRef.current.misses === 0 && encoreRef.current.hits >= 8
+                    ? `FLAWLESS ENCORE — ${encoreRef.current.hits} notes, zero misses! Double stickers!`
+                    : `Encore: ${encoreRef.current.hits} notes in time, ${encoreRef.current.misses} slip${encoreRef.current.misses === 1 ? '' : 's'}.`}
+                </p>
+              )}
               <p className="text-xs mb-4" style={{ color: '#9DB4CC' }}>
-                {reachedLegendRef.current ? 'Shred Legend sticker unlocked!' : 'Play in time and keep your streak going for ×2 to fill the meter!'}
+                {reachedLegendRef.current
+                  ? (encoreRef.current.misses === 0 && encoreRef.current.hits >= 8 ? 'Shred Legend + Encore! stickers unlocked!' : 'Shred Legend sticker unlocked! Play a flawless encore for a second sticker.')
+                  : 'Play in time and keep your streak going for ×2 to fill the meter!'}
               </p>
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 <button

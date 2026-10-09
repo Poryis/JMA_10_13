@@ -1,3 +1,6 @@
+## Jun 2026 — Campus v4 (user's layered underwater art) + layered UnderwaterBackdrop everywhere
+- Assets → `public/assets/underwater/`; UnderwaterBackdrop rebuilt in layers; CampusMapPage v4 (AI extras removed, Surf Charlie / Snorkel Finn strollers, fish face swim direction, avatar swims to the door before entering). Tested iteration_38 (all pass).
+
 # Changelog
 
 ## Jun 2026 — Daily Quests + Progressive Reveal (anti-overwhelm round 1)

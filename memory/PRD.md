@@ -1,6 +1,15 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Campus v3 — underwater panorama** (tested iteration_37, 100%)
+## Latest (Jun 2026): **Campus v4 — built from the USER's layered underwater art** (tested iteration_38, 100%)
+- User uploaded `Underwater scene.zip` (Water BG, wave bands, back/front sand dunes, 2 seaweeds, 2 shells, 2 fish + a fish school — ALL fish face RIGHT). Exported to `public/assets/underwater/` (bands.png, sand-back-tile.png / sand-front-tile.png = mirror-tiled so `repeat-x` is seamless, seaweed-1/2, shell-1/2, fish-1/2, fish-school). Water color `#34E0F6` (`UNDERWATER_WATER`).
+- `components/UnderwaterBackdrop.js` rewritten as LAYERS (water → bands → sand-back → accents → sand-front → fish → bubbles) and exports `Bubbles`, `Swimmer` (flips scaleX −1 when swimming left), `SandStrip`, `Seaweed`, `UW_ASSETS`. HomePage now mounts `<UnderwaterBackdrop />` (its inline copy removed); SubMenu/DressingRoom use it; Jam Session uses `deep` (no sand).
+- `pages/CampusMapPage.js` v4: removed ALL my SVG extras (kelp, coral, fish, reef circles, SVG sand, lucide floating notes, window glow). Kept per user: bubbles (loved), hosts + shout bubbles, bobbing, blimp, swipe hint, night tint (now .32). Back dune parallax +0.3·scrollX with seaweed-2/shell-1; front dune is the street; front seaweed-1/shell-2 parallax −0.2·scrollX at z 7 (behind buildings so name labels stay readable).
+- Strollers on every street = Surf Charlie (L→R) + Snorkel Finn (R→L, flipped) (`data/campus.js`).
+- **Swim-to-door**: tap open building → `campus-you` (data-swimming) translates to the door (0.75–1.5 s by distance), scale keyframes [1, .9, .28], fades, then zoom transition + navigate. Locked buildings still shake only.
+- Screenshot harness tip: dismiss audio overlay with a click, then "I'll add my name later", set `jma_unlock_all_v1`, `jma_reveal_seen_v1`, `jma_player_name_skipped_v1` = '1', reload.
+- Still pending (user said "just the campus work for now"): P0 Fun Facts Play Again cut-off, P0 Robot Boogie title overlap, For Parents counts, pre-launch code review.
+
+## Jun 2026: Campus v3 — underwater panorama (SUPERSEDED by v4) (tested iteration_37, 100%)
 - User HATED v2's flat green slab ("takes back the magic"). v3 (`pages/CampusMapPage.js`, full rewrite): one street per visit, horizontally scrollable panorama over the home `UnderwaterBackdrop` (+ `deep` at night), `BlimpFlyby`, fish, 2 swimming Jellies, kelp/coral SVG props, sand shelf, parallax far-reef + near-kelp (translate with scrollLeft), buildings at varied depth (every 3rd lifted/scaled .86), bobbing, pulsing window glow, floating lucide Music notes, **host Jelly at each door** with random shout bubbles, kid's avatar at the street entrance (`campus-you`), swipe hint, desktop drag-to-pan. Slot 300px (≥640) / 220px (phone). Street-name chip centered under header.
 - Option "b. panorama" chosen by user over winding path (a) / diorama (c). Still one street per visit.
 

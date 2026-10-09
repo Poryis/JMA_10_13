@@ -1,0 +1,25 @@
+{
+  "summary": "Frontend-only testing of the rebuilt Underwater Campus (v4 layered art). Verified all data-testids, 6+ unlockable buildings per zone, UW asset HTTP 200s + naturalWidth>0, fish directions (scaleX sign matches dx), strollers (charlie-surf not flipped, sharky-snorkel flipped) present on all 3 zones, swim-to-door swims then navigates (play->/#/simon-says, learn->/#/lessons, create->/#/free-play), locked buildings show lock chip, shake and don't swim/navigate, parallax (back ~0.3*scrollLeft, front ~-0.2*scrollLeft), swipe hint hides on scroll, HomePage layered backdrop images load, /#/free-play (deep variant) has NO sand strips, /#/play & /#/dressing-room load, mobile 390x844 campus renders YOU avatar + buildings and swim-to-door navigates. All v4 acceptance criteria pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Non-blocking: React warning 'Encountered two children with the same key' observed on campus pages. Likely from mapping backAccents/frontAccents with key={i} on nested divs that remount, or Swimmer strollers using key={src} when the same src appears twice. Consider stable composite keys (e.g., `${a.kind}-${i}` and `${src}-${i}`) in CampusMapPage.js backAccents/frontAccents/strollers maps.",
+    "Non-blocking: Console warning 'An empty string (\"\") was passed to the src attribute' appears on /#/campus?zone=create — a Building (likely jam-session Host) or Swimmer may receive an empty src for one frame. Guard <img>/<Swimmer> rendering when src is falsy."
+  ],
+  "critical_code_review_comments": [
+    "CampusMapPage.js backAccents/frontAccents use key={i} inside .map which is OK for static arrays but duplicated keys may arise if arrays share the same wrapper — switch to kind+index composite keys.",
+    "Swimmer stroller map uses key={src}; sharky/charlie appear once per zone so OK on campus but if ever doubled would collide.",
+    "Minor: Host img has src from b.host which should always exist for defined buildings; still worth guarding to silence empty-src warning on /#/campus?zone=create."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "localStorage flags only: jma_unlock_all_v1, jma_reveal_seen_v1, jma_player_name_skipped_v1",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Campus v4 fully validated: 7 PLAY buildings, 5 LEARN, 3 CREATE (all data-testid campus-building-<id>). Lock selector is campus-building-<id>-lock; be careful counting buildings — filter out testids ending in -lock. On mobile the audio-overlay dismissal click uses coords (195,400). The name prompt only reappears after localStorage.clear(). free-play uses UnderwaterBackdrop deep=true (no sand). Vimeo 401s and WebGL stall warnings are environmental noise."
+}

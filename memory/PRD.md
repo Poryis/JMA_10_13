@@ -1,6 +1,11 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Voice layer** — tested iteration_33, 100%
+## Latest (Jun 2026): **Avatar + Dressing Room** (tested iteration_34, 100%) · first campus prop
+- `data/avatars.js` (8 Jellies, 30 outfits from existing art; unlock kinds free/badge/rank/sticker), `hooks/useAvatar.js` (`jma_avatar_v1`, `readAvatarSrc()`), `pages/DressingRoomPage.js` at `/dressing-room` (character row + wardrobe, locked outfits show hint). Avatar appears in the Home rank bar (`home-avatar`, pulses "NEW" until chosen, tap → Dressing Room), as the YOU member in the Shred City crowd, and the Sticker Book has a Dressing Room button. Backup includes `progress.avatar`.
+- **Campus prop #1** generated from the user's art as reference: `public/assets/campus/detective-office.png` (Dr. Jellybone's office, keyed from magenta → transparent via PIL; recipe: ask Gemini for solid #FF00FF background, then chroma-key — the "transparent" option bakes a checkerboard). AWAITING USER APPROVE/REJECT.
+- Known noise: "two children with the same key" React warning (pre-existing, source not yet found).
+
+## Jun 2026: **Voice layer** — tested iteration_33, 100%
 - `data/voiceLines.js`: 150 short blurbs, 7 voices (Charlie = host; Dr. Jellybone, Stew, Jazzy, Chunk, Finn, Sharky; **Lou never talks**). id = `<char>.<group>[.<variant>]`. `lib/voice.js` `say(idOrGroup, {interrupt, minGapMs, delayMs})` plays `public/assets/voice/<id>.mp3`, random variant for groups, remembers missing files (silent), single channel, defers the latest line until the first tap (audio-unlock gate). Toggle: `jma_voice_v1` in Manage Progress ("Character Voices").
 - Wired: Home greeting once per session (first visit / time-of-day / streak / quests / all-done), lock lines, quest nudges on GO, room taglines on every game mount (`useVoiceTagline`), correct/perfect/miss reactions in Detective, Stew, Note Match, Sight-Reading, Name That Note, Ear Quest, Jukebox (song end), Boom, Beat Lab, Robot Boogie, Fun Facts, Song Studio, Shred City (tiers/encore/too wild/flawless), plus badge/sticker/gem toast, rank-up, quests-done, Academy-open overlays.
 - **Recording script for the user: `/app/memory/voice_script.md`** (regenerate with `node frontend/scripts/voiceScript.mjs`). Files go in `frontend/public/assets/voice/`.

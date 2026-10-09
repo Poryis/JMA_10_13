@@ -7,20 +7,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, ChevronsRight } from 'lucide-react';
+import { Lock, Music, ChevronsRight } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
-import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER } from '../components/UnderwaterBackdrop';
+import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
 import AvatarSprite from '../components/AvatarSprite';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import { say, voiceEnabled } from '../lib/voice';
 
-const slotFor = (w) => (w < 640 ? 220 : 300); // horizontal space per building (px)
+// Shelf layouts: wide (tablet/desktop), narrow (phone portrait), short (phone landscape — little headroom).
+const LAYOUTS = {
+  wide:   { slot: 300, bw: 230, left: 120, sandBack: 190, sandFront: 118, floor: 56, lift: 1,    you: 64 },
+  narrow: { slot: 220, bw: 170, left: 96,  sandBack: 130, sandFront: 84,  floor: 46, lift: 0.7,  you: 64 },
+  short:  { slot: 176, bw: 132, left: 72,  sandBack: 84,  sandFront: 56,  floor: 30, lift: 0.4,  you: 46 },
+};
+const layoutFor = (w, h) => (h < 520 ? LAYOUTS.short : w < 640 ? LAYOUTS.narrow : LAYOUTS.wide);
 const SHOUTS = ['Hey!', 'Come in!', 'Over here!', 'Woo!', 'Jam time!', 'Psst!'];
 const YOU_LEFT = 16;
-const YOU_W = 64;
 
 function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 
@@ -51,8 +56,7 @@ function Host({ src, shout }) {
   );
 }
 
-function Building({ b, index, locked, onEnter, shout, slot, floor, entering }) {
-  const narrow = slot < 300;
+function Building({ b, index, locked, onEnter, shout, L, entering }) {
   const [shake, setShake] = useState(0);
   const lift = index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
   const scale = index % 3 === 1 ? 0.86 : 1;
@@ -68,7 +72,7 @@ function Building({ b, index, locked, onEnter, shout, slot, floor, entering }) {
       aria-disabled={locked}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      style={{ left: (narrow ? 96 : 120) + index * slot, width: Math.round((narrow ? 170 : 230) * b.size * scale), marginBottom: floor + (narrow ? lift * 0.7 : lift), zIndex: 10 - (index % 3) }}
+      style={{ left: L.left + index * L.slot, width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: 10 - (index % 3) }}
       initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: entering ? 1.04 : 1 }} transition={{ delay: entering ? 0 : 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
@@ -76,6 +80,14 @@ function Building({ b, index, locked, onEnter, shout, slot, floor, entering }) {
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
           <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />
+          {/* floating notes from the door */}
+          {!locked && [0, 1, 2].map((n) => (
+            <motion.span key={n} className="absolute pointer-events-none" style={{ left: `${44 + n * 10}%`, bottom: '22%', color: ['#FFCC00', '#FF2D85', '#4FC3F7'][n] }}
+              animate={{ y: [0, -90 - n * 20], x: [0, (n % 2 ? 1 : -1) * 18], opacity: [0, 1, 0], rotate: [0, n % 2 ? 25 : -25] }}
+              transition={{ repeat: Infinity, duration: 2.4 + n * 0.5, delay: n * 0.8 + (index % 3) * 0.4, ease: 'easeOut' }}>
+              <Music className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+            </motion.span>
+          ))}
           {!locked && b.host && <Host src={b.host} shout={shout} />}
         </motion.div>
         {locked && (
@@ -107,15 +119,15 @@ export default function CampusMapPage() {
   const buildings = useMemo(() => CAMPUS_BUILDINGS.filter((b) => b.zone === zone.id), [zone.id]);
   const night = useMemo(isNight, []);
   const avatar = useMemo(readAvatarOutfit, []);
-  const [vw, setVw] = useState(window.innerWidth);
-  useEffect(() => { const f = () => setVw(window.innerWidth); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
-  const slot = slotFor(vw);
-  const narrow = slot < 300;
+  const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
+  useEffect(() => { const f = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
+  const L = layoutFor(vp.w, vp.h);
+  const short = L === LAYOUTS.short;
+  const { slot, sandBack, sandFront, floor } = L;
+  const acc = short ? 0.62 : L === LAYOUTS.narrow ? 0.72 : 1; // accent art scale
   const width = 200 + buildings.length * slot;
-  const sandBack = narrow ? 130 : 190;
-  const sandFront = narrow ? 84 : 118;
-  const floor = narrow ? 46 : 56; // where buildings stand on the front sand
   const youBottom = floor + 2;
+  const YOU_W = L.you;
   useAmbient(zone.ambient);
 
   // Hosts shout now and then.
@@ -162,22 +174,22 @@ export default function CampusMapPage() {
     const n = Math.ceil((width + 400) / slot);
     for (let i = 0; i < n; i++) {
       const x = i * slot + (i % 2 ? 40 : 160);
-      if (i % 2 === 0) items.push({ kind: 'weed', src: UW_ASSETS.seaweed2, x, w: narrow ? 70 : 100, bottom: sandBack * 0.5, delay: i * 0.5 });
-      else items.push({ kind: 'shell', src: UW_ASSETS.shell1, x, w: narrow ? 60 : 90, bottom: sandBack * 0.42 });
+      if (i % 2 === 0) items.push({ kind: 'weed', src: UW_ASSETS.seaweed2, x, w: Math.round(100 * acc), bottom: sandBack * 0.5, delay: i * 0.5 });
+      else items.push({ kind: 'shell', src: UW_ASSETS.shell1, x, w: Math.round(90 * acc), bottom: sandBack * 0.42 });
     }
     return items;
-  }, [width, slot, narrow, sandBack]);
+  }, [width, slot, acc, sandBack]);
 
   const frontAccents = useMemo(() => {
     const items = [];
     const n = Math.ceil((width + 600) / (slot * 1.5));
     for (let i = 0; i < n; i++) {
       const x = i * slot * 1.5 + 200;
-      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: narrow ? 90 : 130, bottom: 0, delay: i * 0.7 });
-      if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + (narrow ? 110 : 160), w: narrow ? 34 : 48, bottom: 10 });
+      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: Math.round(130 * acc), bottom: 0, delay: i * 0.7 });
+      if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + Math.round(160 * acc), w: Math.round(48 * acc), bottom: 10 });
     }
     return items;
-  }, [width, slot, narrow]);
+  }, [width, slot, acc]);
 
   return (
     <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_WATER }} data-testid="campus-map-page" data-zone={zone.id} data-sky={night ? 'night' : 'day'}>
@@ -189,9 +201,9 @@ export default function CampusMapPage() {
       <GameHeader title={`${zone.label} STREET`} showHomeButton={true} />
 
       {/* street name under the header title */}
-      <div className="absolute inset-x-0 top-14 md:top-[72px] z-20 flex justify-center pointer-events-none">
+      {!short && <div className="absolute inset-x-0 top-14 md:top-[72px] z-20 flex justify-center pointer-events-none">
         <div className="rounded-full px-3 py-0.5 text-[10px] md:text-xs font-black" style={{ background: zone.color, color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)' }}>{zone.street}</div>
-      </div>
+      </div>}
 
       {/* the user's fish — every sprite faces the way it swims */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} data-testid="campus-fish">
@@ -229,19 +241,19 @@ export default function CampusMapPage() {
               : <img key={i} src={a.src} alt="" draggable={false} className="absolute pointer-events-none" style={{ left: a.x, width: a.w, bottom: a.bottom, zIndex: 2 }} />)}
           </div>
           {/* front dune — the street everyone stands on */}
-          <SandStrip src={UW_ASSETS.sandFront} height={sandFront} style={{ zIndex: 3 }} />
+          <SandStrip src={UW_ASSETS.sandFront} height={sandFront} shift={FRONT_TROUGH} style={{ zIndex: 3 }} />
           {/* the kid's Jelly at the street entrance — swims to the tapped door */}
           <motion.div className="absolute flex flex-col items-center" style={{ left: YOU_LEFT, bottom: youBottom, width: YOU_W, zIndex: 11 }} data-testid="campus-you" data-swimming={swim ? 'true' : 'false'}
             animate={swim ? { x: swim.x, y: swim.y, scale: [1, 0.9, 0.28], opacity: [1, 1, 1, 0] } : { x: 0, y: 0, scale: 1, opacity: 1 }}
             transition={swim ? { duration: swim.dur, ease: 'easeInOut', scale: { duration: swim.dur, times: [0, 0.7, 1] }, opacity: { duration: swim.dur, times: [0, 0.7, 0.92, 1] } } : { duration: 0 }}>
             <motion.span className="rounded-full px-1.5 text-[9px] font-black text-white mb-0.5" style={{ background: '#FF2D85', border: '2px solid var(--jma-dark)' }} animate={{ opacity: swim ? 0 : 1 }}>YOU</motion.span>
             <motion.div animate={swim ? { y: [0, -8, 0, -8, 0], rotate: [0, 6, 0, 6, 0] } : { y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: swim ? 0.7 : 1.6, ease: 'easeInOut' }}>
-              <AvatarSprite src={avatar.src} helmet={!!avatar.helmet} width={avatar.helmet ? 44 : 60} imgStyle={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.35))' }} />
+              <AvatarSprite src={avatar.src} helmet={!!avatar.helmet} width={Math.round((avatar.helmet ? 44 : 60) * (YOU_W / 64))} imgStyle={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.35))' }} />
             </motion.div>
           </motion.div>
           {/* buildings */}
           {buildings.map((b, i) => (
-            <Building key={b.id} b={b} index={i} slot={slot} floor={floor} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
+            <Building key={b.id} b={b} index={i} L={L} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">

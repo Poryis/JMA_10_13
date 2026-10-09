@@ -1,6 +1,12 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Campus v4 — built from the USER's layered underwater art** (tested iteration_38, 100%)
+## Jun 2026: Campus v4.1 — user feedback ("I LOVE THIS")
+- Front dune no longer starts mid-slope: `SandStrip shift={FRONT_TROUGH}` (0.249 of tile width) slides the tile so x=0 is a dune trough (campus + home backdrop).
+- Floating lucide music notes restored on open buildings (user asked). Window glow stays removed.
+- **Sharky merged into Finn** everywhere: `data/avatars.js` Finn now has Daredevil / Classic (`shark.png`) / Disco / Hip-Hop / Snorkel / Zoot; `useAvatar.readAvatar` migrates stored `{character:'sharky'}` → finn (classic → `plain`). Voice ids `sharky.*` → `finn.tag.notematch`, `finn.match.N`, `finn.sweep.N`, `finn.mismatch.N`, `finn.gomatch.N`, `finn.quest.q_note_match` (NoteMatchPage updated); voice script regenerated — Finn section is 33 lines, 6 voices total. No voice MP3s recorded yet.
+- **Phone-landscape headroom**: `LAYOUTS.short` when viewport height < 520 (slot 176, buildings 132px, sand 84/56, floor 30, avatar 46, street chip hidden, accents ×0.62). Verified at 844×340. Tablets (≥700px tall in landscape) unaffected. PWA "Add to Home Screen" (P1 backlog) would remove the browser URL bar entirely.
+
+## Jun 2026: **Campus v4 — built from the USER's layered underwater art** (tested iteration_38, 100%)
 - User uploaded `Underwater scene.zip` (Water BG, wave bands, back/front sand dunes, 2 seaweeds, 2 shells, 2 fish + a fish school — ALL fish face RIGHT). Exported to `public/assets/underwater/` (bands.png, sand-back-tile.png / sand-front-tile.png = mirror-tiled so `repeat-x` is seamless, seaweed-1/2, shell-1/2, fish-1/2, fish-school). Water color `#34E0F6` (`UNDERWATER_WATER`).
 - `components/UnderwaterBackdrop.js` rewritten as LAYERS (water → bands → sand-back → accents → sand-front → fish → bubbles) and exports `Bubbles`, `Swimmer` (flips scaleX −1 when swimming left), `SandStrip`, `Seaweed`, `UW_ASSETS`. HomePage now mounts `<UnderwaterBackdrop />` (its inline copy removed); SubMenu/DressingRoom use it; Jam Session uses `deep` (no sand).
 - `pages/CampusMapPage.js` v4: removed ALL my SVG extras (kelp, coral, fish, reef circles, SVG sand, lucide floating notes, window glow). Kept per user: bubbles (loved), hosts + shout bubbles, bobbing, blimp, swipe hint, night tint (now .32). Back dune parallax +0.3·scrollX with seaweed-2/shell-1; front dune is the street; front seaweed-1/shell-2 parallax −0.2·scrollX at z 7 (behind buildings so name labels stay readable).

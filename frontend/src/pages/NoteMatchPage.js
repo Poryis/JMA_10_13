@@ -112,7 +112,7 @@ export default function NoteMatchPage() {
     firstFlippedRef.current = null;
   }, [initAudioContext, difficulty]);
 
-  useVoiceTagline('sharky.tag.notematch');
+  useVoiceTagline('finn.tag.notematch');
 
   // Daily-quest deep link: /note-match?quest=easy skips the pick screen.
   const location = useLocation();
@@ -139,7 +139,7 @@ export default function NoteMatchPage() {
       }
       try { earnSticker(level.sticker); } catch { /* ignore */ }
       reportQuestEvent('note_match', { difficulty });
-      say('sharky.perfect');
+      say('finn.sweep');
       // 🎧 Note Detective achievement — completing each tier proves a level
       // of ear/memory skill.
       try {

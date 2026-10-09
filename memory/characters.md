@@ -9,3 +9,7 @@
 - **Dr. Jellybone** — smooth-talkin' jazzman, sax player. Velvet, gentlemanly, never loud. Running gag: "Dr. Jellybone prescription Fedoras."
 
 Scripts: Jelly Music Academy (educational series) and The Jelly of the Month Club Show E1 (variety show) were shared as PDFs in June 2026.
+
+
+## Jun 2026 note
+- Dressing Room + voice lines now have ONE shark: `finn` (Sharky's outfits Hip-Hop/Snorkel/Zoot and his Note Match lines live under Finn). Do not reintroduce a separate `sharky` id.

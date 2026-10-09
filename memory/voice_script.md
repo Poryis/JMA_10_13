@@ -1,6 +1,6 @@
 # JMA Voice Recording Script
 
-**150 lines · 7 voices.** Lou never speaks. **Sharky IS Finn Danger — the same shark, one voice.** Stew can be performed as kazoo-talk.
+**150 lines · 6 voices.** Lou never speaks. **Sharky IS Finn Danger — the same shark, one voice.** Stew can be performed as kazoo-talk.
 
 ## How to record
 - One short take per line, 1–3 seconds. Leave ~150 ms of silence at the start, trim the tail.
@@ -174,8 +174,8 @@
 
 ---
 
-## Finn Danger (the shark) — 18 lines
-**Rooms:** Sight-Reading Sprint · Name That Note  
+## Finn Danger (the shark — a.k.a. Sharky) — 33 lines
+**Rooms:** Sight-Reading Sprint · Name That Note · Note Match  
 **Voice:** Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can't contain his excitement at ANYTHING. Eager, literal, loves puns. "Jumpin' jellyfish!"
 
 | # | File (id) | Line | Emotion | Plays when |
@@ -195,31 +195,22 @@
 | 13 | `finn.miss.4` | **Ooh! Next one, next one!** | moving on | Miss |
 | 14 | `finn.go.1` | **Read ahead, read ahead!** | urging | Mid-game |
 | 15 | `finn.go.2` | **Eyes on the staff! Hee!** | coach | Mid-game |
-| 16 | `finn.quest.q_sight_read` | **Run a sprint with me! Oh boy!** | daring | Quest: Sight-Reading |
-| 17 | `finn.quest.q_name_note` | **Eight outta ten! I DARE ya! Hee-hee!** | dare | Quest: Name That Note |
-| 18 | `finn.quest.q_lesson` | **Class time! Watch a lesson — it's FUN!** | bright | Quest: Music 101 lesson |
-
----
-
-## Sharky (= Finn Danger) — 15 lines
-**Rooms:** Note Match  
-**Voice:** Sharky IS Finn — the same shark, same voice. Giddy, cracking up, thrilled by everything.
-
-| # | File (id) | Line | Emotion | Plays when |
-|---|---|---|---|---|
-| 1 | `sharky.tag.notematch` | **NOTE MATCH! Find the twins! Oh, I love this one!** | hip-hop cool | Entering Note Match |
-| 2 | `sharky.correct.1` | **MATCH! Ha-HA!** | punchy | Pair found |
-| 3 | `sharky.correct.2` | **TWINS! Oh, look at 'em!** | fun | Pair found |
-| 4 | `sharky.correct.3` | **YES! You found it!** | cool | Pair found |
-| 5 | `sharky.correct.4` | **That's a match! Hee-hee!** | happy | Pair found |
-| 6 | `sharky.perfect.1` | **CLEAN SWEEP! Jumpin' jellyfish!** | big | Round cleared |
-| 7 | `sharky.perfect.2` | **Perfect match-up! HEY, LOOK at that!** | proud | Round cleared |
-| 8 | `sharky.perfect.3` | **Flawless! FLAWLESS! Ha!** | thrilled | Round cleared |
-| 9 | `sharky.miss.1` | **Nope! Not twins! Ha!** | easy | Mismatch |
-| 10 | `sharky.miss.2` | **Ooh, remember that one!** | hinting | Mismatch |
-| 11 | `sharky.miss.3` | **Try again, try again!** | chill | Mismatch |
-| 12 | `sharky.miss.4` | **Keep lookin'! Hee!** | calm | Mismatch |
-| 13 | `sharky.go.1` | **Remember the sounds!** | coach | Mid-game |
-| 14 | `sharky.go.2` | **You got this! Oh boy!** | cool | Mid-game |
-| 15 | `sharky.quest.q_note_match` | **Clear a round of Note Match! Oh boy oh boy!** | cool | Quest: Note Match |
+| 16 | `finn.tag.notematch` | **NOTE MATCH! Find the twins! Oh, I love this one!** | hip-hop cool | Entering Note Match |
+| 17 | `finn.match.1` | **MATCH! Ha-HA!** | punchy | Pair found |
+| 18 | `finn.match.2` | **TWINS! Oh, look at 'em!** | fun | Pair found |
+| 19 | `finn.match.3` | **YES! You found it!** | cool | Pair found |
+| 20 | `finn.match.4` | **That's a match! Hee-hee!** | happy | Pair found |
+| 21 | `finn.sweep.1` | **CLEAN SWEEP! Jumpin' jellyfish!** | big | Round cleared |
+| 22 | `finn.sweep.2` | **Perfect match-up! HEY, LOOK at that!** | proud | Round cleared |
+| 23 | `finn.sweep.3` | **Flawless! FLAWLESS! Ha!** | thrilled | Round cleared |
+| 24 | `finn.mismatch.1` | **Nope! Not twins! Ha!** | easy | Mismatch |
+| 25 | `finn.mismatch.2` | **Ooh, remember that one!** | hinting | Mismatch |
+| 26 | `finn.mismatch.3` | **Try again, try again!** | chill | Mismatch |
+| 27 | `finn.mismatch.4` | **Keep lookin'! Hee!** | calm | Mismatch |
+| 28 | `finn.gomatch.1` | **Remember the sounds!** | coach | Mid-game |
+| 29 | `finn.gomatch.2` | **You got this! Oh boy!** | cool | Mid-game |
+| 30 | `finn.quest.q_sight_read` | **Run a sprint with me! Oh boy!** | daring | Quest: Sight-Reading |
+| 31 | `finn.quest.q_name_note` | **Eight outta ten! I DARE ya! Hee-hee!** | dare | Quest: Name That Note |
+| 32 | `finn.quest.q_lesson` | **Class time! Watch a lesson — it's FUN!** | bright | Quest: Music 101 lesson |
+| 33 | `finn.quest.q_note_match` | **Clear a round of Note Match! Oh boy oh boy!** | cool | Quest: Note Match |
 

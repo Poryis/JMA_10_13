@@ -11,8 +11,7 @@ export const VOICE_CHARACTERS = {
   stew:    { name: 'Stew',                  role: 'Stew Kazoo Says · Fun Facts Clubhouse',                     vibe: 'Goofy, buzzy, easily delighted. In the show Stew talks in KAZOO — these lines can be performed as kazoo-talk with the words as intent.' },
   jazzy:   { name: 'Jazzy',                 role: 'Jelly Jukebox · Jam Session',                               vibe: 'LOUD, boisterous, fun-loving pun machine — CAT puns (purrrfect, meow-sic, kitten around). Big laughs, means every word.' },
   chunk:   { name: 'Chunk',                 role: "Beat Lab · Robot Boogie · Who's Got the Rhythm",            vibe: 'Stereotypical surfer bro. "Duuude." Laid back, stoked, everything is gnarly or epic.' },
-  finn:    { name: 'Finn Danger (the shark)', role: 'Sight-Reading Sprint · Name That Note',                   vibe: 'Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can\'t contain his excitement at ANYTHING. Eager, literal, loves puns. "Jumpin\' jellyfish!"' },
-  sharky:  { name: 'Sharky (= Finn Danger)', role: 'Note Match',                                                vibe: 'Sharky IS Finn — the same shark, same voice. Giddy, cracking up, thrilled by everything.' },
+  finn:    { name: 'Finn Danger (the shark — a.k.a. Sharky)', role: 'Sight-Reading Sprint · Name That Note · Note Match',                   vibe: 'Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can\'t contain his excitement at ANYTHING. Eager, literal, loves puns. "Jumpin\' jellyfish!"' },
   // Lou never talks. By design.
 };
 
@@ -160,20 +159,20 @@ export const VOICE_LINES = [
   L('finn.go.2',      'Eyes on the staff! Hee!',    'coach',      'Mid-game'),
 
   // ───────────── SHARKY — Note Match ─────────────
-  L('sharky.tag.notematch', 'NOTE MATCH! Find the twins! Oh, I love this one!', 'hip-hop cool', 'Entering Note Match'),
-  L('sharky.correct.1', 'MATCH! Ha-HA!',              'punchy',     'Pair found'),
-  L('sharky.correct.2', 'TWINS! Oh, look at \'em!',              'fun',        'Pair found'),
-  L('sharky.correct.3', 'YES! You found it!',          'cool',       'Pair found'),
-  L('sharky.correct.4', 'That\'s a match! Hee-hee!',           'happy',      'Pair found'),
-  L('sharky.perfect.1', 'CLEAN SWEEP! Jumpin\' jellyfish!',        'big',        'Round cleared'),
-  L('sharky.perfect.2', 'Perfect match-up! HEY, LOOK at that!',   'proud',      'Round cleared'),
-  L('sharky.perfect.3', 'Flawless! FLAWLESS! Ha!',       'thrilled',   'Round cleared'),
-  L('sharky.miss.1',    'Nope! Not twins! Ha!',    'easy',       'Mismatch'),
-  L('sharky.miss.2',    'Ooh, remember that one!',  'hinting',    'Mismatch'),
-  L('sharky.miss.3',    'Try again, try again!',          'chill',      'Mismatch'),
-  L('sharky.miss.4',    'Keep lookin\'! Hee!',       'calm',       'Mismatch'),
-  L('sharky.go.1',      'Remember the sounds!','coach',      'Mid-game'),
-  L('sharky.go.2',      'You got this! Oh boy!',       'cool',       'Mid-game'),
+  L('finn.tag.notematch', 'NOTE MATCH! Find the twins! Oh, I love this one!', 'hip-hop cool', 'Entering Note Match'),
+  L('finn.match.1', 'MATCH! Ha-HA!',              'punchy',     'Pair found'),
+  L('finn.match.2', 'TWINS! Oh, look at \'em!',              'fun',        'Pair found'),
+  L('finn.match.3', 'YES! You found it!',          'cool',       'Pair found'),
+  L('finn.match.4', 'That\'s a match! Hee-hee!',           'happy',      'Pair found'),
+  L('finn.sweep.1', 'CLEAN SWEEP! Jumpin\' jellyfish!',        'big',        'Round cleared'),
+  L('finn.sweep.2', 'Perfect match-up! HEY, LOOK at that!',   'proud',      'Round cleared'),
+  L('finn.sweep.3', 'Flawless! FLAWLESS! Ha!',       'thrilled',   'Round cleared'),
+  L('finn.mismatch.1',    'Nope! Not twins! Ha!',    'easy',       'Mismatch'),
+  L('finn.mismatch.2',    'Ooh, remember that one!',  'hinting',    'Mismatch'),
+  L('finn.mismatch.3',    'Try again, try again!',          'chill',      'Mismatch'),
+  L('finn.mismatch.4',    'Keep lookin\'! Hee!',       'calm',       'Mismatch'),
+  L('finn.gomatch.1',      'Remember the sounds!','coach',      'Mid-game'),
+  L('finn.gomatch.2',      'You got this! Oh boy!',       'cool',       'Mid-game'),
 
   // ───────────── QUEST NUDGES (tap GO on a Daily Quest) ─────────────
   L('doctor.quest.q_detective_case', 'A case awaits, baby. Easy does it.',                 'noir',     'Quest: Crack a case'),
@@ -192,7 +191,7 @@ export const VOICE_LINES = [
   L('finn.quest.q_sight_read',       'Run a sprint with me! Oh boy!',               'daring',   'Quest: Sight-Reading'),
   L('finn.quest.q_name_note',        'Eight outta ten! I DARE ya! Hee-hee!',          'dare',     'Quest: Name That Note'),
   L('finn.quest.q_lesson',           'Class time! Watch a lesson — it\'s FUN!',         'bright',   'Quest: Music 101 lesson'),
-  L('sharky.quest.q_note_match',     'Clear a round of Note Match! Oh boy oh boy!',        'cool',     'Quest: Note Match'),
+  L('finn.quest.q_note_match',     'Clear a round of Note Match! Oh boy oh boy!',        'cool',     'Quest: Note Match'),
   L('charlie.quest.q_shred',         'Play a show in Shred City, kid!',          'rock',     'Quest: Shred City'),
   L('charlie.quest.q_song_save',     'Come write a hit in my studio.',           'creative', 'Quest: Song Studio'),
   L('charlie.quest.q_jmatv',         'Catch a show on JMAtv, pal.',              'TV',       'Quest: JMAtv'),

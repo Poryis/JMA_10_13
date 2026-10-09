@@ -69,10 +69,17 @@ export function Swimmer({ src, top, dur, delay = 0, width, dir = 'right', bob = 
 }
 
 // Sand dune strips tile sideways (mirror-tiled PNGs so there is no seam).
-export function SandStrip({ src, height, className = '', style = {} }) {
+// `shift` slides the tile so the left edge lands in a dune trough instead of
+// a half-dune (the front tile starts mid-slope, which read as a hard cut).
+const TILE_ASPECT = { 'sand-front-tile': 3840 / 176, 'sand-back-tile': 3840 / 268 };
+export const FRONT_TROUGH = 0.249;
+export function SandStrip({ src, height, shift = 0, className = '', style = {} }) {
+  const key = Object.keys(TILE_ASPECT).find((k) => src.includes(k));
+  const h = typeof height === 'number' ? `${height}px` : height;
+  const posX = shift && key ? `calc(${(-shift * TILE_ASPECT[key]).toFixed(3)} * ${h})` : 'left';
   return (
     <div aria-hidden="true" className={`absolute inset-x-0 bottom-0 pointer-events-none ${className}`}
-      style={{ height, backgroundImage: `url(${src})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: 'left bottom', ...style }} />
+      style={{ height, backgroundImage: `url(${src})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: `${posX} bottom`, ...style }} />
   );
 }
 
@@ -96,7 +103,7 @@ export default function UnderwaterBackdrop({ deep = false } = {}) {
             <SandStrip src={UW_ASSETS.sandBack} height="clamp(110px, 20vh, 240px)" />
             <Seaweed src={UW_ASSETS.seaweed2} left="27%" width="clamp(70px, 9vw, 150px)" bottom="clamp(40px, 7vh, 90px)" />
             <img src={UW_ASSETS.shell1} alt="" draggable={false} className="absolute pointer-events-none" style={{ left: '63%', bottom: 'clamp(30px, 5vh, 64px)', width: 'clamp(80px, 9vw, 150px)' }} />
-            <SandStrip src={UW_ASSETS.sandFront} height="clamp(70px, 12vh, 150px)" />
+            <SandStrip src={UW_ASSETS.sandFront} height="clamp(70px, 12vh, 150px)" shift={FRONT_TROUGH} />
             <img src={UW_ASSETS.shell2} alt="" draggable={false} className="absolute pointer-events-none" style={{ left: '44%', bottom: 'clamp(6px, 1.5vh, 20px)', width: 'clamp(34px, 4vw, 64px)' }} />
             <Seaweed src={UW_ASSETS.seaweed1} left="82%" width="clamp(90px, 11vw, 190px)" bottom="clamp(4px, 1vh, 14px)" delay={1.3} />
           </>

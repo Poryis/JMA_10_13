@@ -32,8 +32,12 @@ export const AVATARS = [
     outfit('grad',      'Graduate',      'charlie-grad', LESSON),
   ] },
   { id: 'finn',    name: 'Finn',          color: '#4285F4', outfits: [
-    outfit('classic', 'Daredevil', 'finn-danger'),
-    outfit('disco',   'Disco',     'finn-disco', FIRST_BADGE),
+    outfit('classic',   'Daredevil', 'finn-danger'),
+    outfit('plain',     'Classic',   'shark'),
+    outfit('disco',     'Disco',     'finn-disco', FIRST_BADGE),
+    outfit('hiphop',    'Hip-Hop',   'sharky-hiphop', FIRST_BADGE),
+    outfit('snorkel',   'Snorkel',   'sharky-snorkel', STREAK_3),
+    outfit('zoot',      'Zoot Suit', 'sharky-zoot', APPRENTICE),
   ] },
   { id: 'chunk',   name: 'Chunk',         color: '#34A853', outfits: [
     outfit('classic',   'Classic',   'chunk'),
@@ -55,12 +59,6 @@ export const AVATARS = [
     outfit('classic',   'Classic',   'dr-jellybone'),
     outfit('detective', 'Detective', 'dr-jellybone-detective', DETECTIVE),
     { ...outfit('astro', 'Astronaut', 'dr-jellybone-astro-1', GEM_3), helmet: true },
-  ] },
-  { id: 'sharky',  name: 'Sharky',        color: '#FF3B30', outfits: [
-    outfit('classic', 'Classic', 'shark'),
-    outfit('hiphop',  'Hip-Hop', 'sharky-hiphop', FIRST_BADGE),
-    outfit('snorkel', 'Snorkel', 'sharky-snorkel', STREAK_3),
-    outfit('zoot',    'Zoot Suit', 'sharky-zoot', APPRENTICE),
   ] },
   { id: 'lou',     name: 'Lou',           color: '#8E8E93', outfits: [
     outfit('classic', 'Classic', 'lou'),

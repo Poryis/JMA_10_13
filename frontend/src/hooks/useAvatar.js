@@ -12,6 +12,7 @@ const notify = () => listeners.forEach(fn => { try { fn(); } catch (_) {} });
 export function readAvatar() {
   try {
     const v = JSON.parse(localStorage.getItem(AVATAR_KEY));
+    if (v && v.character === 'sharky') { v.character = 'finn'; if (v.outfit === 'classic') v.outfit = 'plain'; } // Sharky merged into Finn
     if (v && AVATAR_MAP[v.character]) return { chosen: true, character: v.character, outfit: v.outfit || 'classic' };
   } catch (_) {}
   return { chosen: false, character: 'charlie', outfit: 'classic' };

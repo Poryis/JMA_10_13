@@ -16,6 +16,7 @@ import SimonSaysPage from "./pages/SimonSaysPage";
 import EarTrainerPage from "./pages/EarTrainerPage";
 import LoopStudioPage from "./pages/LoopStudioPage";
 import StickerBookPage from "./pages/StickerBookPage";
+import DressingRoomPage from "./pages/DressingRoomPage";
 import FunFactsPage from "./pages/FunFactsPage";
 import NoteMatchPage from "./pages/NoteMatchPage";
 import DetectivePage from "./pages/DetectivePage";
@@ -108,6 +109,7 @@ function App() {
             <Route path="/jmatv/:channelId" element={<JMAtvChannelPage />} />
             <Route path="/jmatv/:channelId/:episodeIndex" element={<JMAtvPlayerPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
+            <Route path="/dressing-room" element={<DressingRoomPage />} />
           </Routes>
         </AnimatePresence>
       </HashRouter>

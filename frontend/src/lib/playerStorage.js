@@ -67,6 +67,7 @@ const KEYS = {
   questDays:        'jma_quest_days_v1',
   revealSeen:       'jma_reveal_seen_v1',
   unlockAll:        'jma_unlock_all_v1',
+  avatar:           'jma_avatar_v1',
 };
 
 function readJson(key, fallback) {
@@ -117,6 +118,7 @@ export function getPlayerSnapshot() {
       dailyQuests: readJson(KEYS.dailyQuests, null),
       questDays:   readJson(KEYS.questDays, { total: 0, lastDate: null }),
       revealSeen:  localStorage.getItem(KEYS.revealSeen) === '1',
+      avatar:      readJson(KEYS.avatar, null),
     },
     deviceSettings: {
       teacherView: localStorage.getItem(KEYS.teacherView) === '1',
@@ -158,6 +160,7 @@ export function importPlayerSnapshot(snapshot) {
   if (typeof progress?.bestScores?.tempoQuiz === 'number') localStorage.setItem(KEYS.tempoQuizBest, String(progress.bestScores.tempoQuiz));
   if (progress?.dailyQuests) writeJson(KEYS.dailyQuests, progress.dailyQuests);
   if (progress?.questDays)   writeJson(KEYS.questDays, progress.questDays);
+  if (progress?.avatar)      writeJson(KEYS.avatar, progress.avatar);
   if (typeof progress?.revealSeen === 'boolean') localStorage.setItem(KEYS.revealSeen, progress.revealSeen ? '1' : '0');
   if (deviceSettings && typeof deviceSettings.unlockAll === 'boolean') {
     localStorage.setItem(KEYS.unlockAll, deviceSettings.unlockAll ? '1' : '0');
@@ -202,6 +205,7 @@ export function resetAllPlayerData() {
     KEYS.dailyQuests,
     KEYS.questDays,
     KEYS.revealSeen,
+    KEYS.avatar,
   ];
   try {
     playerScopedKeys.forEach(k => localStorage.removeItem(k));

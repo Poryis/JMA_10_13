@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Flame, Star } from 'lucide-react';
 import useRank from '../hooks/useRank';
+import useAvatar from '../hooks/useAvatar';
 import useStickers from '../hooks/useStickers';
 import usePracticeStreak from '../hooks/usePracticeStreak';
 
@@ -29,6 +30,7 @@ function Divider() {
 
 export default function HomeProgressCard() {
   const navigate = useNavigate();
+  const { src: avatarSrc, chosen: avatarChosen } = useAvatar();
   const { currentRank, nextRank, progress } = useRank();
   const { count: streakCount } = usePracticeStreak();
   const { earned } = useStickers();
@@ -77,17 +79,35 @@ export default function HomeProgressCard() {
     >
       {/* Chip 1 — Rank */}
       <div className="flex items-center gap-2 md:gap-2.5 flex-1 min-w-0 pl-1">
-        <div
-          className="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border-2 bg-white"
-          style={{ width: 40, height: 40, borderColor: currentRank.color }}
+        <motion.div
+          role="button"
+          data-testid="home-avatar"
+          data-chosen={avatarChosen ? 'true' : 'false'}
+          onClick={(e) => { e.stopPropagation(); navigate('/dressing-room'); }}
+          className="relative rounded-full flex items-center justify-center overflow-visible flex-shrink-0 border-2 bg-white"
+          style={{ width: 42, height: 42, borderColor: currentRank.color }}
+          animate={avatarChosen ? {} : { scale: [1, 1.08, 1] }}
+          transition={{ repeat: Infinity, duration: 1.4 }}
+          title="Dressing Room"
         >
+          <img
+            src={avatarSrc}
+            alt=""
+            className="object-contain"
+            style={{ width: '88%', height: '88%' }}
+            draggable={false}
+          />
           <img
             src={currentRank.icon}
             alt=""
-            className="w-full h-full object-contain"
+            className="absolute -bottom-1 -right-1 rounded-full bg-white object-contain"
+            style={{ width: 18, height: 18, border: `1.5px solid ${currentRank.color}` }}
             draggable={false}
           />
-        </div>
+          {!avatarChosen && (
+            <span className="absolute -top-2 -right-3 rounded-full px-1.5 text-[8px] font-black text-white whitespace-nowrap" style={{ background: '#FF3B30', border: '1.5px solid var(--jma-dark)' }}>NEW</span>
+          )}
+        </motion.div>
         <div className="flex flex-col leading-tight min-w-0 text-left">
           <span
             className="text-[9px] md:text-[10px] uppercase tracking-wide font-black"

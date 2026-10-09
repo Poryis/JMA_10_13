@@ -10,7 +10,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Trophy, GraduationCap, Printer, Settings } from 'lucide-react';
+import { Sparkles, X, Trophy, GraduationCap, Printer, Settings, Shirt } from 'lucide-react';
 import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/stickers';
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId, DOMAIN_MAP } from '../data/achievements';
 import useStickers from '../hooks/useStickers';
@@ -303,6 +303,15 @@ export default function StickerBookPage() {
               <span className="text-xs font-bold opacity-60 ml-1">({achievementCount}/{totalAchievements})</span>
             </h2>
             <div className="flex items-center gap-2">
+              <button
+                data-testid="open-dressing-room"
+                onClick={() => navigate('/dressing-room')}
+                className="chunky-btn px-2 py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                style={{ backgroundColor: '#FFCC00', color: 'var(--jma-dark)', borderColor: 'var(--jma-dark)' }}
+                title="Dressing Room"
+              >
+                <Shirt className="w-3.5 h-3.5" /> Dressing Room
+              </button>
               {/* Teacher View toggle — swaps kid blurbs for standards-aligned descriptions */}
               <button
                 data-testid="teacher-view-toggle"

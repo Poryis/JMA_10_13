@@ -12,6 +12,7 @@ import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import { readAvatarSrc } from '../hooks/useAvatar';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
@@ -59,6 +60,7 @@ const CROWD_BACK_ROW = [
 export const CROWD_SHOUTS = ['WOOO!', 'YEAH!', 'ROCK ON!', 'ENCORE!', 'SHRED!', 'GO GO GO!', 'SO GOOD!'];
 
 function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
+  const you = !!m.you;
   const delay = (i % 4) * 0.07;
   return (
     <motion.div
@@ -96,12 +98,15 @@ function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
           />
         )}
       </AnimatePresence>
+      {you && (
+        <span data-testid="shred-crowd-you" className="absolute left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] md:text-[10px] font-black text-white whitespace-nowrap" style={{ top: '-30%', background: '#FF2D85', border: '2px solid #0A1420', zIndex: 6 }}>YOU</span>
+      )}
       <motion.img
         src={m.src}
         alt=""
         draggable={false}
         className="object-contain object-bottom"
-        style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', willChange: 'transform' }}
+        style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', willChange: 'transform', filter: you ? 'drop-shadow(0 0 8px rgba(255,45,133,0.8))' : 'none' }}
         animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
         transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
       />
@@ -109,7 +114,10 @@ function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
   );
 }
 
-function CrowdRow({ energy, burstId = 0, shouts = [] }) {
+function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc }) {
+  const members = avatarSrc
+    ? [...CROWD_MEMBERS.slice(0, 3), { src: avatarSrc, scale: 1.08, you: true }, ...CROWD_MEMBERS.slice(3, 6)]
+    : CROWD_MEMBERS;
   // Bucket the energy so the jump height/speed only change at a few
   // thresholds — continuously-changing framer targets caused the taller
   // sprites (Finn, Lou) to jitter/glitch while celebrating.
@@ -143,7 +151,7 @@ function CrowdRow({ energy, burstId = 0, shouts = [] }) {
         )}
       </AnimatePresence>
       <div className="relative w-full h-full flex items-end justify-center gap-1 md:gap-3" style={{ zIndex: 1 }}>
-        {CROWD_MEMBERS.map((m, i) => (
+        {members.map((m, i) => (
           <CrowdMember
             key={i} m={m} i={i} lift={lift} dur={dur}
             tilt={e * 5 * (i % 2 === 0 ? 1 : -1)}
@@ -763,7 +771,7 @@ export default function ShredLegendPage() {
               style={{ height: 'clamp(84px, 17vh, 140px)' }}
               data-testid="shred-crowd"
             >
-              <CrowdRow energy={energy} burstId={crowdBurst} shouts={shouts} />
+              <CrowdRow energy={energy} burstId={crowdBurst} shouts={shouts} avatarSrc={readAvatarSrc()} />
             </div>
 
             {/* Guitar */}

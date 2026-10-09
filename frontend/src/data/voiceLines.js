@@ -7,12 +7,12 @@
 
 export const VOICE_CHARACTERS = {
   charlie: { name: 'Charlie the Polliwog', role: 'Academy host · Shred City · Song Studio · Music 101 · JMAtv', vibe: 'Sinatra / Louis Prima New York wise guy. Friendly, finger-snapping, "how YOU doin\'" warmth. Calls you kid, pal, champ.' },
-  doctor:  { name: 'Dr. Jellybone',        role: 'Detective · Ear Quest',                                     vibe: 'Smooth-talking jazz cat. Velvet, unhurried, gentlemanly. NEVER loud — the excitement is in the eyebrows.' },
-  stew:    { name: 'Stew',                  role: 'Stew Kazoo Says · Fun Facts Clubhouse',                     vibe: 'Goofy, buzzy, easily delighted. Laughs at his own kazoo.' },
-  jazzy:   { name: 'Jazzy',                 role: 'Jelly Jukebox · Jam Session',                               vibe: 'LOUD, boisterous, fun-loving pun machine. Big belly laughs, groans at her own jokes, means every word.' },
+  doctor:  { name: 'Dr. Jellybone',        role: 'Detective · Ear Quest',                                     vibe: 'Smooth-talkin\' jazzman, sax player. Velvet, unhurried, gentlemanly. NEVER loud — the excitement is in the eyebrows.' },
+  stew:    { name: 'Stew',                  role: 'Stew Kazoo Says · Fun Facts Clubhouse',                     vibe: 'Goofy, buzzy, easily delighted. In the show Stew talks in KAZOO — these lines can be performed as kazoo-talk with the words as intent.' },
+  jazzy:   { name: 'Jazzy',                 role: 'Jelly Jukebox · Jam Session',                               vibe: 'LOUD, boisterous, fun-loving pun machine — CAT puns (purrrfect, meow-sic, kitten around). Big laughs, means every word.' },
   chunk:   { name: 'Chunk',                 role: "Beat Lab · Robot Boogie · Who's Got the Rhythm",            vibe: 'Stereotypical surfer bro. "Duuude." Laid back, stoked, everything is gnarly or epic.' },
-  finn:    { name: 'Finn',                  role: 'Sight-Reading Sprint · Name That Note',                     vibe: 'Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can\'t contain his excitement at ANYTHING. SAME VOICE as Sharky.' },
-  sharky:  { name: 'Sharky',                role: 'Note Match',                                                vibe: 'Same character/voice as Finn: Jerry Lewis "HEY LADY!" — giddy, cracking up, thrilled by everything.' },
+  finn:    { name: 'Finn Danger (the shark)', role: 'Sight-Reading Sprint · Name That Note',                   vibe: 'Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can\'t contain his excitement at ANYTHING. Eager, literal, loves puns. "Jumpin\' jellyfish!"' },
+  sharky:  { name: 'Sharky (= Finn Danger)', role: 'Note Match',                                                vibe: 'Sharky IS Finn — the same shark, same voice. Giddy, cracking up, thrilled by everything.' },
   // Lou never talks. By design.
 };
 
@@ -44,9 +44,9 @@ export const VOICE_LINES = [
   L('charlie.meta.badge',      'Badda-bing — new badge!',                       'excited',        'Any achievement badge earned'),
   L('charlie.meta.sticker',    'New sticker! Lookin\' sharp.',                     'delighted',      'Any collection sticker earned'),
   L('charlie.meta.gem',        'A Daily Gem! Now THAT\'S classy.',           'awed',           'Daily Gem sticker earned'),
-  L('charlie.meta.rankup',     'You ranked up, kid! Big time!',                   'huge',           'Rank-up celebration'),
+  L('charlie.meta.rankup',     'Jumpin\' Jelly Beans — you ranked up, kid!',                   'huge',           'Rank-up celebration'),
   L('charlie.meta.questsdone', 'All three quests. Whatta pro!',        'proud',          'Daily quests complete overlay'),
-  L('charlie.meta.academyopen','The Academy is OPEN, baby!',             'ceremonial',     'First badge → LEARN/CREATE reveal'),
+  L('charlie.meta.academyopen','Jumpin\' Jelly Beans! The Academy is OPEN!',             'ceremonial',     'First badge → LEARN/CREATE reveal'),
   L('charlie.meta.streak3',    'Three days runnin\'! Attaboy!',             'proud',          'Practice streak hits 3'),
   L('charlie.meta.streak7',    'A whole week? Fuhgeddaboudit!',              'amazed',         'Practice streak hits 7'),
 
@@ -108,19 +108,19 @@ export const VOICE_LINES = [
   L('stew.go.2',      'You can do it!',         'cheer',      'Mid-game'),
 
   // ───────────── JAZZY — Jelly Jukebox, Jam Session ─────────────
-  L('jazzy.tag.jukebox', 'JELLY JUKEBOX! Let\'s get this show on the ROAD!', 'smooth DJ', 'Entering Jelly Jukebox'),
+  L('jazzy.tag.jukebox', 'JELLY JUKEBOX! Jazzy\'s the name, meow-sic\'s my game!', 'smooth DJ', 'Entering Jelly Jukebox'),
   L('jazzy.tag.jam',     'JAM SESSION! I hope you brought the peanut butter! HA!',     'laid back',  'Entering Jam Session'),
   L('jazzy.correct.1', 'YES! That\'s what I\'m TALKIN\' about!',               'cool',       'Correct / good song'),
   L('jazzy.correct.2', 'You\'re on a ROLL — and I\'m not talkin\' bread! HA!',        'approving',  'Correct'),
   L('jazzy.correct.3', 'Sharp! Like a C-sharp! Get it?!',               'warm',       'Correct'),
-  L('jazzy.correct.4', 'THAT\'S the groove, baby!',   'nodding',    'Correct'),
-  L('jazzy.perfect.1', 'PERFECT TIMING! Somebody call a doctor — you\'re ON FIRE!',       'impressed',  'Perfect'),
+  L('jazzy.correct.4', 'THAT\'S the groove — you\'re not kitten around!',   'nodding',    'Correct'),
+  L('jazzy.perfect.1', 'PURRRFECT TIMING! Oh, you\'re ON FIRE!',       'impressed',  'Perfect'),
   L('jazzy.perfect.2', 'WOW! That was NOTE-worthy! HA HA!',          'delighted',  'Perfect'),
   L('jazzy.perfect.3', 'You ARE the beat! Can\'t BEAT that!',     'big',        'Perfect'),
   L('jazzy.miss.1',    'Missed it! But hey — catch the next one!', 'easy', 'Miss'),
   L('jazzy.miss.2',    'A little late — fashionably late! HA!', 'chill',   'Miss'),
   L('jazzy.miss.3',    'Oof! Feel it… wait for it…', 'coaching',   'Miss'),
-  L('jazzy.miss.4',    'Shake it off! Like a maraca!',         'light',      'Miss'),
+  L('jazzy.miss.4',    'Shake it off! Like a maraca! HA!',         'light',      'Miss'),
   L('jazzy.go.1',      'STAY on that beat!',     'steady',     'Mid-game'),
   L('jazzy.go.2',      'Feel the groove, baby!',      'smooth',     'Mid-game'),
 
@@ -149,7 +149,7 @@ export const VOICE_LINES = [
   L('finn.correct.2', 'You READ that! Oh, I love it!',        'impressed',  'Correct'),
   L('finn.correct.3', 'Right! Next one, next one!',            'fast',       'Correct'),
   L('finn.correct.4', 'Oh, that\'s SHARP!',                'quick',      'Correct'),
-  L('finn.perfect.1', 'PERFECT SCORE! I can\'t — I CAN\'T!',        'big',        'Perfect'),
+  L('finn.perfect.1', 'PERFECT SCORE! Jumpin\' jellyfish!',        'big',        'Perfect'),
   L('finn.perfect.2', 'Speed reader! HEY, LOOK at you!',         'amazed',     'Perfect'),
   L('finn.perfect.3', 'Nothing gets past you! NOTHING! Ha!','proud',      'Perfect'),
   L('finn.miss.1',    'Nope-nope-nope — look again!',    'quick, kind','Miss'),
@@ -165,7 +165,7 @@ export const VOICE_LINES = [
   L('sharky.correct.2', 'TWINS! Oh, look at \'em!',              'fun',        'Pair found'),
   L('sharky.correct.3', 'YES! You found it!',          'cool',       'Pair found'),
   L('sharky.correct.4', 'That\'s a match! Hee-hee!',           'happy',      'Pair found'),
-  L('sharky.perfect.1', 'CLEAN SWEEP! I can\'t believe it!',        'big',        'Round cleared'),
+  L('sharky.perfect.1', 'CLEAN SWEEP! Jumpin\' jellyfish!',        'big',        'Round cleared'),
   L('sharky.perfect.2', 'Perfect match-up! HEY, LOOK at that!',   'proud',      'Round cleared'),
   L('sharky.perfect.3', 'Flawless! FLAWLESS! Ha!',       'thrilled',   'Round cleared'),
   L('sharky.miss.1',    'Nope! Not twins! Ha!',    'easy',       'Mismatch'),

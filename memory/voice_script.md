@@ -1,6 +1,6 @@
 # JMA Voice Recording Script
 
-**150 lines · 7 voices.** Lou never speaks. **Finn and Sharky are the same character — one actor, one voice.**
+**150 lines · 7 voices.** Lou never speaks. **Sharky IS Finn Danger — the same shark, one voice.** Stew can be performed as kazoo-talk.
 
 ## How to record
 - One short take per line, 1–3 seconds. Leave ~150 ms of silence at the start, trim the tail.
@@ -34,9 +34,9 @@
 | 14 | `charlie.meta.badge` | **Badda-bing — new badge!** | excited | Any achievement badge earned |
 | 15 | `charlie.meta.sticker` | **New sticker! Lookin' sharp.** | delighted | Any collection sticker earned |
 | 16 | `charlie.meta.gem` | **A Daily Gem! Now THAT'S classy.** | awed | Daily Gem sticker earned |
-| 17 | `charlie.meta.rankup` | **You ranked up, kid! Big time!** | huge | Rank-up celebration |
+| 17 | `charlie.meta.rankup` | **Jumpin' Jelly Beans — you ranked up, kid!** | huge | Rank-up celebration |
 | 18 | `charlie.meta.questsdone` | **All three quests. Whatta pro!** | proud | Daily quests complete overlay |
-| 19 | `charlie.meta.academyopen` | **The Academy is OPEN, baby!** | ceremonial | First badge → LEARN/CREATE reveal |
+| 19 | `charlie.meta.academyopen` | **Jumpin' Jelly Beans! The Academy is OPEN!** | ceremonial | First badge → LEARN/CREATE reveal |
 | 20 | `charlie.meta.streak3` | **Three days runnin'! Attaboy!** | proud | Practice streak hits 3 |
 | 21 | `charlie.meta.streak7` | **A whole week? Fuhgeddaboudit!** | amazed | Practice streak hits 7 |
 | 22 | `charlie.shred.opening` | **Opening act! Here we go!** | announcer | Crowd meter tier: Opening Act |
@@ -66,7 +66,7 @@
 
 ## Dr. Jellybone — 18 lines
 **Rooms:** Detective · Ear Quest  
-**Voice:** Smooth-talking jazz cat. Velvet, unhurried, gentlemanly. NEVER loud — the excitement is in the eyebrows.
+**Voice:** Smooth-talkin' jazzman, sax player. Velvet, unhurried, gentlemanly. NEVER loud — the excitement is in the eyebrows.
 
 | # | File (id) | Line | Emotion | Plays when |
 |---|---|---|---|---|
@@ -93,7 +93,7 @@
 
 ## Stew — 18 lines
 **Rooms:** Stew Kazoo Says · Fun Facts Clubhouse  
-**Voice:** Goofy, buzzy, easily delighted. Laughs at his own kazoo.
+**Voice:** Goofy, buzzy, easily delighted. In the show Stew talks in KAZOO — these lines can be performed as kazoo-talk with the words as intent.
 
 | # | File (id) | Line | Emotion | Plays when |
 |---|---|---|---|---|
@@ -120,23 +120,23 @@
 
 ## Jazzy — 18 lines
 **Rooms:** Jelly Jukebox · Jam Session  
-**Voice:** LOUD, boisterous, fun-loving pun machine. Big belly laughs, groans at her own jokes, means every word.
+**Voice:** LOUD, boisterous, fun-loving pun machine — CAT puns (purrrfect, meow-sic, kitten around). Big laughs, means every word.
 
 | # | File (id) | Line | Emotion | Plays when |
 |---|---|---|---|---|
-| 1 | `jazzy.tag.jukebox` | **JELLY JUKEBOX! Let's get this show on the ROAD!** | smooth DJ | Entering Jelly Jukebox |
+| 1 | `jazzy.tag.jukebox` | **JELLY JUKEBOX! Jazzy's the name, meow-sic's my game!** | smooth DJ | Entering Jelly Jukebox |
 | 2 | `jazzy.tag.jam` | **JAM SESSION! I hope you brought the peanut butter! HA!** | laid back | Entering Jam Session |
 | 3 | `jazzy.correct.1` | **YES! That's what I'm TALKIN' about!** | cool | Correct / good song |
 | 4 | `jazzy.correct.2` | **You're on a ROLL — and I'm not talkin' bread! HA!** | approving | Correct |
 | 5 | `jazzy.correct.3` | **Sharp! Like a C-sharp! Get it?!** | warm | Correct |
-| 6 | `jazzy.correct.4` | **THAT'S the groove, baby!** | nodding | Correct |
-| 7 | `jazzy.perfect.1` | **PERFECT TIMING! Somebody call a doctor — you're ON FIRE!** | impressed | Perfect |
+| 6 | `jazzy.correct.4` | **THAT'S the groove — you're not kitten around!** | nodding | Correct |
+| 7 | `jazzy.perfect.1` | **PURRRFECT TIMING! Oh, you're ON FIRE!** | impressed | Perfect |
 | 8 | `jazzy.perfect.2` | **WOW! That was NOTE-worthy! HA HA!** | delighted | Perfect |
 | 9 | `jazzy.perfect.3` | **You ARE the beat! Can't BEAT that!** | big | Perfect |
 | 10 | `jazzy.miss.1` | **Missed it! But hey — catch the next one!** | easy | Miss |
 | 11 | `jazzy.miss.2` | **A little late — fashionably late! HA!** | chill | Miss |
 | 12 | `jazzy.miss.3` | **Oof! Feel it… wait for it…** | coaching | Miss |
-| 13 | `jazzy.miss.4` | **Shake it off! Like a maraca!** | light | Miss |
+| 13 | `jazzy.miss.4` | **Shake it off! Like a maraca! HA!** | light | Miss |
 | 14 | `jazzy.go.1` | **STAY on that beat!** | steady | Mid-game |
 | 15 | `jazzy.go.2` | **Feel the groove, baby!** | smooth | Mid-game |
 | 16 | `jazzy.quest.q_jukebox_song` | **Finish a song with me! It'll be MUSIC to my ears! HA!** | inviting | Quest: Jukebox song |
@@ -174,9 +174,9 @@
 
 ---
 
-## Finn — 18 lines
+## Finn Danger (the shark) — 18 lines
 **Rooms:** Sight-Reading Sprint · Name That Note  
-**Voice:** Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can't contain his excitement at ANYTHING. SAME VOICE as Sharky.
+**Voice:** Jerry Lewis "HEY LADY!" energy — always on the brink of joyous laughter, can't contain his excitement at ANYTHING. Eager, literal, loves puns. "Jumpin' jellyfish!"
 
 | # | File (id) | Line | Emotion | Plays when |
 |---|---|---|---|---|
@@ -186,7 +186,7 @@
 | 4 | `finn.correct.2` | **You READ that! Oh, I love it!** | impressed | Correct |
 | 5 | `finn.correct.3` | **Right! Next one, next one!** | fast | Correct |
 | 6 | `finn.correct.4` | **Oh, that's SHARP!** | quick | Correct |
-| 7 | `finn.perfect.1` | **PERFECT SCORE! I can't — I CAN'T!** | big | Perfect |
+| 7 | `finn.perfect.1` | **PERFECT SCORE! Jumpin' jellyfish!** | big | Perfect |
 | 8 | `finn.perfect.2` | **Speed reader! HEY, LOOK at you!** | amazed | Perfect |
 | 9 | `finn.perfect.3` | **Nothing gets past you! NOTHING! Ha!** | proud | Perfect |
 | 10 | `finn.miss.1` | **Nope-nope-nope — look again!** | quick, kind | Miss |
@@ -201,9 +201,9 @@
 
 ---
 
-## Sharky — 15 lines
+## Sharky (= Finn Danger) — 15 lines
 **Rooms:** Note Match  
-**Voice:** Same character/voice as Finn: Jerry Lewis "HEY LADY!" — giddy, cracking up, thrilled by everything.
+**Voice:** Sharky IS Finn — the same shark, same voice. Giddy, cracking up, thrilled by everything.
 
 | # | File (id) | Line | Emotion | Plays when |
 |---|---|---|---|---|
@@ -212,7 +212,7 @@
 | 3 | `sharky.correct.2` | **TWINS! Oh, look at 'em!** | fun | Pair found |
 | 4 | `sharky.correct.3` | **YES! You found it!** | cool | Pair found |
 | 5 | `sharky.correct.4` | **That's a match! Hee-hee!** | happy | Pair found |
-| 6 | `sharky.perfect.1` | **CLEAN SWEEP! I can't believe it!** | big | Round cleared |
+| 6 | `sharky.perfect.1` | **CLEAN SWEEP! Jumpin' jellyfish!** | big | Round cleared |
 | 7 | `sharky.perfect.2` | **Perfect match-up! HEY, LOOK at that!** | proud | Round cleared |
 | 8 | `sharky.perfect.3` | **Flawless! FLAWLESS! Ha!** | thrilled | Round cleared |
 | 9 | `sharky.miss.1` | **Nope! Not twins! Ha!** | easy | Mismatch |

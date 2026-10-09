@@ -1,6 +1,11 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): voice personalities fixed · Stew outfits · campus props #2/#3
+## Latest (Jun 2026): **Campus Map hub** (tested iteration_35; zone-scroll fix verified) · buildings #4–6 · character canon
+- **Character canon saved in `/app/memory/characters.md`** (authoritative). Sharky IS Finn Danger (one character — the user corrected "same actor" wording). Jazzy = cat-pun machine (female). Stew talks in kazoo in the show. Lou non-verbal. Voice bios/lines updated + script regenerated.
+- `pages/CampusMapPage.js` + `data/campus.js`: `/campus?zone=play|learn|create`. Three streets, 15 buildings (6 illustrated: jukebox-diner, shred-club, stew-room, detective-office, beat-lab, song-studio; 9 CSS kiosks with character icons until art exists). Locked (non-starter, Polliwog) buildings dark with glowing window + "Earn 1 badge" chip; open ones zoom-in "door" transition (`campus-door-transition`) then navigate. Home PLAY/LEARN/CREATE cards now route to the campus; `/play` `/learn` `/create` grids remain as fallbacks. Art imgs reserve 1:1 space; zone scroll runs at 150 ms and 800 ms.
+- New buildings pending approval: `campus/shred-club.png`, `campus/beat-lab.png`, `campus/song-studio.png`. Stew room / Jukebox diner shown to user earlier (not yet explicitly approved, but already placed on the map).
+
+## Jun 2026: voice personalities fixed · Stew outfits · campus props #2/#3
 - Voice bios/lines rewritten to the user's character voices: Charlie = Sinatra/Louis Prima NY wise guy; Dr. Jellybone = smooth jazz cat, never loud; Jazzy = loud boisterous pun-teller; **Finn & Sharky = same character/voice** (Jerry Lewis "HEY LADY" giddy); Chunk = surfer bro; Stew unchanged. Script regenerated (`/app/memory/voice_script.md`).
 - Stew outfits: Classic / Kazoo (`assets/stew/stew-neutral.png`, Keyboard Cadet) / Drum Line (`characters/stew-drumline.png` cropped from `animations/stew-drum/right-1.png`, Rhythm Pro). `stew-swing.png` is a duplicate of `stew.png` — unused now.
 - Campus props: **Dr. Jellybone's office APPROVED by user** ("err slightly simpler" for future ones). Generated `campus/stew-room.png` and `campus/jukebox-diner.png` (pending approval). Pipeline: `scripts/chromaKey.py in.jpg out.png` on a magenta-background Gemini render; pass `campus/detective-office.png` as the style reference.

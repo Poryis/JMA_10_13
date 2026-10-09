@@ -51,7 +51,7 @@ function Building({ b, index, locked, onEnter }) {
         style={{ filter: locked ? 'brightness(0.32) saturate(0.4)' : 'none', transition: 'filter 0.6s ease' }}
       >
         {b.art
-          ? <img src={b.art} alt="" draggable={false} className="w-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 6px 0 rgba(10,37,64,0.35))' }} />
+          ? <div className="w-full flex items-end justify-center" style={{ aspectRatio: '1 / 1' }}><img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 6px 0 rgba(10,37,64,0.35))' }} /></div>
           : <Kiosk kiosk={b.kiosk} />}
       </motion.div>
       {locked && (
@@ -108,7 +108,12 @@ export default function CampusMapPage() {
   useEffect(() => {
     const z = new URLSearchParams(location.search).get('zone');
     const el = z && zoneRefs.current[z];
-    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    if (!el) return;
+    // Scroll once early, then again after building art has laid out.
+    const go = () => el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const t1 = setTimeout(go, 150);
+    const t2 = setTimeout(go, 800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [location.search]);
 
   const enter = (b) => {

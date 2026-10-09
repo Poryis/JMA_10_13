@@ -1,0 +1,27 @@
+{
+  "summary": "Frontend-only verification of new Campus Map hub (/#/campus), lock/unlock states, door transition, zone scroll, home card routing, Dressing Room Stew outfits, and fallback routes. 10 out of 11 spec checks pass. Only issue: zone=create scroll on 390x844 mobile does not bring the create section's top into the viewport in the specified setup (locked state, polliwog), top=848.4 (viewport 0-844). All other flows (lock state, door transition, navigation to detective/rhythm-game/song-studio/lessons, home learn/create cards, Stew outfits classic/kazoo/drumline with correct hints and image loading, fallback /#/play|/#/learn|/#/create tile grids) pass. 0 pageerrors on Home, Campus (both lock states), Dressing Room.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CampusMapPage zone scroll (create)", "issue": "On 390x844 mobile with setup from spec, loading /#/campus?zone=create does not scroll the create section into view: campus-zone-create getBoundingClientRect().top = 848.42px (just below 844px viewport). scrollY settles at ~159 but the final element position requires scrollY ~300+. Root cause: scrollIntoView fires at 150ms in CampusMapPage.js useEffect before images in earlier zones finish loading, so once PLAY/LEARN zone images (building art) render they push the CREATE zone further down past the already-executed scroll. Learn zone works (top=174, within viewport). Verified reproducible across reloads. Fix: delay the scroll (e.g., 400-600ms) or re-run scrollIntoView after images are loaded (window.load or MutationObserver / IntersectionObserver), or use scrollMarginTop + a layout-stable image placeholder.", "selector": "[data-testid=campus-zone-create]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix /#/campus?zone=create scroll on mobile: delay scrollIntoView until building art images have finished loading (use window.load / Promise.all on img.decode, or re-trigger scroll after images load), or reserve layout space via fixed aspect-ratio containers so the scroll target doesn't shift after mount."
+  ],
+  "critical_code_review_comments": [
+    "CampusMapPage.js L111 uses a fixed 150ms setTimeout before scrollIntoView — fragile when images load after that; the create zone (last section) is the one that visibly shifts. Prefer a layout-stable approach (reserved image heights) or wait for image load.",
+    "Locked buttons use aria-disabled='true' + cursor-not-allowed but remain focusable via tabindex=0; consider tabindex=-1 or disabled attribute (though spec requires onClick to shake — current approach is acceptable but inconsistent with native disabled semantics).",
+    "No image preloading for building art; on first mount paints are jumpy. Minor polish."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "~95% (10/11 spec checks pass)"},
+  "seed_data_creation": "None — set localStorage/sessionStorage keys per spec; cleared jma_stickers_v1.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Verified: 15 campus buildings total, correct starters (jelly-jukebox, stew-kazoo, detective-jellybone) with data-locked=false; all other 12 locked with 'Earn 1 badge' chip in polliwog state. Door transition appears within 250ms and navigates: detective-jellybone → /#/detective, jelly-jukebox → /#/rhythm-game, song-studio → /#/song-studio, lessons → /#/lessons. Home cards: play/learn/create → /#/campus?zone=.... Fallback /#/play (14 tiles), /#/learn (10 tiles), /#/create (6 tiles) still render. Stew outfits = classic/kazoo/drumline (no swing); assets/stew/stew-neutral.png (562x600) and assets/characters/stew-drumline.png (681x900) load; hints 'Keyboard Cadet' and 'Rhythm Pro' present. 0 pageerrors across all tested routes. Clicking a locked building requires dispatchEvent('click') or force=True in Playwright because aria-disabled makes Playwright treat the element as not-enabled — confirmed URL unchanged + no door transition on locked click.",
+  "rca of the issue": "Zone scroll for ?zone=create fails on mobile only because CampusMapPage.js runs scrollIntoView 150ms after mount, before building art images (lazy loaded <img>) have reported their natural height. The CREATE zone, being last, is pushed downward as earlier zones' images stretch their containers after the scroll already settled, leaving CREATE's top at ~848px — 4px below the 844px viewport. Learn (middle zone) is not affected because downstream expansion from CREATE images below it doesn't move its top. Mitigation: wait for images (await Promise.all([...imgs].map(i=>i.decode()))) before scrolling, or set explicit aspect-ratio on building art wrappers so layout is stable at mount."
+}

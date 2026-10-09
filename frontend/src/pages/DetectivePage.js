@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, Volume2, Trophy, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
@@ -14,6 +14,7 @@ import { BELLS } from '../components/JellyBells';
 import { DETECTIVE_TUNES, SCALE_ORDER } from '../data/detectiveMelodies';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import useNoteNames from '../hooks/useNoteNames';
 
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
@@ -330,6 +331,14 @@ export default function DetectivePage() {
     setTimeout(() => playRound(r), 350);
   }, [initAudioContext, difficulty, playRound]);
 
+  // Daily-quest deep link: /detective?quest=easy skips the pick screen.
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('quest');
+    if (q && LEVELS[q]) startGame(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleGuess = useCallback((slotNum) => {
     if (round == null || guessSlot != null) return;
     // Allow guess during the corrupted playback — but only for the currently-lit slot.
@@ -359,6 +368,7 @@ export default function DetectivePage() {
       try { earnSticker('fit_doctor_detective'); } catch { /* ignore */ }
       // 🎧 Note Detective achievement — Cadet on first correct guess ever
       try { earnAchievement('ear', 'cadet'); } catch { /* ignore */ }
+      reportQuestEvent('detective_case');
       playFeedbackSound('perfect');
     } else {
       setLives((l) => l - 1);

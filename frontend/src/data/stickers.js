@@ -26,7 +26,20 @@ export const STICKER_CATEGORIES = [
   { id: 'lessons',      label: 'Lessons',           kind: 'collection' },
   { id: 'boogie',       label: 'Robot Boogie Band', kind: 'collection' },
   { id: 'milestones',   label: 'Fun Milestones',    kind: 'collection' },
+  { id: 'gems',         label: 'Daily Gems',        kind: 'collection' },
 ];
+
+// Faceted gem rendered as an inline SVG so the Daily Gems need no new assets.
+const gemIcon = (c1, c2) => `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>` +
+  `<polygon points='20,28 80,28 95,48 50,92 5,48' fill='${c1}' stroke='#0A2540' stroke-width='5' stroke-linejoin='round'/>` +
+  `<polygon points='20,28 50,28 35,48 5,48' fill='${c2}' opacity='.85'/>` +
+  `<polygon points='50,28 80,28 65,48 35,48' fill='#FFFFFF' opacity='.55'/>` +
+  `<polygon points='35,48 65,48 50,92' fill='${c2}' opacity='.6'/>` +
+  `<line x1='5' y1='48' x2='95' y2='48' stroke='#0A2540' stroke-width='3'/>` +
+  `<line x1='35' y1='48' x2='50' y2='92' stroke='#0A2540' stroke-width='2' opacity='.6'/>` +
+  `<line x1='65' y1='48' x2='50' y2='92' stroke='#0A2540' stroke-width='2' opacity='.6'/>` +
+  `</svg>`)}`;
 
 // Collection stickers — pure flair, never gate ranks.
 export const COLLECTION_STICKERS = [
@@ -147,6 +160,12 @@ export const COLLECTION_STICKERS = [
   // ---- Name That Note (Finn's staff school) — perfect-round flair ----
   { id: 'ntn_staff_star',    name: 'Staff Star',         category: 'milestones', icon: 'assets/characters/finn-disco.png',       color: '#34A853', hint: 'Score a perfect 10/10 in Name That Note (Name It)' },
   { id: 'ntn_place_ace',     name: 'Note Navigator',     category: 'milestones', icon: 'assets/characters/finn-danger.png',      color: '#4285F4', hint: 'Score a perfect 10/10 in Name That Note (Place It)' },
+  // ---- Daily Gems — earned by finishing all 3 "Today at the Academy" quests ----
+  { id: 'gem_1',  name: 'First Gem',     category: 'gems', icon: gemIcon('#4CD964', '#1F7A36'), color: '#34A853', hint: 'Finish all 3 daily quests for the first time' },
+  { id: 'gem_3',  name: 'Triple Gem',    category: 'gems', icon: gemIcon('#4FA8FF', '#1C5FBF'), color: '#4285F4', hint: 'Finish the daily quests on 3 different days' },
+  { id: 'gem_7',  name: 'Week Gem',      category: 'gems', icon: gemIcon('#C58CFF', '#7B3FD1'), color: '#AF52DE', hint: 'Finish the daily quests on 7 different days' },
+  { id: 'gem_14', name: 'Fortnight Gem', category: 'gems', icon: gemIcon('#FF7A8A', '#C8213C'), color: '#FF3B30', hint: 'Finish the daily quests on 14 different days' },
+  { id: 'gem_30', name: 'Golden Gem',    category: 'gems', icon: gemIcon('#FFD84D', '#C9960A'), color: '#FFCC00', hint: 'Finish the daily quests on 30 different days' },
 ];
 
 // Build sticker arrays/maps. Achievements come from the achievements file

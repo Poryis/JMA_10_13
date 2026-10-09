@@ -31,6 +31,7 @@ import JMAtvChannelPage from "./pages/JMAtvChannelPage";
 import JMAtvPlayerPage from "./pages/JMAtvPlayerPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
+import DailyQuestCelebration from "./components/DailyQuestCelebration";
 import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
 import PlayerNamePrompt from "./components/PlayerNamePrompt";
 import usePlayTime from "./hooks/usePlayTime";
@@ -63,6 +64,7 @@ function App() {
       <HashRouter>
         <StickerToast />
         <RankUpCelebration />
+        <DailyQuestCelebration />
         <AnimatePresence mode="wait">
           <ScrollToTop />
           <Routes>

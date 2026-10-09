@@ -15,6 +15,8 @@ import { Maximize2, Volume2, SkipForward } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import SpaceBackdrop, { SPACE_BG_STYLE } from '../components/SpaceBackdrop';
 import { buildLivePlaylist, getLiveStartIndex } from '../data/jmatv';
+import { earnSticker } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 
 export default function JMAtvLivePage() {
   const navigate = useNavigate();
@@ -104,6 +106,7 @@ export default function JMAtvLivePage() {
   }, [advance]);
 
   useEffect(() => () => destroyPlayer(), [destroyPlayer]);
+  useEffect(() => { earnSticker('jmatv-first-watch'); reportQuestEvent('jmatv_watch'); }, []);
 
   const handleUnmute = useCallback(async () => {
     const player = playerRef.current;

@@ -3,6 +3,7 @@ import SubMenuPage from '../components/SubMenuPage';
 const PLAY_TILES = [
   {
     id: 'jelly-jukebox',
+    starter: true,
     title: 'JELLY JUKEBOX',
     path: '/rhythm-game',
     bg: 'assets/backgrounds/jukebox-floor-1.png',
@@ -16,6 +17,7 @@ const PLAY_TILES = [
   },
   {
     id: 'stew-kazoo',
+    starter: true,
     title: 'STEW KAZOO SAYS',
     path: '/simon-says',
     bg: 'assets/backgrounds/underwater.png',
@@ -41,6 +43,7 @@ const PLAY_TILES = [
   },
   {
     id: 'detective-jellybone',
+    starter: true,
     title: 'DETECTIVE DR. JELLYBONE',
     path: '/detective',
     bg: 'assets/backgrounds/detective-room.jpg',

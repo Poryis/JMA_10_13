@@ -21,6 +21,7 @@ import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
 import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { formatNoteName, getNoteNameMode, NOTE_NAME_MODES } from '../hooks/useNoteNames';
 
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -434,6 +435,7 @@ export default function NameThatNotePage() {
   const finishRound = useCallback((finalResults, finalScore) => {
     const correct = finalResults.filter((r) => r === 'correct').length;
     if (correct >= PASS_MARK) {
+      reportQuestEvent('name_note', { difficulty, correct });
       try {
         if (difficulty === 'cadet')  earnAchievement('scholar', 'cadet');
         if (difficulty === 'pro')    earnAchievementUpTo('scholar', 'pro');

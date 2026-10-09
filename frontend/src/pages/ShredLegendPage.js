@@ -8,6 +8,7 @@ import useAudio from '../hooks/useAudio';
 import useShredBand, { SONGS } from '../hooks/useShredBand';
 import useGamePaused from '../hooks/useGamePause';
 import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
@@ -274,6 +275,7 @@ export default function ShredLegendPage() {
   const endSong = useCallback(() => {
     band.stop();
     setScreen('result');
+    reportQuestEvent('shred_show', { inPocket: inPocketRef.current });
     // Award rhythm achievement ladder + the Shred Legend collectible.
     if (inPocketRef.current >= 8) earnAchievementUpTo('rhythm', 'cadet');
     if (peakRef.current >= 60) earnAchievementUpTo('rhythm', 'pro');

@@ -28,6 +28,7 @@ import BeatPulse from '../components/BeatPulse';
 import CountInOverlay from '../components/CountInOverlay';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import {
   PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS as BASE_BEAT_MS, TOLERANCE_MS,
   patternBeats, noteStartTimes, ROUNDS_PER_SESSION,
@@ -488,6 +489,7 @@ export default function BoomGardenPage() {
         }
         victoryDanceTimerRef.current = setTimeout(() => setVictoryDance(false), 3000);
       }
+      reportQuestEvent('boom_round', { level });
       try {
         earnAchievement('rhythm', 'cadet');
         if (level === 'pro')    earnAchievementUpTo('rhythm', 'pro');
@@ -773,6 +775,7 @@ export default function BoomGardenPage() {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 1800);
       setFeedback({ tone: 'great', text: 'Sharp ears!' });
+      reportQuestEvent('boom_round', { level });
       try {
         earnAchievement('rhythm', 'cadet');
         if (level !== 'cadet') earnAchievementUpTo('rhythm', 'pro');

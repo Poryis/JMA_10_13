@@ -7,13 +7,13 @@
 import { motion, useAnimationControls } from 'framer-motion';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import RankBadge from '../components/RankBadge';
-import StickerSpotlight from '../components/StickerSpotlight';
-import PracticeStreakChip from '../components/PracticeStreakChip';
-import NextMissionPanel from '../components/NextMissionPanel';
+import { Lock } from 'lucide-react';
 import RetroTV from '../components/RetroTV';
 import BlimpFlyby from '../components/BlimpFlyby';
 import HomeProgressCard from '../components/HomeProgressCard';
+import DailyQuestCard from '../components/DailyQuestCard';
+import AcademyRevealCelebration from '../components/AcademyRevealCelebration';
+import useUnlocks from '../hooks/useUnlocks';
 import { pickFeaturedEpisode } from '../data/jmatv';
 
 // Easter-egg animation variants for the shield. Click cycles through them.
@@ -190,10 +190,15 @@ function Blob({ b }) {
   );
 }
 
-function PrimaryCard({ card, index, navigate, wide = false }) {
+function PrimaryCard({ card, index, navigate, wide = false, locked = false }) {
   const [hovered, setHovered] = useState(false);
+  const shake = useAnimationControls();
 
   const handleClick = () => {
+    if (locked) {
+      shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.5 } });
+      return;
+    }
     if (card.sfx) {
       try {
         const audio = new Audio(card.sfx);
@@ -210,17 +215,20 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
     <motion.button
       type="button"
       data-testid={`home-card-${card.id}`}
+      data-locked={locked ? 'true' : 'false'}
+      aria-disabled={locked}
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative rounded-[26px] cursor-pointer w-full bg-transparent border-0 p-0"
+      className={`relative rounded-[26px] w-full bg-transparent border-0 p-0 ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       initial={{ y: 50, opacity: 0, scale: 0.92 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ delay: 0.18 + index * 0.1, type: 'spring', stiffness: 220 }}
-      whileHover={{ y: -6 }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={locked ? {} : { y: -6 }}
+      whileTap={locked ? {} : { scale: 0.97 }}
     >
-      <div
+      <motion.div
+        animate={shake}
         className={`relative rounded-[26px] overflow-hidden flex ${wide ? 'flex-row items-center justify-center gap-4' : 'flex-col items-center justify-end'}`}
         style={{
           background: card.bg,
@@ -228,6 +236,8 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
           aspectRatio: wide ? '16 / 6.4' : '1 / 1.05',
           padding: wide ? 'clamp(10px, 3vw, 20px)' : 'clamp(12px, 2.2vw, 22px)',
+          filter: locked ? 'grayscale(0.92) brightness(0.82)' : 'none',
+          transition: 'filter 0.9s ease',
         }}
       >
         {/* Watercolor blobs (deepest layer) */}
@@ -301,7 +311,26 @@ function PrimaryCard({ card, index, navigate, wide = false }) {
             </span>
           )}
         </div>
-      </div>
+
+        {/* Lock badge — shown until the kid earns their first badge */}
+        {locked && (
+          <div
+            data-testid={`home-card-${card.id}-lock`}
+            className="absolute inset-x-0 flex justify-center pointer-events-none"
+            style={{ top: wide ? '8%' : '6%', zIndex: 40 }}
+          >
+            <div
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1"
+              style={{ backgroundColor: 'rgba(10,37,64,0.88)', color: 'white', border: '2px solid white', boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)' }}
+            >
+              <Lock className="w-3.5 h-3.5" strokeWidth={3} />
+              <span className="text-[9px] md:text-[11px] font-black uppercase tracking-wide whitespace-nowrap">
+                Earn 1 badge to unlock
+              </span>
+            </div>
+          </div>
+        )}
+      </motion.div>
     </motion.button>
   );
 }
@@ -394,6 +423,9 @@ function HomePage() {
   const navigate = useNavigate();
   const shieldControls = useAnimationControls();
   const shieldHitsRef = useRef(0);
+  const { unlocked, revealPending, dismissReveal } = useUnlocks();
+  // Cards stay greyed while the reveal ceremony is up, then glow open on dismiss.
+  const cardsLocked = !unlocked || revealPending;
 
   // Shield intro: tilt-in spring on first paint. After that, clicks replace
   // the animation with one of SHIELD_ANIMS for the easter-egg flourish.
@@ -606,13 +638,13 @@ function HomePage() {
         <HomeProgressCard />
       </div>
 
-      {/* Next Mission — single recommended action driven off the rank engine.
-          Sits BETWEEN the rank row and the 3 main category cards because
-          it's the most important kid-facing signal: "do this one thing next."
-          Hidden when the kid has earned every achievement. */}
-      <div className="relative z-10 mb-2 md:mb-5 w-full max-w-4xl px-2">
-        <NextMissionPanel />
+      {/* Today at the Academy — the daily-quest hero. Three bite-sized
+          tasks that deep-link into games; the single "do this now" signal. */}
+      <div className="relative z-10 mb-3 md:mb-5 w-full max-w-4xl px-1 md:px-2">
+        <DailyQuestCard />
       </div>
+
+      <AcademyRevealCelebration open={revealPending} onClose={dismissReveal} />
 
       {/* ===== PHONE LAYOUT (2 / 1 / 1) — all four destinations above the
            fold: Play+Learn row, full-width Create banner, then the JMAtv
@@ -620,9 +652,9 @@ function HomePage() {
       <div className="md:hidden relative z-10 w-full max-w-md flex flex-col gap-3 px-1">
         <div className="grid grid-cols-2 gap-3">
           <PrimaryCard card={CARDS[0]} index={0} navigate={navigate} />
-          <PrimaryCard card={CARDS[1]} index={1} navigate={navigate} />
+          <PrimaryCard card={CARDS[1]} index={1} navigate={navigate} locked={cardsLocked} />
         </div>
-        <PrimaryCard card={CARDS[2]} index={2} navigate={navigate} wide />
+        <PrimaryCard card={CARDS[2]} index={2} navigate={navigate} wide locked={cardsLocked} />
         <JmatvCrtMobile navigate={navigate} />
       </div>
 
@@ -631,7 +663,7 @@ function HomePage() {
       <div className="hidden md:block relative z-10 w-full max-w-6xl">
         <div className="grid grid-cols-3 gap-6 px-1">
           {CARDS.map((card, idx) => (
-            <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
+            <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} locked={card.id !== 'play' && cardsLocked} />
           ))}
         </div>
         <RetroTV />

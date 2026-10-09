@@ -13,6 +13,7 @@ import usePianoAudio from '../hooks/usePianoAudio';
 import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudio';
 import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 
 const SONGS_KEY = 'jma_songs_v1';
 const REST = 'REST'; // sentinel value for a rest slot — renders the seahorse PNG and plays nothing
@@ -284,6 +285,7 @@ export default function SongStudioPage() {
     setSongs(next);
     setShowSaveModal(false);
     setShowCelebration(true);
+    reportQuestEvent('song_saved');
     // ✍️ Song Creator achievements
     try {
       // Cadet: first saved song

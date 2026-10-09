@@ -9,6 +9,7 @@ import GuitarInstrument from '../components/GuitarInstrument';
 import { FullscreenButton } from '../components/FullscreenButton';
 import UnderwaterBackdrop from '../components/UnderwaterBackdrop';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { SONG_LIBRARY } from '../data/songs';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
@@ -630,6 +631,7 @@ function FreePlayPage() {
     }
     // Stickers: first note + per-bell + instrument tab
     earnSticker('ach_first_note');
+    reportQuestEvent('jam_note');
     const bellStickerMap = { 'C': 'bell_C', 'D': 'bell_D', 'E': 'bell_E', 'F': 'bell_F', 'G': 'bell_G', 'A': 'bell_A', 'B': 'bell_B', 'High C': 'bell_HC' };
     if (bellStickerMap[note]) earnSticker(bellStickerMap[note]);
     const tabStickerMap = { 'bells': 'inst_bells', 'xylophone': 'inst_xylo', 'piano': 'inst_piano' };
@@ -676,6 +678,7 @@ function FreePlayPage() {
     if (isRecording) setRecording(prev => [...prev, { note: drumId, type: 'drum', time: Date.now() - recordStartRef.current }]);
     // Stickers
     earnSticker('ach_first_note');
+    reportQuestEvent('jam_note');
     earnSticker('inst_drums');
     earnSticker('fit_charlie_drum_major');
     try {

@@ -63,6 +63,10 @@ const KEYS = {
   tempoQuizBest:    'jma_tempo_quiz_best_v1',
   nameSkipped:      'jma_player_name_skipped_v1',
   teacherView:      'jma_teacher_view_v1',
+  dailyQuests:      'jma_daily_quests_v1',
+  questDays:        'jma_quest_days_v1',
+  revealSeen:       'jma_reveal_seen_v1',
+  unlockAll:        'jma_unlock_all_v1',
 };
 
 function readJson(key, fallback) {
@@ -110,10 +114,14 @@ export function getPlayerSnapshot() {
         nameThatNote: readJson(KEYS.nameThatNoteBest, {}),
         tempoQuiz:    parseInt(localStorage.getItem(KEYS.tempoQuizBest) || '0', 10) || 0,
       },
+      dailyQuests: readJson(KEYS.dailyQuests, null),
+      questDays:   readJson(KEYS.questDays, { total: 0, lastDate: null }),
+      revealSeen:  localStorage.getItem(KEYS.revealSeen) === '1',
     },
     deviceSettings: {
       teacherView: localStorage.getItem(KEYS.teacherView) === '1',
       noteNames:   localStorage.getItem(KEYS.noteNames) || 'solfege',
+      unlockAll:   localStorage.getItem(KEYS.unlockAll) === '1',
     },
   };
 }
@@ -148,6 +156,12 @@ export function importPlayerSnapshot(snapshot) {
   if (progress?.bestScores?.sightReading) writeJson(KEYS.sightReadBest, progress.bestScores.sightReading);
   if (progress?.bestScores?.nameThatNote) writeJson(KEYS.nameThatNoteBest, progress.bestScores.nameThatNote);
   if (typeof progress?.bestScores?.tempoQuiz === 'number') localStorage.setItem(KEYS.tempoQuizBest, String(progress.bestScores.tempoQuiz));
+  if (progress?.dailyQuests) writeJson(KEYS.dailyQuests, progress.dailyQuests);
+  if (progress?.questDays)   writeJson(KEYS.questDays, progress.questDays);
+  if (typeof progress?.revealSeen === 'boolean') localStorage.setItem(KEYS.revealSeen, progress.revealSeen ? '1' : '0');
+  if (deviceSettings && typeof deviceSettings.unlockAll === 'boolean') {
+    localStorage.setItem(KEYS.unlockAll, deviceSettings.unlockAll ? '1' : '0');
+  }
   if (deviceSettings && typeof deviceSettings.teacherView === 'boolean') {
     localStorage.setItem(KEYS.teacherView, deviceSettings.teacherView ? '1' : '0');
   }
@@ -185,6 +199,9 @@ export function resetAllPlayerData() {
     KEYS.nameThatNoteBest,
     KEYS.tempoQuizBest,
     KEYS.nameSkipped,
+    KEYS.dailyQuests,
+    KEYS.questDays,
+    KEYS.revealSeen,
   ];
   try {
     playerScopedKeys.forEach(k => localStorage.removeItem(k));

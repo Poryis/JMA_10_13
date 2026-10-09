@@ -13,13 +13,15 @@
 // No taglines, no sign nameplates, no speech bubbles — the title carries
 // the tile.
 
-import { motion } from 'framer-motion';
+import { motion, useAnimationControls } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { GameHeader } from './GameUI';
 import BlimpFlyby from './BlimpFlyby';
 import UnderwaterBackdrop, { UNDERWATER_BG_COLOR } from './UnderwaterBackdrop';
 import TileDecoration from './TileDecoration';
+import useUnlocks from '../hooks/useUnlocks';
 
 /**
  * Single-line uppercase title with UNIFORM size across every tile on the
@@ -63,12 +65,17 @@ function TileTitle({ text, testId }) {
   );
 }
 
-function Tile({ tile, index, navigate }) {
+function Tile({ tile, index, navigate, locked = false }) {
   const [hovered, setHovered] = useState(false);
+  const shake = useAnimationControls();
   const disabled = tile.disabled;
 
   const handleClick = () => {
     if (disabled) return;
+    if (locked) {
+      shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.5 } });
+      return;
+    }
     if (tile.sfx) {
       try {
         const audio = new Audio(tile.sfx);
@@ -105,23 +112,28 @@ function Tile({ tile, index, navigate }) {
     <motion.button
       type="button"
       data-testid={`submenu-tile-${tile.id}`}
+      data-locked={locked ? 'true' : 'false'}
+      aria-disabled={disabled || locked}
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative w-full text-left rounded-3xl border-4 overflow-hidden ${tile.fullWidth ? 'md:col-span-2' : ''} ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+      className={`relative w-full text-left rounded-3xl border-4 overflow-hidden ${tile.fullWidth ? 'md:col-span-2' : ''} ${disabled ? 'cursor-not-allowed opacity-80' : locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       style={{
         borderColor: 'var(--jma-dark)',
         boxShadow: `0 8px 0 0 var(--jma-dark)`,
         background: tile.color,
         aspectRatio: tile.fullWidth ? '16 / 6' : '4 / 3',
         minHeight: tile.fullWidth ? 180 : 220,
+        filter: locked ? 'grayscale(0.92) brightness(0.8)' : 'none',
+        transition: 'filter 0.9s ease',
       }}
       initial={{ y: 40, opacity: 0, rotate: index % 2 === 0 ? -1.5 : 1.5 }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}
       transition={{ delay: 0.15 + index * 0.08, type: 'spring', stiffness: 220 }}
-      whileHover={disabled ? {} : { y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.012 }}
-      whileTap={disabled ? {} : { y: 3, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
+      whileHover={disabled || locked ? {} : { y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.012 }}
+      whileTap={disabled || locked ? {} : { y: 3, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
     >
+      <motion.div animate={shake} className="absolute inset-0">
       {/* Background scene — slow Ken Burns drift so the world "breathes".
           Staggered per-card so the grid isn't in lockstep. */}
       {tile.bg && (
@@ -261,7 +273,7 @@ function Tile({ tile, index, navigate }) {
       </div>
 
       {/* Enter chip (hover-reveal, desktop only) */}
-      {!disabled && (
+      {!disabled && !locked && (
         <motion.div
           className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full border-2 z-20 hidden md:flex items-center gap-1"
           style={{ backgroundColor: 'white', borderColor: 'var(--jma-dark)' }}
@@ -273,6 +285,19 @@ function Tile({ tile, index, navigate }) {
           </span>
         </motion.div>
       )}
+
+      {/* Lock chip — progressive reveal until the first badge is earned */}
+      {locked && (
+        <div
+          data-testid={`submenu-tile-${tile.id}-lock`}
+          className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-full px-2.5 py-1"
+          style={{ backgroundColor: 'rgba(10,37,64,0.9)', color: 'white', border: '2px solid white', boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)' }}
+        >
+          <Lock className="w-3.5 h-3.5" strokeWidth={3} />
+          <span className="text-[10px] md:text-xs font-black uppercase tracking-wide">Earn 1 badge to unlock</span>
+        </div>
+      )}
+      </motion.div>
     </motion.button>
   );
 }
@@ -373,6 +398,7 @@ function HeaderHero({ subtitle }) {
  */
 export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient, tiles, testId }) {
   const navigate = useNavigate();
+  const { unlocked } = useUnlocks();
   return (
     <div
       data-testid={testId}
@@ -397,7 +423,7 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient,
 
       <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
         {tiles.map((tile, idx) => (
-          <Tile key={tile.id} tile={tile} index={idx} navigate={navigate} />
+          <Tile key={tile.id} tile={tile} index={idx} navigate={navigate} locked={!unlocked && !tile.starter} />
         ))}
       </div>
     </div>

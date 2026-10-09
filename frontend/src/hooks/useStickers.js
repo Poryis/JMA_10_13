@@ -30,6 +30,9 @@ function readEarned() {
   } catch (_) { return {}; }
 }
 
+// Synchronous read for non-hook modules (daily quests, unlock gating).
+export function readEarnedStickers() { return readEarned(); }
+
 function writeEarned(earned) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(earned)); } catch (_) {}
 }
@@ -174,6 +177,9 @@ export function resetAllStickers() {
     'jma_bells_played_v1',
     'jma_instruments_played_v1',
     'jma_lessons_watched_v1',
+    'jma_daily_quests_v1',
+    'jma_quest_days_v1',
+    'jma_reveal_seen_v1',
   ];
   try {
     for (const k of keysToClear) localStorage.removeItem(k);

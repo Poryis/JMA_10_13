@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Play, Eye, RotateCcw } from 'lucide-react';
 import { KazoosRow, KAZOOS } from '../components/Kazoos';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
@@ -8,6 +8,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import useGamePaused from '../hooks/useGamePause';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 
@@ -178,6 +179,14 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setShowingIndex(0);
   }, [initAudioContext, resetGame, difficulty]);
 
+  // Daily-quest deep link: /simon-says?quest=easy starts straight away.
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('quest');
+    if (q && LEVELS[q]) startGame(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Show pattern to player
   useEffect(() => {
     if (gameState !== 'showing') return;
@@ -260,6 +269,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         timeoutRef.current = setTimeout(() => {
           // 🎹 Keyboard Scout achievements via Stew Kazoo Says level milestones
           if (level >= 1) earnAchievement('keyboard', 'cadet');
+          reportQuestEvent('stew_level', { level });
           if (level >= 4) earnAchievementUpTo('keyboard', 'pro');
           if (level >= 8) earnAchievementUpTo('keyboard', 'master');
           if (level >= 8) {

@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from './useStickers';
+import { reportQuestEvent } from './useDailyQuests';
 import { LESSONS } from '../data/lessons';
 
 const KEY = 'jma_lessons_watched_v1';
@@ -45,6 +46,7 @@ export function useLessonsProgress() {
       saveWatched(next);
       // Award the per-lesson sticker + the JMA Graduate sticker if all done.
       try { earnSticker(`lesson_${num}`); } catch { /* ignore */ }
+      reportQuestEvent('lesson', { num });
       // 📖 Music Scholar achievements: Cadet on lesson 1, Pro on lesson 4,
       // Master on completing every lesson.
       try {

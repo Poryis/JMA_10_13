@@ -8,7 +8,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2, Music2 } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2, Music2, Unlock } from 'lucide-react';
 import {
   downloadSnapshotJson,
   importPlayerSnapshot,
@@ -16,6 +16,45 @@ import {
   getPlayerSnapshot,
 } from '../lib/playerStorage';
 import useNoteNames, { NOTE_NAME_MODES } from '../hooks/useNoteNames';
+import useUnlocks from '../hooks/useUnlocks';
+
+function UnlockSetting() {
+  const { unlocked, override, toggleUnlockAll } = useUnlocks();
+  const earnedUnlock = unlocked && !override;
+  return (
+    <div
+      data-testid="unlock-setting"
+      className="rounded-2xl border-2 p-3 mb-3"
+      style={{ borderColor: 'var(--jma-dark)', backgroundColor: '#FFF9E6' }}
+    >
+      <div className="flex items-center gap-2 mb-1.5">
+        <Unlock className="w-4 h-4" style={{ color: '#B8860B' }} />
+        <span className="text-sm font-black font-display" style={{ color: 'var(--jma-dark)' }}>Academy Rooms</span>
+        <span className="text-[10px] md:text-xs font-bold opacity-60 ml-auto" style={{ color: 'var(--jma-dark)' }}>
+          {earnedUnlock ? 'Unlocked by first badge' : override ? 'Unlocked by grown-up' : 'LEARN & CREATE locked'}
+        </span>
+      </div>
+      <p className="text-[11px] md:text-xs font-bold opacity-70 mb-2" style={{ color: 'var(--jma-dark)' }}>
+        New students start with 3 PLAY games. LEARN, CREATE and the rest open after the first badge. Flip this to open everything now.
+      </p>
+      <button
+        type="button"
+        data-testid="unlock-all-toggle"
+        onClick={toggleUnlockAll}
+        aria-pressed={override}
+        className="w-full rounded-xl border-2 py-1.5 text-xs md:text-sm font-black"
+        style={{
+          borderColor: 'var(--jma-dark)',
+          backgroundColor: override ? '#FFCC00' : 'white',
+          color: 'var(--jma-dark)',
+          boxShadow: '0 3px 0 0 var(--jma-dark)',
+        }}
+      >
+        {override ? 'Everything unlocked ✓ (tap to re-lock)' : 'Unlock everything now'}
+      </button>
+    </div>
+  );
+}
 
 function NoteNamesSetting() {
   const { mode, setMode } = useNoteNames();
@@ -168,6 +207,7 @@ export default function ManageDataModal({ open, onClose }) {
 
             {/* Note-name display (non-destructive device setting) */}
             <NoteNamesSetting />
+            <UnlockSetting />
 
             {/* Action rows */}
             <div className="space-y-2">

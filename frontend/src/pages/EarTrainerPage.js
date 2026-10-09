@@ -8,6 +8,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
 import TempoListeningGame from '../components/TempoListeningGame';
 import useNoteNames from '../hooks/useNoteNames';
@@ -116,6 +117,7 @@ function EarTrainerPage() {
       setStreak(prev => prev + 1);
       setResults(prev => {
         const next = { ...prev, correct: prev.correct + 1 };
+        reportQuestEvent('ear_quest', { correct: next.correct });
         if (next.correct >= 5) {
           // 🎧 Note Detective Cadet — scored 5 correct in Ear Quest.
           earnAchievement('ear', 'cadet');

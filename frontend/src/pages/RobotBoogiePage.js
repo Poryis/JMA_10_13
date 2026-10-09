@@ -34,6 +34,7 @@ import useBeatPulse from '../hooks/useBeatPulse';
 import LightningStage from '../components/LightningStage';
 import { BACKGROUNDS } from '../components/RobotBoogieBackgrounds';
 import { earnSticker } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 
 // ============================================================
 // Character config
@@ -1032,6 +1033,7 @@ export default function RobotBoogiePage() {
       // Count dancers AFTER this activation (dancing state above is
       // async; do the arithmetic here directly).
       const willBeDancingCount = Object.values(dancing).filter(Boolean).length + 1;
+      reportQuestEvent('robot_dancers', { count: willBeDancingCount });
       if (willBeDancingCount === CHARACTERS.length) {
         earnSticker('boogie_full_band');
       }

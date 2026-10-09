@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { X, Sparkles, Search, RotateCcw } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { GameHeader } from '../components/GameUI';
 
 // Characters placed IN the clubhouse scene at specific spots.
@@ -139,6 +140,7 @@ function FunFactsPage() {
       setTimeout(() => {
         setActiveFact({ character: characterName, ...fact });
         if (charObj?.stickerId) earnSticker(charObj.stickerId);
+        reportQuestEvent('fun_fact');
         noteFactSeen();
       }, 350);
     } else {

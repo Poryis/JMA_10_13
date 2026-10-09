@@ -17,6 +17,7 @@ import { GameHeader } from '../components/GameUI';
 import SpaceBackdrop, { SPACE_BG_STYLE } from '../components/SpaceBackdrop';
 import { getChannel, getEpisode } from '../data/jmatv';
 import { earnSticker } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 
 export default function JMAtvPlayerPage() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function JMAtvPlayerPage() {
   useEffect(() => {
     if (!episode) return;
     try { earnSticker('jmatv-first-watch'); } catch { /* no-op */ }
+    reportQuestEvent('jmatv_watch');
   }, [episode]);
 
   const destroyPlayer = useCallback(() => {

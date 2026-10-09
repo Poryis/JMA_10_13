@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, RotateCcw, Trophy, Play, Volume2, Check } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
@@ -26,6 +26,7 @@ import { JellyBellsRow } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
 import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { reportQuestEvent } from '../hooks/useDailyQuests';
 
 const LOW_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -191,6 +192,7 @@ export default function SightReadingPage() {
         if (difficulty === 'master') earnAchievementUpTo('scholar', 'master');
         if (difficulty === 'wizard') earnAchievementUpTo('scholar', 'master');
       } catch { /* ignore */ }
+      reportQuestEvent('sight_read', { difficulty });
       try { playFeedbackSound('perfect'); } catch { /* ignore */ }
       setGameState('run-complete');
       return;
@@ -249,6 +251,14 @@ export default function SightReadingPage() {
     setIsNewBest(false);
     beginCard(diff, 0);
   }, [initAudioContext, stopAllTimers, difficulty, beginCard]);
+
+  // Daily-quest deep link: /sight-reading?quest=cadet skips the pick screen.
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('quest');
+    if (q && LEVELS[q]) startRun(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Replay the current card's demo (kid wants to hear it again).
   const replayDemo = useCallback(() => {

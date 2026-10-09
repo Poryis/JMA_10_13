@@ -1,27 +1,39 @@
 {
-  "summary": "Frontend-only testing of two parallel additions: (1) iOS AudioUnlockOverlay splash on first session, (2) Sticker Book Teacher View toggle. All 6 review scenarios pass end-to-end on https://jelly-jam-academy.preview.emergentagent.com (1280x900). 21/21 assertions pass.",
-  "backend_issues": { "critical": [], "minor": [] },
-  "frontend_issues": {
-    "ui_bugs": [],
-    "integration_issues": [],
-    "design_issues": [
-      {"screen": "Free Play (and generally)", "issues": ["Pre-existing console warning: 'An empty string (\"\") was passed to the src attribute'. Unrelated to current changes but worth cleaning up an <img> with empty src somewhere in the tree."]}
-    ]
-  },
+  "summary": "Frontend-only testing for the Shred City rework (route /#/shred-legend). Verified PLAY menu order+rename, intro/header 'SHRED CITY', the per-note BEND bug fix (held voice gets a playbackRate ramp AFTER two quick taps), mash guard (4-key->TOO WILD!, 3-key clean), dev-hook meter tiers with tier flash banner + confetti burst + back row + camera flashes + crowd-surfer + pyro, home daily-quest-card regression, and Jam Session guitar BEND regression. No pageerror on intro/playing.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
   "test_report_links": [],
   "action_items": [],
   "critical_code_review_comments": [
-    "useAudioUnlock.js: performUnlock() creates a throwaway AudioContext each invocation that is never .close()'d. Browsers cap context count (~6 in Chrome) — fine for one-time unlock, but consider closing it after the silent buffer plays for hygiene.",
-    "AudioUnlockOverlay uses a <motion.button> as the full-viewport overlay (good for a11y) but the inner <motion.h1>, <motion.p>, and <motion.div> with nested children render inside a <button>; this is invalid HTML (block-level descendants of button). Functionally fine but a11y/parsing concern. Consider role='button' on a <motion.div> with tabIndex=0 + keypress handling.",
-    "useAudioUnlock document-level pointerdown handler uses {once:true, capture:true}. Removal in cleanup uses {capture:true} only — that's correct match. No leak.",
-    "StickerBookPage teacherView label always reads 'Teacher View' in both states (line 217 returns the same string). Minor: could swap to 'Kid View' label when ON to make the toggle direction obvious. Current aria-pressed handles a11y but visual label is identical.",
-    "Pre-existing: console error about empty src='' attribute on an <img>; harmless but causes the browser to fetch the current page as an image."
+    "ShredLegendPage.js is 813 lines - consider splitting (CrowdRow/CrowdExtras/CameraFlashes are good extraction candidates). Maintainability only, not a bug.",
+    "Informational: idle decay (-0.5/100ms after 600ms idle) means a single dev-hook __shredSetMeter(22) decays below the 22 tier threshold within ~500ms, so shred-tier-label snaps back to the previous tier even though the shred-tier-flash correctly fires. In actual gameplay (continuous note input) this is a non-issue. For automated tests I pumped the hook 3x in quick succession to overcome decay; consider adding window.__shredSetMeter(v, { freeze: true }) to simplify future tests."
   ],
   "updated_files": [],
-  "success_rate": { "backend": "n/a (skipped)", "frontend": "100%" },
-  "seed_data_creation": "none",
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100%"},
+  "test_credentials": "none (frontend-only)",
+  "seed_data_creation": "localStorage: jma_unlock_all_v1='1', jma_reveal_seen_v1='1', jma_player_name_skipped_v1='1' set after first navigation then reload (add_init_script timing was flaky with the audio-unlock overlay).",
   "retest_needed": false,
-  "should_main_agent_self_test": true,
-  "context_for_next_testing_agent": "Audio overlay z-index:200 intercepts all clicks until dismissed. To bypass in tests: either set sessionStorage('jma_audio_unlocked_v1','1') via addInitScript BEFORE the goto, OR click the overlay first. Hash-route navigation (e.g. goto '#/x') does NOT reload the SPA, so clearing sessionStorage requires a page.reload() to reset React state. AudioContext.resume() warnings in Playwright are expected (no real user gesture) and not a bug. Verified testids: audio-unlock-overlay, teacher-view-toggle, domain-blurb-{rhythm|ear|keyboard|beat|song|scholar}, domain-teacher-desc-{...}, badge-ach_* (18 total), rank-badge, next-mission-panel, next-mission-go, bell-C.",
-  "rca of the issue": "n/a — no bugs found. Initial test 3 failure was a TEST script artifact (hash-route nav doesn't reload SPA so cleared sessionStorage didn't reset React state); retest after a hard reload confirmed the auto-dismiss-on-gesture works correctly, the bell remains tappable, and bell-press produces the expected new-sticker toast."
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration-32 Shred City criteria verified. Key gotcha: idle decay in ShredLegendPage runs at -0.5/100ms when no notes fired recently, so single dev-hook meter set will decay below tier thresholds within ~500ms. Pump __shredSetMeter(v) 3x with 60ms gap to verify tier labels; pump at v>=95 to see surfer/pyro. BEND fix verified by monkey-patching AudioParam.prototype.linearRampToValueAtTime via add_init_script and counting ramp calls after keydown('b') while holding '1' past two quick 3/5 taps (delta_on_b=2 in Shred City, 1 in Jam Session). All expected testids present. PLAY tile order confirmed: jelly-jukebox, shred-legend, stew-kazoo, note-match, detective-jellybone, sight-reading, robot-boogie.",
+  "test_results_detail": {
+    "play_menu_order": ["jelly-jukebox","shred-legend","stew-kazoo","note-match","detective-jellybone","sight-reading","robot-boogie"],
+    "shred_tile_title": "SHRED CITY",
+    "navigates_to_shred_legend": true,
+    "intro_h1": "SHRED CITY",
+    "header_title_SHRED_CITY": true,
+    "bend_fix_shred_city": {"ramp_calls_delta_on_b_after_two_taps": 2, "bend_button_shows_pressed": true},
+    "bend_fix_free_play": {"ramp_calls_delta_on_b_after_two_taps": 1, "bend_button_present": true},
+    "mash_guard_4_keys_too_wild": true,
+    "mash_guard_3_keys_no_too_wild": true,
+    "tiers_dev_hook": {
+      "21": {"label": "Garage Band", "flash": null, "burst": false, "back_row": "false"},
+      "23_pumped": {"label": "Garage Band (just-below after idle decay)", "flash": "Opening Act!", "burst": true},
+      "60_pumped": {"label": "Headliner", "flash": "Headliner!", "burst": true, "back_row": "true", "camera_flashes": 1},
+      "95_pumped": {"label": "SHRED LEGEND", "flash": "SHRED LEGEND!", "burst": true, "back_row": "true", "camera_flashes": 2, "surfer": true, "pyro": true}
+    },
+    "meter_fill_tracks_meter": true,
+    "home_daily_quest_card": true,
+    "no_page_errors_shred_legend": true,
+    "combo_multiplier_visuals": "code path confirmed in ShredLegendPage.onGuitarPlay (combo>=3 shows shred-combo, >=6 shows x1.5 multiplier, >=12 shows x2 ON FIRE). Live tap-to-beat timing not reliably automatable (informational)."
+  }
 }

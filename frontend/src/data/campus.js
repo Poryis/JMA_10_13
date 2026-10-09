@@ -4,9 +4,9 @@
 const CH = 'assets/characters/';
 
 export const CAMPUS_ZONES = [
-  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', ambient: 'assets/ambient/play.mp3',   strollers: [`${CH}charlie.png`, `${CH}finn-danger.png`, `${CH}jazzy.png`] },
-  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', ambient: 'assets/ambient/learn.mp3',  strollers: [`${CH}charlie-grad.png`, `${CH}dr-jellybone.png`, `${CH}llama-lou-stew.png`] },
-  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', ambient: 'assets/ambient/create.mp3', strollers: [`${CH}chunk.png`, `${CH}charlie-studio.png`, `${CH}jazzy-disco.png`] },
+  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', ambient: 'assets/ambient/play.mp3',   strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', ambient: 'assets/ambient/learn.mp3',  strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', ambient: 'assets/ambient/create.mp3', strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
 ];
 
 export const CAMPUS_BUILDINGS = [

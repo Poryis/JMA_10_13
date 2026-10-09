@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import RetroTV from '../components/RetroTV';
 import BlimpFlyby from '../components/BlimpFlyby';
+import UnderwaterBackdrop from '../components/UnderwaterBackdrop';
 import HomeProgressCard from '../components/HomeProgressCard';
 import DailyQuestCard from '../components/DailyQuestCard';
 import AcademyRevealCelebration from '../components/AcademyRevealCelebration';
@@ -482,82 +483,7 @@ function HomePage() {
         backgroundColor: '#02243F',
       }}
     >
-      {/* Underwater backdrop — locked to the VIEWPORT (position: fixed)
-          instead of the whole page height, so we always see the full
-          composed underwater scene and never zoom it to fill a very
-          tall document. Ken Burns is deliberately gentle (1.0 → 1.03). */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 home-underwater-bg-layer pointer-events-none"
-        style={{
-          backgroundImage: `url(${process.env.PUBLIC_URL || ''}/assets/backgrounds/underwater.png)`,
-        }}
-      />
-      {/* Top vignette — softens the crop line on ultrawide desktops
-          where the top of the underwater PNG would otherwise look cut. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-x-0 top-0 z-0 pointer-events-none"
-        style={{
-          height: '32vh',
-          background:
-            'linear-gradient(180deg, rgba(2,36,63,0.55) 0%, rgba(2,36,63,0.15) 60%, transparent 100%)',
-        }}
-      />
-      {/* Diagonal god-ray shafts — barely-there striped screen overlay. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 pointer-events-none home-underwater-shafts"
-      />
-      {/* Rising bubbles — CSS-only. 18 bubbles at varied sizes, positions,
-          durations, and delays so the loop reads as random. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-      >
-        {[
-          { left: '3%',  size: 10, dur: 13, delay: 0 },
-          { left: '8%',  size: 16, dur: 15, delay: 3 },
-          { left: '14%', size: 8,  dur: 11, delay: 6.5 },
-          { left: '18%', size: 22, dur: 18, delay: 1.5 },
-          { left: '24%', size: 12, dur: 14, delay: 4 },
-          { left: '30%', size: 6,  dur: 10, delay: 8 },
-          { left: '36%', size: 18, dur: 16, delay: 2 },
-          { left: '42%', size: 10, dur: 12, delay: 5.5 },
-          { left: '48%', size: 24, dur: 19, delay: 0.5 },
-          { left: '54%', size: 8,  dur: 11, delay: 7 },
-          { left: '60%', size: 14, dur: 14, delay: 3.5 },
-          { left: '66%', size: 20, dur: 17, delay: 1 },
-          { left: '72%', size: 10, dur: 13, delay: 6 },
-          { left: '78%', size: 6,  dur: 10, delay: 2.5 },
-          { left: '84%', size: 16, dur: 15, delay: 4.5 },
-          { left: '89%', size: 12, dur: 12, delay: 8.5 },
-          { left: '94%', size: 22, dur: 18, delay: 0 },
-          { left: '97%', size: 8,  dur: 11, delay: 5 },
-        ].map((b, i) => {
-          // Negative animation-delay = pre-progress the CSS keyframes.
-          // Instead of every bubble waiting `b.delay` seconds to rise
-          // from the bottom (which left ~8s of dead sky at the top on
-          // first paint), we seed each one already mid-rise. The
-          // `(delay + dur/2) % dur` seed keeps the original per-bubble
-          // variation but spreads starting positions across the whole
-          // vertical column so the ocean feels alive from t=0.
-          const preRun = ((b.delay + b.dur * 0.5) % b.dur).toFixed(2);
-          return (
-            <span
-              key={i}
-              className="home-underwater-bubble"
-              style={{
-                left: b.left,
-                width: b.size,
-                height: b.size,
-                animationDuration: `${b.dur}s`,
-                animationDelay: `-${preRun}s`,
-              }}
-            />
-          );
-        })}
-      </div>
+      <UnderwaterBackdrop />
       {/* Drifting Jelly Rocks blimp — behind everything */}
       <BlimpFlyby />
 

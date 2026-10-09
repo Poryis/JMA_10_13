@@ -1,15 +1,16 @@
-// Campus Map — an underwater panorama per street. Pan sideways across a
-// reef shelf; every room is a building with its host Jelly at the door,
-// glowing windows, floating notes, kelp, fish and bubbles. Locked rooms go
-// dark. Tapping an open door zooms into the building before the route changes.
+// Campus Map — an underwater panorama per street built from the user's own
+// scene layers (water, wave bands, sand dunes, seaweed, shells, fish).
+// Pan sideways along the sea floor; every room is a building with its host
+// Jelly at the door. Locked rooms go dark. Tap an open door and YOUR Jelly
+// swims over, shrinks into the doorway, then the camera zooms in.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Music, ChevronsRight } from 'lucide-react';
+import { Lock, ChevronsRight } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
-import UnderwaterBackdrop, { UNDERWATER_BG_COLOR } from '../components/UnderwaterBackdrop';
+import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER } from '../components/UnderwaterBackdrop';
 import AvatarSprite from '../components/AvatarSprite';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
@@ -18,6 +19,8 @@ import { say, voiceEnabled } from '../lib/voice';
 
 const slotFor = (w) => (w < 640 ? 220 : 300); // horizontal space per building (px)
 const SHOUTS = ['Hey!', 'Come in!', 'Over here!', 'Woo!', 'Jam time!', 'Psst!'];
+const YOU_LEFT = 16;
+const YOU_W = 64;
 
 function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 
@@ -30,37 +33,6 @@ function useAmbient(src) {
     try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') start(); else { armed = true; document.addEventListener('pointerdown', start, { once: true, capture: true }); } } catch (_) { start(); }
     return () => { a.pause(); if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
   }, [src]);
-}
-
-// Flat, outlined kelp blade that sways.
-function Kelp({ x, h, delay, color = '#2E9E6B' }) {
-  return (
-    <motion.svg viewBox="0 0 40 160" className="absolute bottom-0 pointer-events-none" style={{ left: x, width: 34, height: h, transformOrigin: 'bottom center' }}
-      animate={{ rotate: [-6, 6, -6], skewX: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 3.6, delay, ease: 'easeInOut' }}>
-      <path d="M20 160 C 2 130, 38 110, 20 80 C 2 50, 38 30, 20 0" stroke="#0A2540" strokeWidth="14" fill="none" strokeLinecap="round" />
-      <path d="M20 160 C 2 130, 38 110, 20 80 C 2 50, 38 30, 20 0" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
-    </motion.svg>
-  );
-}
-
-function Coral({ x, color, size = 56 }) {
-  return (
-    <svg viewBox="0 0 60 60" className="absolute bottom-0 pointer-events-none" style={{ left: x, width: size, height: size }}>
-      <g stroke="#0A2540" strokeWidth="4" fill={color} strokeLinejoin="round">
-        <circle cx="30" cy="40" r="18" /><circle cx="14" cy="30" r="11" /><circle cx="46" cy="28" r="12" /><circle cx="30" cy="18" r="10" />
-      </g>
-    </svg>
-  );
-}
-
-function Fish({ y, dur, delay, color, flip }) {
-  return (
-    <motion.svg viewBox="0 0 60 30" className="absolute pointer-events-none" style={{ top: y, width: 44, height: 22, left: 0 }}
-      initial={{ x: flip ? '110vw' : '-10vw', scaleX: flip ? -1 : 1 }} animate={{ x: flip ? '-10vw' : '110vw' }} transition={{ repeat: Infinity, duration: dur, delay, ease: 'linear' }}>
-      <g stroke="#0A2540" strokeWidth="3" fill={color}><ellipse cx="26" cy="15" rx="20" ry="11" /><path d="M44 15 L58 4 L58 26 Z" /></g>
-      <circle cx="16" cy="12" r="2.5" fill="#0A2540" />
-    </motion.svg>
-  );
 }
 
 function Host({ src, shout }) {
@@ -79,7 +51,7 @@ function Host({ src, shout }) {
   );
 }
 
-function Building({ b, index, locked, onEnter, shout, slot }) {
+function Building({ b, index, locked, onEnter, shout, slot, floor, entering }) {
   const narrow = slot < 300;
   const [shake, setShake] = useState(0);
   const lift = index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
@@ -96,25 +68,14 @@ function Building({ b, index, locked, onEnter, shout, slot }) {
       aria-disabled={locked}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      style={{ left: (narrow ? 96 : 120) + index * slot, width: Math.round((narrow ? 170 : 230) * b.size * scale), marginBottom: (narrow ? 50 : 56) + (narrow ? lift * 0.7 : lift), zIndex: 10 - (index % 3) }}
-      initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
+      style={{ left: (narrow ? 96 : 120) + index * slot, width: Math.round((narrow ? 170 : 230) * b.size * scale), marginBottom: floor + (narrow ? lift * 0.7 : lift), zIndex: 10 - (index % 3) }}
+      initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: entering ? 1.04 : 1 }} transition={{ delay: entering ? 0 : 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
       <motion.div key={shake} animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}} transition={{ duration: 0.45 }} className="relative w-full">
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
-          <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.45))' }} />
-          {/* window glow pulsing to a beat */}
-          <motion.span className="absolute rounded-full pointer-events-none" style={{ left: '38%', top: '38%', width: '24%', height: '18%', background: 'radial-gradient(circle, rgba(255,226,138,0.85) 0%, rgba(255,226,138,0) 70%)' }}
-            animate={{ opacity: locked ? [0.2, 0.9, 0.2] : [0.35, 0.95, 0.35], scale: [1, 1.25, 1] }} transition={{ repeat: Infinity, duration: locked ? 2.6 : 0.9 + (index % 2) * 0.3 }} />
-          {/* floating notes from the door */}
-          {!locked && [0, 1, 2].map((n) => (
-            <motion.span key={n} className="absolute pointer-events-none" style={{ left: `${44 + n * 10}%`, bottom: '22%', color: ['#FFCC00', '#FF2D85', '#4FC3F7'][n] }}
-              animate={{ y: [0, -90 - n * 20], x: [0, (n % 2 ? 1 : -1) * 18], opacity: [0, 1, 0], rotate: [0, n % 2 ? 25 : -25] }}
-              transition={{ repeat: Infinity, duration: 2.4 + n * 0.5, delay: n * 0.8 + (index % 3) * 0.4, ease: 'easeOut' }}>
-              <Music className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
-            </motion.span>
-          ))}
+          <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />
           {!locked && b.host && <Host src={b.host} shout={shout} />}
         </motion.div>
         {locked && (
@@ -135,7 +96,9 @@ export default function CampusMapPage() {
   const location = useLocation();
   const { unlocked } = useUnlocks();
   const scroller = useRef(null);
+  const shelfRef = useRef(null);
   const [leaving, setLeaving] = useState(null);
+  const [swim, setSwim] = useState(null); // { x, y, dur, buildingId }
   const [scrollX, setScrollX] = useState(0);
   const [shout, setShout] = useState(null); // { id, buildingId, text }
   const [hint, setHint] = useState(true);
@@ -147,7 +110,12 @@ export default function CampusMapPage() {
   const [vw, setVw] = useState(window.innerWidth);
   useEffect(() => { const f = () => setVw(window.innerWidth); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
   const slot = slotFor(vw);
+  const narrow = slot < 300;
   const width = 200 + buildings.length * slot;
+  const sandBack = narrow ? 130 : 190;
+  const sandFront = narrow ? 84 : 118;
+  const floor = narrow ? 46 : 56; // where buildings stand on the front sand
+  const youBottom = floor + 2;
   useAmbient(zone.ambient);
 
   // Hosts shout now and then.
@@ -169,17 +137,54 @@ export default function CampusMapPage() {
   const onPointerMove = (e) => { if (drag.current) scroller.current.scrollLeft = drag.current.left - (e.clientX - drag.current.x); };
   const onPointerUp = () => { drag.current = null; };
 
-  const enter = (b) => {
+  const zoomIn = (b) => {
     const el = document.querySelector(`[data-testid="campus-building-${b.id}"]`);
     const r = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
     setLeaving({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
     setTimeout(() => navigate(b.path), 520);
   };
 
+  // Your Jelly swims from the street entrance to the tapped door, then we go in.
+  const enter = (b) => {
+    if (swim || leaving) return;
+    const el = shelfRef.current && shelfRef.current.querySelector(`[data-testid="campus-building-${b.id}"]`);
+    if (!el) { zoomIn(b); return; }
+    const door = { x: el.offsetLeft + el.offsetWidth * 0.5, bottom: (parseFloat(el.style.marginBottom) || 0) + el.offsetWidth * 0.1 };
+    const dx = door.x - (YOU_LEFT + YOU_W / 2);
+    const dy = -(door.bottom - youBottom);
+    const dur = Math.min(1.5, Math.max(0.75, Math.abs(dx) / 800));
+    setSwim({ x: dx, y: dy, dur, buildingId: b.id });
+    setTimeout(() => zoomIn(b), dur * 1000 + 120);
+  };
+
+  const backAccents = useMemo(() => {
+    const items = [];
+    const n = Math.ceil((width + 400) / slot);
+    for (let i = 0; i < n; i++) {
+      const x = i * slot + (i % 2 ? 40 : 160);
+      if (i % 2 === 0) items.push({ kind: 'weed', src: UW_ASSETS.seaweed2, x, w: narrow ? 70 : 100, bottom: sandBack * 0.5, delay: i * 0.5 });
+      else items.push({ kind: 'shell', src: UW_ASSETS.shell1, x, w: narrow ? 60 : 90, bottom: sandBack * 0.42 });
+    }
+    return items;
+  }, [width, slot, narrow, sandBack]);
+
+  const frontAccents = useMemo(() => {
+    const items = [];
+    const n = Math.ceil((width + 600) / (slot * 1.5));
+    for (let i = 0; i < n; i++) {
+      const x = i * slot * 1.5 + 200;
+      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: narrow ? 90 : 130, bottom: 0, delay: i * 0.7 });
+      if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + (narrow ? 110 : 160), w: narrow ? 34 : 48, bottom: 10 });
+    }
+    return items;
+  }, [width, slot, narrow]);
+
   return (
-    <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_BG_COLOR }} data-testid="campus-map-page" data-zone={zone.id} data-sky={night ? 'night' : 'day'}>
-      <UnderwaterBackdrop deep={night} />
-      {night && <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(2,20,45,0.45)', zIndex: 1 }} />}
+    <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_WATER }} data-testid="campus-map-page" data-zone={zone.id} data-sky={night ? 'night' : 'day'}>
+      {/* water + wave bands (user's layers) */}
+      <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '82%', zIndex: 0, backgroundImage: `url(${UW_ASSETS.bands})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: 'center bottom' }} />
+      <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
+      <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
       <GameHeader title={`${zone.label} STREET`} showHomeButton={true} />
 
@@ -188,19 +193,21 @@ export default function CampusMapPage() {
         <div className="rounded-full px-3 py-0.5 text-[10px] md:text-xs font-black" style={{ background: zone.color, color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)' }}>{zone.street}</div>
       </div>
 
-      {/* fish */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }}>
-        <Fish y="22%" dur={26} delay={0} color="#FF9500" />
-        <Fish y="34%" dur={34} delay={6} color="#4FC3F7" flip />
-        <Fish y="16%" dur={40} delay={14} color="#FFCC00" />
+      {/* the user's fish — every sprite faces the way it swims */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} data-testid="campus-fish">
+        <Swimmer src={UW_ASSETS.fishSchool} top="11%" dur={64} delay={18} width="clamp(90px, 10vw, 170px)" />
+        <Swimmer src={UW_ASSETS.fish1} top="30%" dur={30} delay={6} width="clamp(40px, 5vw, 80px)" dir="left" />
+        <Swimmer src={UW_ASSETS.fish2} top="20%" dur={24} delay={2} width="clamp(44px, 5vw, 84px)" />
+        <Swimmer src={UW_ASSETS.fish1} top="44%" dur={38} delay={16} width="clamp(32px, 4vw, 64px)" />
       </div>
 
-      {/* swimming Jellies */}
+      {/* Surf Charlie paddles right, Snorkel Finn swims left */}
       {(zone.strollers || []).slice(0, 2).map((src, i) => (
-        <motion.img key={src} src={src} alt="" draggable={false} className="absolute pointer-events-none object-contain" style={{ top: `${26 + i * 12}%`, width: 'clamp(40px, 6vw, 70px)', zIndex: 3, left: 0 }}
-          initial={{ x: i ? '100vw' : '-12vw', scaleX: i ? -1 : 1 }} animate={{ x: i ? '-12vw' : '100vw', y: [0, -14, 0, 10, 0] }}
-          transition={{ x: { repeat: Infinity, duration: 38 + i * 9, ease: 'linear', delay: -i * 11 }, y: { repeat: Infinity, duration: 3, ease: 'easeInOut' } }} />
+        <Swimmer key={src} src={src} top={`${24 + i * 14}%`} dur={40 + i * 8} delay={i * 13} width="clamp(56px, 8vw, 100px)" dir={i ? 'left' : 'right'} bob={14} zIndex={4}
+          style={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.25))' }} />
       ))}
+
+      {night && <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(2,20,45,0.32)', zIndex: 4 }} />}
 
       {/* panorama scroller */}
       <motion.div
@@ -213,41 +220,34 @@ export default function CampusMapPage() {
         animate={leaving ? { scale: 2.6, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.6, 0, 0.8, 1] }}
       >
-        <div className="relative h-full" style={{ width, minWidth: '100vw' }} data-testid="campus-shelf">
-          {/* far reef (parallax) */}
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '46%', transform: `translateX(${scrollX * 0.35}px)` }}>
-            {[...Array(Math.ceil(width / 260) + 2)].map((_, i) => (
-              <div key={i} className="absolute bottom-0 rounded-t-[50%]" style={{ left: i * 260 - 60, width: 300, height: 90 + (i % 3) * 60, background: night ? '#0A3356' : '#0E4A72', opacity: 0.85 }} />
-            ))}
+        <div ref={shelfRef} className="relative h-full" style={{ width, minWidth: '100vw' }} data-testid="campus-shelf">
+          {/* back dune + its accents (parallax: drifts slower than the street) */}
+          <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 400, height: sandBack, transform: `translateX(${scrollX * 0.3}px)`, zIndex: 1 }} data-testid="campus-sand-back">
+            <SandStrip src={UW_ASSETS.sandBack} height={sandBack} />
+            {backAccents.map((a, i) => a.kind === 'weed'
+              ? <Seaweed key={i} src={a.src} left={a.x} width={a.w} bottom={a.bottom} delay={a.delay} zIndex={2} />
+              : <img key={i} src={a.src} alt="" draggable={false} className="absolute pointer-events-none" style={{ left: a.x, width: a.w, bottom: a.bottom, zIndex: 2 }} />)}
           </div>
-          {/* sand shelf */}
-          <svg className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 120 }} viewBox={`0 0 ${width} 120`} preserveAspectRatio="none">
-            <path d={`M0 60 Q ${width * 0.12} 30, ${width * 0.25} 58 T ${width * 0.5} 54 T ${width * 0.75} 60 T ${width} 50 L ${width} 120 L 0 120 Z`} fill="#0A2540" />
-            <path d={`M0 68 Q ${width * 0.12} 38, ${width * 0.25} 66 T ${width * 0.5} 62 T ${width * 0.75} 68 T ${width} 58 L ${width} 120 L 0 120 Z`} fill={night ? '#B9A36E' : '#E9D28A'} />
-          </svg>
-          {/* back kelp + coral */}
-          {buildings.map((b, i) => (
-            <div key={`deco-${b.id}`}>
-              <Kelp x={60 + i * slot} h={150 + (i % 2) * 40} delay={i * 0.4} />
-              <Coral x={200 + i * slot + (i % 2) * 40} color={['#FF6B6B', '#FF9500', '#C8A8F2'][i % 3]} size={44 + (i % 2) * 16} />
-            </div>
-          ))}
-          {/* the kid's Jelly at the street entrance */}
-          <div className="absolute flex flex-col items-center" style={{ left: 16, bottom: 58, width: 64, zIndex: 9 }} data-testid="campus-you">
-            <span className="rounded-full px-1.5 text-[9px] font-black text-white mb-0.5" style={{ background: '#FF2D85', border: '2px solid var(--jma-dark)' }}>YOU</span>
-            <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+          {/* front dune — the street everyone stands on */}
+          <SandStrip src={UW_ASSETS.sandFront} height={sandFront} style={{ zIndex: 3 }} />
+          {/* the kid's Jelly at the street entrance — swims to the tapped door */}
+          <motion.div className="absolute flex flex-col items-center" style={{ left: YOU_LEFT, bottom: youBottom, width: YOU_W, zIndex: 11 }} data-testid="campus-you" data-swimming={swim ? 'true' : 'false'}
+            animate={swim ? { x: swim.x, y: swim.y, scale: [1, 0.9, 0.28], opacity: [1, 1, 1, 0] } : { x: 0, y: 0, scale: 1, opacity: 1 }}
+            transition={swim ? { duration: swim.dur, ease: 'easeInOut', scale: { duration: swim.dur, times: [0, 0.7, 1] }, opacity: { duration: swim.dur, times: [0, 0.7, 0.92, 1] } } : { duration: 0 }}>
+            <motion.span className="rounded-full px-1.5 text-[9px] font-black text-white mb-0.5" style={{ background: '#FF2D85', border: '2px solid var(--jma-dark)' }} animate={{ opacity: swim ? 0 : 1 }}>YOU</motion.span>
+            <motion.div animate={swim ? { y: [0, -8, 0, -8, 0], rotate: [0, 6, 0, 6, 0] } : { y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: swim ? 0.7 : 1.6, ease: 'easeInOut' }}>
               <AvatarSprite src={avatar.src} helmet={!!avatar.helmet} width={avatar.helmet ? 44 : 60} imgStyle={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.35))' }} />
             </motion.div>
-          </div>
+          </motion.div>
           {/* buildings */}
           {buildings.map((b, i) => (
-            <Building key={b.id} b={b} index={i} slot={slot} locked={!unlocked && !b.starter} onEnter={enter} shout={shout && shout.buildingId === b.id ? shout : null} />
+            <Building key={b.id} b={b} index={i} slot={slot} floor={floor} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
-          {/* near kelp (parallax, in front) */}
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 140, transform: `translateX(${-scrollX * 0.25}px)`, zIndex: 12 }}>
-            {[...Array(Math.ceil(width / 420) + 2)].map((_, i) => (
-              <Kelp key={i} x={i * 420 + 150} h={120 + (i % 2) * 30} delay={i * 0.7} color="#1F7A4F" />
-            ))}
+          {/* near seaweed + shells (parallax, in front) */}
+          <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">
+            {frontAccents.map((a, i) => a.kind === 'weed'
+              ? <Seaweed key={i} src={a.src} left={a.x} width={a.w} bottom={a.bottom} delay={a.delay} />
+              : <img key={i} src={a.src} alt="" draggable={false} className="absolute pointer-events-none" style={{ left: a.x, width: a.w, bottom: a.bottom }} />)}
           </div>
         </div>
       </motion.div>

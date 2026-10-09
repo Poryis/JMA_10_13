@@ -1,6 +1,12 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Campus Map hub** (tested iteration_35; zone-scroll fix verified) · buildings #4–6 · character canon
+## Latest (Jun 2026): Campus v2 — single street, all 15 buildings, campus life (tested iteration_36, 100%)
+- `/campus?zone=` shows ONLY that street (user request). All 15 rooms have art in `assets/campus/` (kiosk fallback kept in code but unused). PLAY order: jukebox, shred, stew, note-match, detective, sight, robot. Stew uses `stew-room-kazoo.png` (v1 with kazoo in window — user approved v1 look; `stew-room.png` original kept). Who's Got the Rhythm = football field.
+- Ground slab under every row (fixes "floating" on phone) + shadow ellipses; user's `assets/ui/sun.png` by day / CSS moon + stars at night (`skyFor(hour)`); `BlimpFlyby`; 3 strolling Jellies per street; ambient loops `assets/ambient/{play,learn,create}.mp3` (ffmpeg-synthesized placeholders, vol .22, honor voices toggle, start after audio-unlock tap).
+- **Astronaut Jellybone helmet fixed**: `components/AvatarSprite.js` layers the SVG helmet (exported from `DrJellyboneAstronaut.js`) for outfits with `helmet: true`; used in Dressing Room, Home rank bar, Shred crowd.
+- User approvals so far: Dr. Jellybone office ✓, Jukebox diner ✓, Stew room ✓ (with kazoo window), Shred/BeatLab/Studio "like it all" ✓. The 9 newest buildings not yet explicitly reviewed.
+
+## Jun 2026: **Campus Map hub** (tested iteration_35; zone-scroll fix verified) · buildings #4–6 · character canon
 - **Character canon saved in `/app/memory/characters.md`** (authoritative). Sharky IS Finn Danger (one character — the user corrected "same actor" wording). Jazzy = cat-pun machine (female). Stew talks in kazoo in the show. Lou non-verbal. Voice bios/lines updated + script regenerated.
 - `pages/CampusMapPage.js` + `data/campus.js`: `/campus?zone=play|learn|create`. Three streets, 15 buildings (6 illustrated: jukebox-diner, shred-club, stew-room, detective-office, beat-lab, song-studio; 9 CSS kiosks with character icons until art exists). Locked (non-starter, Polliwog) buildings dark with glowing window + "Earn 1 badge" chip; open ones zoom-in "door" transition (`campus-door-transition`) then navigate. Home PLAY/LEARN/CREATE cards now route to the campus; `/play` `/learn` `/create` grids remain as fallbacks. Art imgs reserve 1:1 space; zone scroll runs at 150 ms and 800 ms.
 - New buildings pending approval: `campus/shred-club.png`, `campus/beat-lab.png`, `campus/song-studio.png`. Stew room / Jukebox diner shown to user earlier (not yet explicitly approved, but already placed on the map).

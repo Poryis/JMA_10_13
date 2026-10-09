@@ -3,15 +3,99 @@
 // Next Mission pill as the single "do this now" signal.
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, Gem } from 'lucide-react';
+import { Check, ChevronRight, ChevronDown, ChevronUp, Gem } from 'lucide-react';
 import useDailyQuests from '../hooks/useDailyQuests';
 import { DOMAIN_MAP } from '../data/achievements';
 import { STICKER_MAP } from '../data/stickers';
 
 const WEEKDAY = new Date().toLocaleDateString(undefined, { weekday: 'long' });
+const SEEN_KEY = 'jma_quest_seen_done_v1'; // { date, done } — last doneCount the kid saw
 
-function QuestRow({ quest, index, navigate }) {
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e) => setDesktop(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return desktop;
+}
+
+// Phones start collapsed, but pop the card open when a quest was just finished.
+function shouldAutoExpand(date, doneCount) {
+  try {
+    const seen = JSON.parse(localStorage.getItem(SEEN_KEY));
+    return !!seen && seen.date === date && doneCount > seen.done && doneCount < 3;
+  } catch (_) { return false; }
+}
+function rememberSeen(date, done) {
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify({ date, done })); } catch (_) {}
+}
+
+function CompactQuestStrip({ quests, doneCount, allDone, onExpand }) {
+  return (
+    <motion.button
+      type="button"
+      data-testid="daily-quest-strip"
+      data-all-done={allDone ? 'true' : 'false'}
+      onClick={onExpand}
+      className="w-full flex items-center gap-2 rounded-2xl px-2.5 text-left touch-manipulation"
+      style={{
+        height: 58,
+        background: allDone
+          ? 'linear-gradient(160deg, #FFF4C2 0%, #FFE07A 100%)'
+          : 'linear-gradient(180deg, #FFFDF6 0%, #FFF6DD 100%)',
+        border: '3px solid var(--jma-dark)',
+        boxShadow: '0 4px 0 0 var(--jma-dark)',
+      }}
+      initial={{ y: 10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      whileTap={{ y: 2, boxShadow: '0 2px 0 0 var(--jma-dark)' }}
+    >
+      <img src="assets/ui/sun.png" alt="" draggable={false} className="flex-shrink-0 object-contain" style={{ width: 30, filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.18))' }} />
+      <div className="flex flex-col leading-tight flex-1 min-w-0">
+        <span className="text-[8px] uppercase tracking-[0.14em] font-black" style={{ color: '#B8860B' }}>Today at the Academy</span>
+        <span className="text-[14px] font-black font-display truncate" style={{ color: 'var(--jma-dark)' }} data-testid="daily-quest-strip-heading">
+          {allDone ? 'All quests done!' : `${WEEKDAY}'s Quests`}
+        </span>
+      </div>
+      <div className="flex items-center -space-x-1.5 flex-shrink-0" data-testid="daily-quest-strip-dots">
+        {quests.map((q, i) => {
+          const domain = DOMAIN_MAP[q.domain];
+          return (
+            <div
+              key={q.id}
+              data-testid={`daily-quest-strip-dot-${i}`}
+              data-done={q.done ? 'true' : 'false'}
+              className="relative rounded-full overflow-hidden bg-white flex items-center justify-center"
+              style={{ width: 30, height: 30, border: `2px solid ${q.done ? '#34A853' : domain.color}`, filter: q.done ? 'grayscale(0.4)' : 'none' }}
+            >
+              <img src={domain.icon} alt="" className="w-full h-full object-contain" draggable={false} />
+              {q.done && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(52,168,83,0.78)' }}>
+                  <Check className="w-4 h-4 text-white" strokeWidth={4} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div
+        data-testid="daily-quest-strip-progress"
+        className="flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-black"
+        style={{ backgroundColor: allDone ? '#34A853' : 'var(--jma-dark)', color: 'white' }}
+      >
+        {doneCount}/{quests.length}
+      </div>
+      <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--jma-dark)' }} strokeWidth={3} />
+    </motion.button>
+  );
+}
+
+function QuestRow({ quest, index, navigate, baseDelay = 0.5 }) {
   const domain = DOMAIN_MAP[quest.domain];
   const { done, progress, target } = quest;
   return (
@@ -31,7 +115,7 @@ function QuestRow({ quest, index, navigate }) {
       }}
       initial={{ x: -12, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      transition={{ delay: 0.5 + index * 0.08, type: 'spring', stiffness: 240 }}
+      transition={{ delay: baseDelay + index * 0.08, type: 'spring', stiffness: 240 }}
       whileHover={done ? {} : { y: -2 }}
       whileTap={{ y: 1, scale: 0.995 }}
     >
@@ -80,8 +164,23 @@ function QuestRow({ quest, index, navigate }) {
 
 export default function DailyQuestCard() {
   const navigate = useNavigate();
-  const { quests, doneCount, allDone, gem, questDays } = useDailyQuests();
+  const { date, quests, doneCount, allDone, gem, questDays } = useDailyQuests();
   const gemSticker = gem ? STICKER_MAP[gem] : null;
+  const isDesktop = useIsDesktop();
+  const [expanded, setExpanded] = useState(() => shouldAutoExpand(date, doneCount));
+
+  useEffect(() => { rememberSeen(date, doneCount); }, [date, doneCount]);
+
+  if (!isDesktop && !expanded) {
+    return (
+      <CompactQuestStrip
+        quests={quests}
+        doneCount={doneCount}
+        allDone={allDone}
+        onExpand={() => setExpanded(true)}
+      />
+    );
+  }
 
   return (
     <motion.section
@@ -97,7 +196,7 @@ export default function DailyQuestCard() {
       }}
       initial={{ y: 14, opacity: 0, scale: 0.98 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
-      transition={{ delay: 0.42, type: 'spring', stiffness: 200 }}
+      transition={{ delay: isDesktop ? 0.42 : 0, type: 'spring', stiffness: 200 }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-2.5 px-0.5">
@@ -127,11 +226,23 @@ export default function DailyQuestCard() {
         >
           {allDone ? '3 / 3 ✓' : `${doneCount} / ${quests.length}`}
         </div>
+        {!isDesktop && (
+          <button
+            type="button"
+            data-testid="daily-quest-collapse"
+            aria-label="Collapse quests"
+            onClick={() => setExpanded(false)}
+            className="flex-shrink-0 rounded-full flex items-center justify-center bg-white"
+            style={{ width: 30, height: 30, border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)' }}
+          >
+            <ChevronUp className="w-4 h-4" style={{ color: 'var(--jma-dark)' }} strokeWidth={3} />
+          </button>
+        )}
       </div>
 
       {/* Quests */}
       <div className="flex flex-col gap-2">
-        {quests.map((q, i) => <QuestRow key={q.id} quest={q} index={i} navigate={navigate} />)}
+        {quests.map((q, i) => <QuestRow key={q.id} quest={q} index={i} navigate={navigate} baseDelay={isDesktop ? 0.5 : 0.05} />)}
       </div>
 
       {/* Footer */}

@@ -1,5 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Latest (Jun 2026): Compact quest strip on phone/tablet (< 1024px)
+- `DailyQuestCard` renders `CompactQuestStrip` (`daily-quest-strip`, 58 px: sun, "Friday's Quests", 3 domain dots with ✓, n/3, chevron) below `lg`; tap expands the full card in place (`daily-quest-collapse` to fold). Auto-expands when a quest was just completed (`jma_quest_seen_done_v1`). Desktop ≥1024 keeps the full card. Result: rank bar + quests + PLAY/LEARN/CREATE + JMAtv all above the fold on 390×844 and 820×1180 (screenshot-verified).
+
 ## Latest (Jun 2026): **Shred City Encore Round** — tested iteration_32, 100%
 - When the 45 s timer ends with the Crowd Meter maxed (reached SHRED LEGEND), a **10 s ENCORE** starts instead of the result screen: `band.setTempoScale(1.2)` (re-anchors the 8th grid), ENCORE tier-flash + mega confetti + crowd wave + everyone shouts, pink HUD (`shred-encore-label` "ENCORE! FLAWLESS" while no misses), punk strobe lights. **Flawless encore** (0 OFF BEAT/TOO WILD, ≥8 timed hits) → second sticker `shred_encore` ("Encore!", Fun Milestones) on top of `shred_legend` = "double stickers". Result card line `shred-result-encore`. Surf Charlie crowd-surfer removed. Dev hooks `__shredSetMeter` / `__shredSetTimeLeft` (non-production).
 

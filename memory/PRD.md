@@ -1,6 +1,9 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Shred City** (was Shred Legend; route `/shred-legend` kept) — tested iteration_10 (Shred City run), 100%
+## Latest (Jun 2026): **Shred City Encore Round** — tested iteration_32, 100%
+- When the 45 s timer ends with the Crowd Meter maxed (reached SHRED LEGEND), a **10 s ENCORE** starts instead of the result screen: `band.setTempoScale(1.2)` (re-anchors the 8th grid), ENCORE tier-flash + mega confetti + crowd wave + everyone shouts, pink HUD (`shred-encore-label` "ENCORE! FLAWLESS" while no misses), punk strobe lights. **Flawless encore** (0 OFF BEAT/TOO WILD, ≥8 timed hits) → second sticker `shred_encore` ("Encore!", Fun Milestones) on top of `shred_legend` = "double stickers". Result card line `shred-result-encore`. Surf Charlie crowd-surfer removed. Dev hooks `__shredSetMeter` / `__shredSetTimeLeft` (non-production).
+
+## Jun 2026: **Shred City** (was Shred Legend; route `/shred-legend` kept) — tested iteration_10 (Shred City run), 100%
 - Renamed everywhere (PLAY tile now 2nd; header/intro; quest + sticker hints). Top crowd tier is still "SHRED LEGEND" (the sticker you earn in Shred City).
 - **Bend bug fixed** (`GuitarInstrument.js`): bend targets are now per-note (`setBendTarget(id, …)`); releasing a quick second/third note no longer clears the bend for the note still held. BEND bends every still-sounding note.
 - **Scoring rework** (`ShredLegendPage.js` `onGuitarPlay`/`bumpMeter`): tempo-scaled windows (perfect ≤18% / nice ≤36% of an 8th), one score per 8th, OFF BEAT resets combo, combo ×1.5 at 6 / ×2 at 12, **mash guard** (4+ onsets inside one beat = "TOO WILD!", −1.5 meter; 3-note runs allowed), sustain only feeds meter for first 1.5 s, idle decay 0.5/100 ms after 600 ms. **Meter curve**: gain ×1.6 below 22, ×1.0 to 58, ×0.72 to 90, ×0.55 after. Tiers 0 / 22 Opening Act / 58 Headliner / 90 SHRED LEGEND.

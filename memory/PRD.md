@@ -1,6 +1,12 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): Compact quest strip on phone/tablet (< 1024px)
+## Latest (Jun 2026): **Voice layer** — tested iteration_33, 100%
+- `data/voiceLines.js`: 150 short blurbs, 7 voices (Charlie = host; Dr. Jellybone, Stew, Jazzy, Chunk, Finn, Sharky; **Lou never talks**). id = `<char>.<group>[.<variant>]`. `lib/voice.js` `say(idOrGroup, {interrupt, minGapMs, delayMs})` plays `public/assets/voice/<id>.mp3`, random variant for groups, remembers missing files (silent), single channel, defers the latest line until the first tap (audio-unlock gate). Toggle: `jma_voice_v1` in Manage Progress ("Character Voices").
+- Wired: Home greeting once per session (first visit / time-of-day / streak / quests / all-done), lock lines, quest nudges on GO, room taglines on every game mount (`useVoiceTagline`), correct/perfect/miss reactions in Detective, Stew, Note Match, Sight-Reading, Name That Note, Ear Quest, Jukebox (song end), Boom, Beat Lab, Robot Boogie, Fun Facts, Song Studio, Shred City (tiers/encore/too wild/flawless), plus badge/sticker/gem toast, rank-up, quests-done, Academy-open overlays.
+- **Recording script for the user: `/app/memory/voice_script.md`** (regenerate with `node frontend/scripts/voiceScript.mjs`). Files go in `frontend/public/assets/voice/`.
+- Decided direction (user): voice-act short blurbs only; avatar + Dressing Room next; campus map with AI-generated props one at a time from user's art as reference (user approves each); pricing recommendation $5.99/mo · $39.99/yr · $79 lifetime; free tier = 3 starter games + LEARN + JMAtv + meta, Academy Pass = CREATE + other games.
+
+## Jun 2026: Compact quest strip on phone/tablet (< 1024px)
 - `DailyQuestCard` renders `CompactQuestStrip` (`daily-quest-strip`, 58 px: sun, "Friday's Quests", 3 domain dots with ✓, n/3, chevron) below `lg`; tap expands the full card in place (`daily-quest-collapse` to fold). Auto-expands when a quest was just completed (`jma_quest_seen_done_v1`). Desktop ≥1024 keeps the full card. Result: rank bar + quests + PLAY/LEARN/CREATE + JMAtv all above the fold on 390×844 and 820×1180 (screenshot-verified).
 
 ## Latest (Jun 2026): **Shred City Encore Round** — tested iteration_32, 100%

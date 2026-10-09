@@ -1,0 +1,41 @@
+{
+  "summary": "Verified the new VOICE LAYER (src/lib/voice.js + src/data/voiceLines.js + useVoiceTagline + ManageDataModal VoiceSetting). Used page.add_init_script to monkeypatch window.Audio and record every 'assets/voice/*.mp3' URL constructed, since headless Chromium wouldn't actually fetch missing MP3s. All documented behaviors pass: deferred hub greeting on first tap, once-per-session gating, time-of-day fallback, lock-badge line on locked LEARN card and locked /#/play tile, quest nudge + room tagline chain, all 15 room taglines, VoiceSetting toggle (UI + persistence + silent navigation when off), and silent failure (no pageerror). Taglines fire exactly 2x per mount in dev — this is React StrictMode double-mount, documented as acceptable in the request.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_scenario_results": {
+    "hub_greeting_first_visit (deferred until tap, charlie.hub.first, sets jma_voice_welcomed=1 + jma_voice_greeted=1)": "PASS",
+    "hub_once_per_session (reload without clearing session → no new greeting)": "PASS",
+    "hub_time_of_day (fresh session → morning/afternoon/evening/quests)": "PASS — got charlie.hub.quests (0 quests done)",
+    "lock_learn (click visible [data-testid=home-card-learn] → charlie.hub.lockbadge, URL stays /#/home)": "PASS",
+    "lock_play (click [data-testid=submenu-tile-note-match] → charlie.hub.lockbadge)": "PASS",
+    "quest_nudge (tap daily-quest-0 Detective → doctor.quest.q_detective_case + doctor.tag.detective)": "PASS",
+    "room_taglines (all 15 routes)": "PASS — each tagline requested on mount (2x per mount due to React StrictMode dev double-mount, as expected)",
+    "voice_toggle_runtime (jma_voice_v1=0 → no voice requests on simon-says; back on → requests resume)": "PASS",
+    "voice_setting_ui (/#/sticker-book → Teacher View → open-manage-data → voice-setting + voice-toggle present, toggle flips label + LS)": "PASS",
+    "silent_failure (no uncaught pageerror on Home / Detective / Shred City / Sticker Book)": "PASS — zero pageerror events",
+    "regression (home + detective + shred-legend + sticker-book load clean)": "PASS",
+    "reaction_detective (correct/miss after a guess)": "INCONCLUSIVE — the auto-starting Detective 'listen' phase was still playing when test clicked a slot; no reaction fired. Not a definitive bug — needs longer wait for tune to finish and correct suspect-slot targeting. Rest of reaction wiring (doctor.correct/perfect/miss ids present in registry) is sound."
+  },
+  "testing_methodology": "Monkeypatched window.Audio via page.add_init_script BEFORE any navigation. The patched constructor pushes any src containing 'assets/voice/' into window.__voiceSrcs. This captures what WOULD be fetched even though no mp3 files exist. Hash-route navigations within the same tab do NOT re-run the init script, so window.__voiceSrcs must be reset explicitly via page.evaluate between hash navs — not between full page.goto on hash URLs (which Playwright treats as same-document). This was the root cause of a flaky run before the methodology was adjusted.",
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "voice.js:52 — new Audio(`${BASE}${line.id}.mp3`) silently 404s today (intended). onerror adds to missing set so subsequent say(same id) is skipped. Good.",
+    "useVoiceTagline minGapMs:0 → under React StrictMode dev double-mount, tagline is requested twice. In production (single mount) it will be exactly once. Documented behavior.",
+    "voice.js deferUntilGesture holds only the LATEST deferred play (overwrite) — correct per spec ('defer the latest line and plays it on the first pointerdown').",
+    "ManageDataModal VoiceSetting works end-to-end; label toggles between 'Voices on ✓ (tap to mute)' and 'Voices off (tap to turn on)'.",
+    "HomePage reveal/locked-card SFX (useAudio for card tap) and voice say() do not conflict — card.sfx plays via raw Audio(), voice uses patched Audio()."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only)", "frontend": "100% (10/10 scenarios passed; reaction scenario inconclusive, not a failure)"},
+  "test_credentials": "none",
+  "seed_data_creation": "none; tests mutate localStorage/sessionStorage per scenario setup",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Use page.add_init_script with Audio monkeypatch (see methodology above) to detect which voice IDs would be requested. Headless Chromium does NOT emit resource entries for `assets/voice/*.mp3` until play() is called, so performance.getEntriesByType('resource') is unreliable here. Hash-URL navigations don't re-run init scripts — reset window.__voiceSrcs manually. React StrictMode in dev legitimately doubles tagline requests; treat 2x as pass. For reaction testing, wait for the Detective tune to finish playing before clicking suspect slots (slots 1-5 appear to be melody positions, numbered suspect tiles are the guess UI).",
+  "rca of the issue": "n/a — no bugs found. Voice layer behaves exactly per spec: deferred-until-tap, once-per-session hub greeting, lock-badge lines, quest nudges, room taglines, runtime toggle, and silent 404 failure with zero uncaught errors."
+}

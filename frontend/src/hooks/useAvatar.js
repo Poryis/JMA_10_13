@@ -17,11 +17,12 @@ export function readAvatar() {
   return { chosen: false, character: 'charlie', outfit: 'classic' };
 }
 
-export function readAvatarSrc() {
+export function readAvatarOutfit() {
   const { character, outfit } = readAvatar();
   const a = AVATAR_MAP[character];
-  return (a.outfits.find(o => o.id === outfit) || a.outfits[0]).src;
+  return a.outfits.find(o => o.id === outfit) || a.outfits[0];
 }
+export function readAvatarSrc() { return readAvatarOutfit().src; }
 
 function writeAvatar(character, outfit) {
   try { localStorage.setItem(AVATAR_KEY, JSON.stringify({ character, outfit })); } catch (_) {}

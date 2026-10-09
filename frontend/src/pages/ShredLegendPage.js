@@ -12,7 +12,8 @@ import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
-import { readAvatarSrc } from '../hooks/useAvatar';
+import { readAvatarOutfit } from '../hooks/useAvatar';
+import AvatarSprite from '../components/AvatarSprite';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
@@ -101,6 +102,12 @@ function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
       {you && (
         <span data-testid="shred-crowd-you" className="absolute left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] md:text-[10px] font-black text-white whitespace-nowrap" style={{ top: '-30%', background: '#FF2D85', border: '2px solid #0A1420', zIndex: 6 }}>YOU</span>
       )}
+      {m.helmet ? (
+        <motion.div className="flex items-end" style={{ height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', filter: 'drop-shadow(0 0 8px rgba(255,45,133,0.8))' }}
+          animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }} transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}>
+          <AvatarSprite src={m.src} helmet width={54} />
+        </motion.div>
+      ) : (
       <motion.img
         src={m.src}
         alt=""
@@ -110,13 +117,14 @@ function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
         animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
         transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
       />
+      )}
     </motion.div>
   );
 }
 
-function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc }) {
+function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc, avatarHelmet = false }) {
   const members = avatarSrc
-    ? [...CROWD_MEMBERS.slice(0, 3), { src: avatarSrc, scale: 1.08, you: true }, ...CROWD_MEMBERS.slice(3, 6)]
+    ? [...CROWD_MEMBERS.slice(0, 3), { src: avatarSrc, scale: 1.08, you: true, helmet: avatarHelmet }, ...CROWD_MEMBERS.slice(3, 6)]
     : CROWD_MEMBERS;
   // Bucket the energy so the jump height/speed only change at a few
   // thresholds — continuously-changing framer targets caused the taller
@@ -771,7 +779,7 @@ export default function ShredLegendPage() {
               style={{ height: 'clamp(84px, 17vh, 140px)' }}
               data-testid="shred-crowd"
             >
-              <CrowdRow energy={energy} burstId={crowdBurst} shouts={shouts} avatarSrc={readAvatarSrc()} />
+              <CrowdRow energy={energy} burstId={crowdBurst} shouts={shouts} avatarSrc={readAvatarOutfit().src} avatarHelmet={!!readAvatarOutfit().helmet} />
             </div>
 
             {/* Guitar */}

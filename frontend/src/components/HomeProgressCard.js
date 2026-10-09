@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Flame, Star } from 'lucide-react';
 import useRank from '../hooks/useRank';
 import useAvatar from '../hooks/useAvatar';
+import AvatarSprite from './AvatarSprite';
 import useStickers from '../hooks/useStickers';
 import usePracticeStreak from '../hooks/usePracticeStreak';
 
@@ -30,7 +31,7 @@ function Divider() {
 
 export default function HomeProgressCard() {
   const navigate = useNavigate();
-  const { src: avatarSrc, chosen: avatarChosen } = useAvatar();
+  const { src: avatarSrc, chosen: avatarChosen, outfit: avatarOutfit } = useAvatar();
   const { currentRank, nextRank, progress } = useRank();
   const { count: streakCount } = usePracticeStreak();
   const { earned } = useStickers();
@@ -90,13 +91,7 @@ export default function HomeProgressCard() {
           transition={{ repeat: Infinity, duration: 1.4 }}
           title="Dressing Room"
         >
-          <img
-            src={avatarSrc}
-            alt=""
-            className="object-contain"
-            style={{ width: '88%', height: '88%' }}
-            draggable={false}
-          />
+          <AvatarSprite src={avatarSrc} helmet={!!avatarOutfit.helmet} width={avatarOutfit.helmet ? '70%' : '88%'} className="object-contain" imgStyle={avatarOutfit.helmet ? {} : { height: '100%', objectFit: 'contain' }} />
           <img
             src={currentRank.icon}
             alt=""

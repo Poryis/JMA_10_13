@@ -54,7 +54,7 @@ export const AVATARS = [
   { id: 'doctor',  name: 'Dr. Jellybone', color: '#0FA3B1', outfits: [
     outfit('classic',   'Classic',   'dr-jellybone'),
     outfit('detective', 'Detective', 'dr-jellybone-detective', DETECTIVE),
-    outfit('astro',     'Astronaut', 'dr-jellybone-astro-1', GEM_3),
+    { ...outfit('astro', 'Astronaut', 'dr-jellybone-astro-1', GEM_3), helmet: true },
   ] },
   { id: 'sharky',  name: 'Sharky',        color: '#FF3B30', outfits: [
     outfit('classic', 'Classic', 'shark'),

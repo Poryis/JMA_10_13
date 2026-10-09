@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
+import BlimpFlyby from '../components/BlimpFlyby';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
 import { say, voiceEnabled } from '../lib/voice';
@@ -98,6 +99,7 @@ function Building({ b, index, locked, onEnter }) {
         className="relative w-full"
         style={{ filter: locked ? 'brightness(0.32) saturate(0.4)' : 'none', transition: 'filter 0.6s ease' }}
       >
+        <div className="absolute left-[8%] right-[8%] rounded-[50%] pointer-events-none" style={{ bottom: -6, height: 14, background: 'rgba(10,37,64,0.22)' }} />
         {b.art
           ? <div className="w-full flex items-end justify-center" style={{ aspectRatio: '1 / 1' }}><img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 6px 0 rgba(10,37,64,0.35))' }} /></div>
           : <Kiosk kiosk={b.kiosk} />}
@@ -133,8 +135,8 @@ function Street({ zone, buildings, locked, onEnter, refEl }) {
         <div className="rounded-lg px-2 py-0.5 text-[10px] md:text-xs font-black text-white" style={{ background: 'var(--jma-dark)' }}>{zone.street}</div>
       </div>
       {/* ground */}
-      <div className="relative mt-2 px-3 md:px-6 pb-6" style={{ background: `linear-gradient(180deg, transparent 0 38%, ${zone.ground} 38%)` }}>
-        <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-6 md:gap-x-8 pt-2">
+      <div className="relative mt-2 px-3 md:px-6 pb-6 rounded-t-[40px]" style={{ background: zone.ground, borderTop: '3px solid var(--jma-dark)' }}>
+        <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-6 md:gap-x-8 pt-6">
           {buildings.map((b, i) => (
             <Building key={b.id} b={b} index={i} locked={locked && !b.starter} onEnter={onEnter} />
           ))}
@@ -171,12 +173,12 @@ export default function CampusMapPage() {
       {sky.night && [...Array(26)].map((_, i) => (
         <motion.span key={i} className="absolute rounded-full bg-white pointer-events-none" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 55}%`, width: i % 3 ? 2 : 3, height: i % 3 ? 2 : 3 }} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.6 + (i % 5) * 0.4, delay: (i % 7) * 0.3 }} />
       ))}
-      <motion.div
-        data-testid="campus-sun-moon"
-        className="absolute rounded-full pointer-events-none"
-        style={{ right: '8%', top: 70, width: 'clamp(40px, 6vw, 64px)', height: 'clamp(40px, 6vw, 64px)', background: sky.night ? '#F4F1DE' : '#FFD54A', border: '3px solid var(--jma-dark)', boxShadow: sky.night ? '0 0 24px 6px rgba(244,241,222,0.45)' : '0 0 28px 8px rgba(255,213,74,0.55)' }}
-        animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-      />
+      {sky.night ? (
+        <motion.div data-testid="campus-sun-moon" data-kind="moon" className="absolute rounded-full pointer-events-none" style={{ right: '8%', top: 70, width: 'clamp(40px, 6vw, 64px)', height: 'clamp(40px, 6vw, 64px)', background: '#F4F1DE', border: '3px solid var(--jma-dark)', boxShadow: '0 0 24px 6px rgba(244,241,222,0.45)' }} animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }} />
+      ) : (
+        <motion.img data-testid="campus-sun-moon" data-kind="sun" src="assets/ui/sun.png" alt="" draggable={false} className="absolute pointer-events-none object-contain" style={{ right: '7%', top: 62, width: 'clamp(56px, 8vw, 96px)', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.18))' }} animate={{ rotate: [0, 10, 0], y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }} />
+      )}
+      <BlimpFlyby />
       <GameHeader title={`${zone.label} STREET`} showHomeButton={true} />
       <motion.main
         className="relative pt-14 md:pt-16 max-w-6xl mx-auto"

@@ -7,6 +7,7 @@ import UnderwaterBackdrop, { UNDERWATER_BG_COLOR } from '../components/Underwate
 import useAvatar from '../hooks/useAvatar';
 import { AVATARS } from '../data/avatars';
 import { say } from '../lib/voice';
+import AvatarSprite from '../components/AvatarSprite';
 
 function CharacterPick({ a, active, unlockedCount, onPick }) {
   return (
@@ -44,7 +45,9 @@ function OutfitTile({ o, worn, color, onWear }) {
       whileTap={o.unlocked ? { scale: 0.95 } : { x: [0, -6, 6, -4, 4, 0] }}
       layout
     >
-      <img src={o.src} alt="" draggable={false} className="object-contain" style={{ height: 'clamp(64px, 10vw, 96px)', filter: o.unlocked ? 'none' : 'grayscale(1) brightness(0.25) contrast(0.8)' }} />
+      <div className="flex items-end justify-center" style={{ height: 'clamp(64px, 10vw, 96px)' }}>
+        <AvatarSprite src={o.src} helmet={!!o.helmet} width={o.helmet ? 'clamp(44px, 6vw, 60px)' : undefined} className="object-contain max-h-full" style={{ filter: o.unlocked ? 'none' : 'grayscale(1) brightness(0.25) contrast(0.8)' }} imgStyle={o.helmet ? {} : { height: 'clamp(64px, 10vw, 96px)' }} />
+      </div>
       <span className="text-[11px] md:text-sm font-black font-display mt-1" style={{ color: 'var(--jma-dark)' }}>{o.name}</span>
       {!o.unlocked && (
         <span className="flex items-center gap-1 text-[9px] md:text-[10px] font-bold mt-0.5 leading-tight" style={{ color: 'var(--jma-dark)', opacity: 0.7 }}>
@@ -64,7 +67,8 @@ export default function DressingRoomPage() {
   const previewChar = AVATARS.find(a => a.id === preview) || character;
   const previewOutfits = previewChar.id === character.id ? outfits : previewChar.outfits.map(o => ({ ...o, unlocked: o.unlock.kind === 'free' || unlockedFor({ outfits: [o] }) > 0 }));
   const isCurrent = previewChar.id === character.id;
-  const shownSrc = isCurrent ? outfit.src : previewChar.outfits[0].src;
+  const shownOutfit = isCurrent ? outfit : previewChar.outfits[0];
+  const shownSrc = shownOutfit.src;
 
   const pick = (a) => {
     setPreview(a.id);
@@ -80,14 +84,15 @@ export default function DressingRoomPage() {
         {/* Preview */}
         <section className="rounded-3xl p-4 md:p-5 flex items-center gap-4" style={{ background: 'white', border: '4px solid var(--jma-dark)', boxShadow: '0 6px 0 0 var(--jma-dark)' }} data-testid="avatar-preview">
           <AnimatePresence initial={false}>
-            <motion.img
+            <motion.div
               key={shownSrc}
-              src={shownSrc} alt="" draggable={false}
-              className="object-contain flex-shrink-0"
+              className="flex-shrink-0 flex items-end justify-center"
               style={{ height: 'clamp(110px, 20vw, 170px)', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.25))' }}
               initial={{ scale: 0.6, rotate: -8, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} exit={{ scale: 0.8, opacity: 0, position: 'absolute' }}
               transition={{ type: 'spring', stiffness: 300, damping: 18, opacity: { duration: 0.15 } }}
-            />
+            >
+              <AvatarSprite src={shownSrc} helmet={!!shownOutfit.helmet} width={shownOutfit.helmet ? 'clamp(80px, 13vw, 118px)' : undefined} className="max-h-full" imgStyle={shownOutfit.helmet ? {} : { height: 'clamp(110px, 20vw, 170px)', objectFit: 'contain' }} testId="avatar-preview-sprite" />
+            </motion.div>
           </AnimatePresence>
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] md:text-xs uppercase tracking-[0.15em] font-black" style={{ color: previewChar.color }}>{chosen ? 'Your Jelly' : 'Pick your Jelly!'}</span>

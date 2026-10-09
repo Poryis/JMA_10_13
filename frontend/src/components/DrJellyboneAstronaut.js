@@ -63,7 +63,7 @@ const HELMET = {
 
 // Back layer: dome silhouette peeking around head, neck collar,
 // oxygen tube snaking down, and life-support backpack tank.
-function HelmetBackShell() {
+export function HelmetBackShell() {
   return (
     <div aria-hidden="true" className="absolute pointer-events-none" style={{ inset: 0, zIndex: 0 }}>
       {/* Backpack tank — anchored behind the tentacle mass */}
@@ -160,7 +160,7 @@ function HelmetBackShell() {
 
 // Front layer: transparent visor glass, rim highlight, glints,
 // side comm box, and antenna with blinking red tip.
-function HelmetFrontVisor() {
+export function HelmetFrontVisor() {
   return (
     <div aria-hidden="true" className="absolute pointer-events-none" style={{ inset: 0, zIndex: 3 }}>
       <div className="absolute" style={{ ...HELMET }}>

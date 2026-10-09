@@ -1,6 +1,10 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): Campus v2 — single street, all 15 buildings, campus life (tested iteration_36, 100%)
+## Latest (Jun 2026): **Campus v3 — underwater panorama** (tested iteration_37, 100%)
+- User HATED v2's flat green slab ("takes back the magic"). v3 (`pages/CampusMapPage.js`, full rewrite): one street per visit, horizontally scrollable panorama over the home `UnderwaterBackdrop` (+ `deep` at night), `BlimpFlyby`, fish, 2 swimming Jellies, kelp/coral SVG props, sand shelf, parallax far-reef + near-kelp (translate with scrollLeft), buildings at varied depth (every 3rd lifted/scaled .86), bobbing, pulsing window glow, floating lucide Music notes, **host Jelly at each door** with random shout bubbles, kid's avatar at the street entrance (`campus-you`), swipe hint, desktop drag-to-pan. Slot 300px (≥640) / 220px (phone). Street-name chip centered under header.
+- Option "b. panorama" chosen by user over winding path (a) / diorama (c). Still one street per visit.
+
+## Jun 2026: Campus v2 — single street, all 15 buildings, campus life (tested iteration_36, 100%) — SUPERSEDED
 - `/campus?zone=` shows ONLY that street (user request). All 15 rooms have art in `assets/campus/` (kiosk fallback kept in code but unused). PLAY order: jukebox, shred, stew, note-match, detective, sight, robot. Stew uses `stew-room-kazoo.png` (v1 with kazoo in window — user approved v1 look; `stew-room.png` original kept). Who's Got the Rhythm = football field.
 - Ground slab under every row (fixes "floating" on phone) + shadow ellipses; user's `assets/ui/sun.png` by day / CSS moon + stars at night (`skyFor(hour)`); `BlimpFlyby`; 3 strolling Jellies per street; ambient loops `assets/ambient/{play,learn,create}.mp3` (ffmpeg-synthesized placeholders, vol .22, honor voices toggle, start after audio-unlock tap).
 - **Astronaut Jellybone helmet fixed**: `components/AvatarSprite.js` layers the SVG helmet (exported from `DrJellyboneAstronaut.js`) for outfits with `helmet: true`; used in Dressing Room, Home rank bar, Shred crowd.

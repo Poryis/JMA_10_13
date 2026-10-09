@@ -2,14 +2,62 @@
 // every room a building. Locked rooms go dark with a lit window; tapping an
 // open door zooms the map into the building before the route changes.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
-import { say } from '../lib/voice';
+import { say, voiceEnabled } from '../lib/voice';
+
+// Sky follows the clock: dawn → day → dusk → night.
+function skyFor(hour) {
+  if (hour >= 20 || hour < 5) return { top: '#0B1D3A', bottom: '#2B3F6B', night: true, label: 'night' };
+  if (hour < 7)  return { top: '#F6A66B', bottom: '#FFD9A0', night: false, label: 'dawn' };
+  if (hour < 17) return { top: '#8FD8FF', bottom: '#CDEFFF', night: false, label: 'day' };
+  if (hour < 20) return { top: '#F08A5D', bottom: '#F9C784', night: false, label: 'dusk' };
+  return { top: '#8FD8FF', bottom: '#CDEFFF', night: false, label: 'day' };
+}
+
+// Jellies strolling the sidewalk — flip to face their direction of travel.
+function Strollers({ srcs }) {
+  return (
+    <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 70, zIndex: 5 }} data-testid="campus-strollers">
+      {srcs.map((src, i) => {
+        const dur = 22 + i * 7;
+        return (
+          <motion.div
+            key={src}
+            className="absolute bottom-1"
+            style={{ left: 0, width: 'clamp(34px, 5vw, 56px)' }}
+            initial={{ x: `${(i * 37) % 100}vw` }}
+            animate={{ x: ['-10vw', '100vw', '-10vw'], scaleX: [1, 1, -1, -1, 1] }}
+            transition={{
+              x: { repeat: Infinity, duration: dur, ease: 'linear', times: [0, 0.5, 1], delay: -i * 9 },
+              scaleX: { repeat: Infinity, duration: dur, times: [0, 0.49, 0.5, 0.99, 1], delay: -i * 9 },
+            }}
+          >
+            <motion.img src={src} alt="" draggable={false} className="w-full object-contain object-bottom"
+              animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }} transition={{ repeat: Infinity, duration: 0.55, ease: 'easeInOut' }} />
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Low ambient loop per street; starts after the audio-unlock tap, stops on leave.
+function useAmbient(src) {
+  useEffect(() => {
+    if (!src || !voiceEnabled()) return undefined;
+    const a = new Audio(src); a.loop = true; a.volume = 0.22;
+    const start = () => a.play().catch(() => {});
+    let armed = false;
+    try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') start(); else { armed = true; document.addEventListener('pointerdown', start, { once: true, capture: true }); } } catch (_) { start(); }
+    return () => { a.pause(); if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
+  }, [src]);
+}
 
 function Kiosk({ kiosk }) {
   return (
@@ -36,7 +84,7 @@ function Building({ b, index, locked, onEnter }) {
       aria-disabled={locked}
       onClick={handle}
       className={`relative flex flex-col items-center bg-transparent border-0 p-0 ${locked ? 'cursor-not-allowed' : 'cursor-pointer'} touch-manipulation`}
-      style={{ width: `clamp(${Math.round(96 * b.size)}px, ${Math.round(17 * b.size)}vw, ${Math.round(200 * b.size)}px)` }}
+      style={{ width: `clamp(${Math.round(100 * b.size)}px, ${Math.round(21 * b.size)}vw, ${Math.round(250 * b.size)}px)` }}
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.08 + index * 0.06, type: 'spring', stiffness: 220 }}
@@ -78,7 +126,7 @@ function Building({ b, index, locked, onEnter }) {
 
 function Street({ zone, buildings, locked, onEnter, refEl }) {
   return (
-    <section ref={refEl} data-testid={`campus-zone-${zone.id}`} className="relative w-full" style={{ scrollMarginTop: 72 }}>
+    <section ref={refEl} data-testid={`campus-zone-${zone.id}`} className="relative w-full min-h-[calc(100vh-56px)] flex flex-col justify-end pb-6" style={{ scrollMarginTop: 72 }}>
       {/* street sign */}
       <div className="relative z-10 flex items-center gap-2 px-3 md:px-6 pt-3">
         <div className="rounded-xl px-3 py-1 font-black font-display text-lg md:text-2xl" style={{ background: zone.color, color: 'var(--jma-dark)', border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}>{zone.label}</div>
@@ -93,6 +141,7 @@ function Street({ zone, buildings, locked, onEnter, refEl }) {
         </div>
         {/* sidewalk */}
         <div className="absolute inset-x-0 bottom-0 h-3" style={{ background: 'repeating-linear-gradient(90deg, #E9DFC8 0 28px, #D6C9AC 28px 56px)', borderTop: '3px solid var(--jma-dark)' }} />
+        <Strollers srcs={zone.strollers || []} />
       </div>
     </section>
   );
@@ -104,17 +153,11 @@ export default function CampusMapPage() {
   const { unlocked } = useUnlocks();
   const [leaving, setLeaving] = useState(null); // { x, y, path }
   const zoneRefs = useRef({});
-
-  useEffect(() => {
-    const z = new URLSearchParams(location.search).get('zone');
-    const el = z && zoneRefs.current[z];
-    if (!el) return;
-    // Scroll once early, then again after building art has laid out.
-    const go = () => el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    const t1 = setTimeout(go, 150);
-    const t2 = setTimeout(go, 800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [location.search]);
+  const zoneId = new URLSearchParams(location.search).get('zone') || 'play';
+  const zone = CAMPUS_ZONES.find((z) => z.id === zoneId) || CAMPUS_ZONES[0];
+  const sky = useMemo(() => skyFor(new Date().getHours()), []);
+  useAmbient(zone.ambient);
+  useEffect(() => { window.scrollTo(0, 0); }, [zoneId]);
 
   const enter = (b) => {
     const el = document.querySelector(`[data-testid="campus-building-${b.id}"]`);
@@ -124,10 +167,19 @@ export default function CampusMapPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden" style={{ background: 'linear-gradient(180deg, #8FD8FF 0%, #CDEFFF 100%)' }} data-testid="campus-map-page">
-      <GameHeader title="THE ACADEMY" showHomeButton={true} />
+    <div className="min-h-screen relative overflow-x-hidden" style={{ background: `linear-gradient(180deg, ${sky.top} 0%, ${sky.bottom} 100%)` }} data-testid="campus-map-page" data-zone={zone.id} data-sky={sky.label}>
+      {sky.night && [...Array(26)].map((_, i) => (
+        <motion.span key={i} className="absolute rounded-full bg-white pointer-events-none" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 55}%`, width: i % 3 ? 2 : 3, height: i % 3 ? 2 : 3 }} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.6 + (i % 5) * 0.4, delay: (i % 7) * 0.3 }} />
+      ))}
+      <motion.div
+        data-testid="campus-sun-moon"
+        className="absolute rounded-full pointer-events-none"
+        style={{ right: '8%', top: 70, width: 'clamp(40px, 6vw, 64px)', height: 'clamp(40px, 6vw, 64px)', background: sky.night ? '#F4F1DE' : '#FFD54A', border: '3px solid var(--jma-dark)', boxShadow: sky.night ? '0 0 24px 6px rgba(244,241,222,0.45)' : '0 0 28px 8px rgba(255,213,74,0.55)' }}
+        animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+      />
+      <GameHeader title={`${zone.label} STREET`} showHomeButton={true} />
       <motion.main
-        className="relative pt-14 md:pt-16 pb-8 max-w-6xl mx-auto"
+        className="relative pt-14 md:pt-16 max-w-6xl mx-auto"
         style={{ transformOrigin: leaving ? `${leaving.x}px ${leaving.y}px` : 'center' }}
         animate={leaving ? { scale: 2.6, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.6, 0, 0.8, 1] }}
@@ -136,16 +188,14 @@ export default function CampusMapPage() {
         {[12, 48, 78].map((x, i) => (
           <motion.div key={i} className="absolute rounded-full bg-white/80" style={{ left: `${x}%`, top: 60 + i * 26, width: 90 + i * 20, height: 28 }} animate={{ x: [0, 18, 0] }} transition={{ repeat: Infinity, duration: 9 + i * 2, ease: 'easeInOut' }} />
         ))}
-        {CAMPUS_ZONES.map((zone) => (
-          <Street
-            key={zone.id}
-            zone={zone}
-            refEl={(el) => { zoneRefs.current[zone.id] = el; }}
-            buildings={CAMPUS_BUILDINGS.filter((b) => b.zone === zone.id)}
-            locked={!unlocked}
-            onEnter={enter}
-          />
-        ))}
+        <Street
+          key={zone.id}
+          zone={zone}
+          refEl={(el) => { zoneRefs.current[zone.id] = el; }}
+          buildings={CAMPUS_BUILDINGS.filter((b) => b.zone === zone.id)}
+          locked={!unlocked}
+          onEnter={enter}
+        />
       </motion.main>
       {/* door-open dark iris */}
       {leaving && (

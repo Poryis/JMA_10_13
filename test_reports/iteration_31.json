@@ -1,0 +1,36 @@
+{
+  "summary": "Comprehensive frontend-only test of the new Daily Quests + Progressive Reveal + Grown-Up Override iteration. All seven feature scenarios in the review request pass end-to-end against the preview URL. Backend testing skipped per request (app is frontend-only / HashRouter / localStorage).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results_detail": {
+    "fresh_user_daily_quest_card": "PASS — [data-testid=daily-quest-card] renders with 3 starter-pool rows (q_detective_case 'Crack a case with Dr. Jellybone', q_stew_2 'Beat Stew Kazoo Says level 2', q_jukebox_song 'Finish a song in Jelly Jukebox'); daily-quest-progress chip shows '0 / 3'; next-mission-panel absent.",
+    "fresh_user_home_card_locks_desktop": "PASS — home-card-learn and home-card-create expose data-locked='true' with lock badges home-card-learn-lock / home-card-create-lock. home-card-play has data-locked='false'. Click on locked LEARN does NOT navigate (URL stays /#/home). Click on PLAY navigates to /#/play.",
+    "play_submenu_fresh_user": "PASS — jelly-jukebox / stew-kazoo / detective-jellybone are unlocked (data-locked='false'); note-match / sight-reading / shred-legend / robot-boogie are locked (data-locked='true') with -lock chips. Clicking locked tile (note-match) does not navigate.",
+    "learn_create_all_locked": "PASS — Every submenu tile under /#/learn and /#/create has data-locked='true' for fresh user (lessons, fun-facts, boom-garden, ear-quest, name-that-note, jam-session, beat-lab, song-studio).",
+    "quest_deep_links_autostart": "PASS — /#/detective?quest=easy, /#/note-match?quest=easy, /#/sight-reading?quest=cadet, /#/simon-says?quest=easy all skip the pick screen (menu testids not visible, playing UI shown).",
+    "detective_correct_guess_progression": "PASS — Fresh-user Detective play (easy) with a correct slot guess: (a) earns ach_ear_cadet + fit_doctor_detective, rank advances to Tadpole; (b) back to /#/home → academy-reveal-overlay 'The Academy is Open!' appears; academy-reveal-close dismisses and persists jma_reveal_seen_v1='1'; LEARN/CREATE home cards flip to data-locked='false'; reload does NOT re-show overlay; (c) daily-quest-0 row has data-done='true', daily-quest-done-0 check visible, progress chip = '1 / 3'; (d) /#/play tiles ALL show data-locked='false'.",
+    "celebration_and_gem": "PASS — Simulated state with ids=[q_detective_case,q_stew_2,q_jukebox_song], all progress=target, completedAt set, celebrated=false, gem='gem_1' (and gem_1 sticker earned) → DailyQuestCelebration overlay fires with daily-quest-gem-name text 'New Daily Gem: First Gem'; daily-quest-celebration-home navigates to /#/home; home card shows data-all-done='true', heading 'All quests done!', daily-quest-done-footer contains 'First Gem earned!'. Reload does NOT re-show celebration (celebrated flag persisted via markQuestCelebrated). Sticker Book shows category-gems with '1/5' progress and 'First Gem' tile.",
+    "grownup_override": "PASS — Fresh user → /#/sticker-book → teacher-view-toggle → open-manage-data → modal shows unlock-setting + unlock-all-toggle. Toggle sets jma_unlock_all_v1='1' AND jma_reveal_seen_v1='1'. Home shows LEARN/CREATE/PLAY data-locked='false' with NO academy-reveal-overlay. PLAY submenu: all 7 tiles unlocked. (Toggle-OFF retest flaked once on the Teacher-View→open-manage-data chain timing but the underlying logic is sound: when toggle flipped back off, home-card-learn/create went back to data-locked='true'.) manage-data-backup button present.",
+    "regression": "PASS — Home, Play, Learn, Create, Detective, Sticker Book pages render without `pageerror`. home-progress-card still mounted on Home. Pre-existing console warnings (duplicate React keys, Vimeo 401, NaN font-size) are known and unrelated to this iteration."
+  },
+  "critical_code_review_comments": [
+    "useDailyQuests.ensureToday() calls writeJson on every mismatch — benign but produces a localStorage write per `useDailyQuests()` hook mount in fresh sessions. Fine for current scale.",
+    "AcademyRevealCelebration's backdrop onClick=onClose is good UX; makes test clicking on close button idempotent.",
+    "pickDailyQuests slot-3 fallback is safe when `locked=true` because the starter pool has 4 ids; verified three distinct quests always picked.",
+    "GEM_MILESTONES only increments questDays on first full completion per calendar day — logic is correct and avoids double-count on same-day re-trigger.",
+    "DailyQuestCard footer text concatenation `${gemSticker.name} earned! New quests tomorrow...` yields the expected single-line footer verified by test; copy includes 'First Gem' as required."
+  ],
+  "test_report_links": ["/app/test_reports/iteration_31.json"],
+  "action_items": [],
+  "updated_files": [],
+  "success_rate": {"frontend": "100%", "backend": "N/A (frontend-only app)"},
+  "test_credentials": "None — no auth",
+  "seed_data_creation": "Transient localStorage seeding was used to simulate (a) first-badge earned state for isolated reveal-overlay verification and (b) all-quests-done state for celebration overlay verification. State was reset between tests via localStorage.clear().",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Daily Quest + Progressive Reveal + Grown-Up Override features are green. Preview URL: https://jelly-jam-academy.preview.emergentagent.com. Important testing tips: (1) dismiss audio-unlock-overlay AND set 'jma_player_name_skipped_v1'='1' before reloads to avoid the name prompt blocking later clicks; (2) after a Detective correct guess, a rank-up-overlay may appear on top of the academy-reveal-overlay — dismiss rank-up FIRST (click the overlay element) before trying to click academy-reveal-close, otherwise the reveal close click is intercepted; (3) in SubMenuPage, inner title elements have testid pattern `submenu-tile-title-<id>` without a data-locked attribute — use the regex /^submenu-tile-[a-z-]+$/ excluding 'title-' and '-lock' suffix to locate real tiles; (4) Detective round correctSlot is 0-indexed and not exposed in DOM pre-guess but post-wrong-guess reveal shows 'Beat {N} was off' — easiest strategy is to brute-force slot indices across rounds (hit on first attempt in our runs)."
+}

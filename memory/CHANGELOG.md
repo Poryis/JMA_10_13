@@ -1,5 +1,14 @@
 # Changelog
 
+## Jun 2026 — Daily Quests + Progressive Reveal (anti-overwhelm round 1)
+- New: `data/dailyQuests.js`, `hooks/useDailyQuests.js`, `hooks/useUnlocks.js`, `components/DailyQuestCard.js`, `components/DailyQuestCelebration.js`, `components/AcademyRevealCelebration.js`.
+- Home: NextMissionPanel replaced by "Today at the Academy"; LEARN/CREATE cards lock until first badge (or grown-up override).
+- SubMenuPage/PlayMenuPage: `locked` tiles (greyscale + lock chip), `starter: true` on Jukebox / Stew Kazoo / Detective.
+- ManageDataModal: "Academy Rooms — Unlock everything now" toggle.
+- Stickers: new `gems` category (gem_1/3/7/14/30). playerStorage snapshot + reset cover new keys.
+- `?quest=` autostart in Detective, Note Match, Sight Reading, Stew Kazoo Says. reportQuestEvent wired into 16 game win/earn points.
+- Tested: test_reports/iteration_31.json (frontend, 100%).
+
 ## Beat Lab — playback render perf (Jun 2026)
 
 Beta report of lag. Root cause (code side): the moving playhead forced a full page re-render every tick, and empty lanes received a fresh `new Array().fill(0)` each render — defeating `StepRow`'s memo so every empty row re-rendered on every tick (up to 64 cells × lanes).

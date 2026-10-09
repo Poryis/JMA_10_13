@@ -116,11 +116,13 @@ function CrowdRow({ energy, burstId = 0, shouts = [] }) {
   const shoutFor = (idx) => shouts.find((s) => s.member === idx) || null;
   return (
     <div className="relative w-full h-full pointer-events-none select-none" data-testid="shred-crowd-row" data-back-row={backRow ? 'true' : 'false'}>
+      <CameraFlashes energy={energy} />
+      <CrowdExtras energy={energy} />
       <AnimatePresence>
         {backRow && (
           <motion.div
             className="absolute inset-x-0 flex items-end justify-center gap-2 md:gap-5"
-            style={{ bottom: '28%', height: '72%', filter: 'brightness(0.72) saturate(0.9)', zIndex: 0 }}
+            style={{ bottom: '28%', height: '72%', filter: 'brightness(0.42) saturate(0.55)', opacity: 0.8, zIndex: 0 }}
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
           >
             {CROWD_BACK_ROW.map((m, i) => (
@@ -146,6 +148,89 @@ function CrowdRow({ energy, burstId = 0, shouts = [] }) {
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+// Camera flashes popping in the crowd once the show heats up.
+function CameraFlashes({ energy }) {
+  const [flashes, setFlashes] = useState([]);
+  const rate = energy >= 0.9 ? 160 : energy >= 0.58 ? 320 : 0;
+  useEffect(() => {
+    if (!rate) { setFlashes([]); return; }
+    const iv = setInterval(() => {
+      const id = Date.now() + Math.random();
+      setFlashes((f) => [...f.slice(-8), { id, x: 5 + Math.random() * 90, y: 10 + Math.random() * 70 }]);
+      setTimeout(() => setFlashes((f) => f.filter((x) => x.id !== id)), 380);
+    }, rate);
+    return () => clearInterval(iv);
+  }, [rate]);
+  return (
+    <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} data-testid="shred-camera-flashes">
+      <AnimatePresence>
+        {flashes.map((f) => (
+          <motion.div
+            key={f.id}
+            className="absolute rounded-full"
+            style={{ left: `${f.x}%`, top: `${f.y}%`, width: 14, height: 14, background: 'white', boxShadow: '0 0 18px 8px rgba(255,255,255,0.9), 0 0 40px 16px rgba(255,255,255,0.35)' }}
+            initial={{ opacity: 0, scale: 0.3 }} animate={{ opacity: 1, scale: 1.4 }} exit={{ opacity: 0, scale: 0.2 }}
+            transition={{ duration: 0.18 }}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Beach ball bouncing over the crowd (Headliner+), Surf Charlie crowd-surfing
+// and stage pyro at SHRED LEGEND.
+function CrowdExtras({ energy }) {
+  const ball = energy >= 0.58;
+  const legend = energy >= 0.9;
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-visible" style={{ zIndex: 4 }} data-testid="shred-crowd-extras" data-legend={legend ? 'true' : 'false'}>
+      <AnimatePresence>
+        {ball && (
+          <motion.div
+            key="ball"
+            className="absolute"
+            style={{ top: '-10%', width: 'clamp(26px, 4vw, 40px)', aspectRatio: '1 / 1', borderRadius: '50%', border: '3px solid #0A1420', background: 'conic-gradient(#FF3B30 0 60deg, #FFCC00 60deg 120deg, #4285F4 120deg 180deg, #FF3B30 180deg 240deg, #FFCC00 240deg 300deg, #4285F4 300deg 360deg)', boxShadow: '0 4px 0 0 rgba(0,0,0,0.3)' }}
+            initial={{ opacity: 0, left: '-6%' }}
+            animate={{ opacity: 1, left: ['-6%', '96%', '-6%'], y: [0, -46, 0, -46, 0, -46, 0, -46, 0], rotate: [0, 720] }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ left: { repeat: Infinity, duration: 7, ease: 'linear' }, y: { repeat: Infinity, duration: 3.5, ease: 'easeInOut' }, rotate: { repeat: Infinity, duration: 3.5, ease: 'linear' }, opacity: { duration: 0.4 } }}
+          />
+        )}
+        {legend && (
+          <motion.img
+            key="surfer"
+            src="assets/characters/charlie-surf.png"
+            alt=""
+            draggable={false}
+            data-testid="shred-crowd-surfer"
+            className="absolute object-contain"
+            style={{ top: '-24%', height: '62%', width: 'auto', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.45))' }}
+            initial={{ opacity: 0, left: '-14%', rotate: -78 }}
+            animate={{ opacity: 1, left: ['-14%', '104%'], y: [0, -14, 4, -12, 0], rotate: [-78, -88, -70, -84, -78] }}
+            exit={{ opacity: 0 }}
+            transition={{ left: { repeat: Infinity, duration: 6.5, ease: 'linear' }, y: { repeat: Infinity, duration: 1.1, ease: 'easeInOut' }, rotate: { repeat: Infinity, duration: 1.1, ease: 'easeInOut' }, opacity: { duration: 0.4 } }}
+          />
+        )}
+        {legend && ['4%', '92%'].map((left, side) => (
+          <div key={`pyro-${side}`} className="absolute bottom-0" style={{ left, width: 24, height: 1 }} data-testid="shred-pyro">
+            {Array.from({ length: 14 }).map((_, i) => (
+              <motion.span
+                key={i}
+                className="absolute rounded-full"
+                style={{ left: 10, bottom: 0, width: 5 + (i % 3) * 2, height: 5 + (i % 3) * 2, background: i % 2 ? '#FFCC00' : '#FFF4B0', boxShadow: '0 0 8px 2px rgba(255,204,0,0.8)' }}
+                initial={{ opacity: 0 }}
+                animate={{ y: [0, -(110 + (i % 5) * 22)], x: [0, (i % 2 ? 1 : -1) * (6 + (i * 7) % 34)], opacity: [1, 1, 0], scale: [1, 0.9, 0.2] }}
+                transition={{ repeat: Infinity, duration: 0.85 + (i % 4) * 0.12, delay: i * 0.07, ease: 'easeOut' }}
+              />
+            ))}
+          </div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
@@ -216,6 +301,7 @@ export default function ShredLegendPage() {
   const [tierFlash, setTierFlash] = useState(null);   // { label, color, id } tier-up banner
   const [burst, setBurst] = useState(null);           // { id, mega } confetti burst on tier-up
   const [shouts, setShouts] = useState([]);           // crowd speech bubbles [{ id, member, text }]
+  const [crowdBurst, setCrowdBurst] = useState(0);    // bumps → whole crowd does a jump wave
   const [hitPulse, setHitPulse] = useState(0);        // bumps on every scored hit (meter pop)
 
   const meterRef = useRef(0);
@@ -312,6 +398,7 @@ export default function ShredLegendPage() {
     setHitPulse((p) => p + 1);
     pushFloat(perfect ? 'PERFECT!' : 'NICE!', perfect ? '#FFCC00' : '#0FA3B1', perfect);
     if (perfect && comboRef.current >= 3 && comboRef.current % 4 === 0) pushShout(1 + (comboRef.current >= 12 ? 1 : 0));
+    if (comboRef.current >= 8 && comboRef.current % 8 === 0) setCrowdBurst(Date.now());
   }, [screen, band, pushFloat, pushShout]);
 
   // Shared meter-raise + tier/cheer handling.
@@ -335,6 +422,7 @@ export default function ShredLegendPage() {
         setTierFlash({ label: tier, color, id });
         setTimeout(() => setTierFlash((f) => (f && f.id === id ? null : f)), 1500);
         setBurst({ id, mega: newIdx >= 2 });
+        setCrowdBurst(id);
         setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 2600);
         pushShout(newIdx >= 2 ? CROWD_MEMBERS.length : 3);
       }
@@ -355,6 +443,10 @@ export default function ShredLegendPage() {
   // ---- song loop: countdown timer + sustain fill / idle decay ----
   useEffect(() => {
     if (screen !== 'playing') return;
+    if (process.env.NODE_ENV !== 'production') {
+      // Dev-only hook so automated tests can drive the Crowd Meter.
+      window.__shredSetMeter = (v) => { meterRef.current = Math.max(0, Math.min(100, v)); bumpMeter(0); };
+    }
     const iv = setInterval(() => {
       if (pausedRef.current) return;
       const now = performance.now();
@@ -386,7 +478,7 @@ export default function ShredLegendPage() {
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0; lastScoredRef.current = -1;
-    onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setBurst(null); setShouts([]);
+    onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setBurst(null); setShouts([]); setCrowdBurst(0);
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
@@ -632,7 +724,7 @@ export default function ShredLegendPage() {
               style={{ height: 'clamp(84px, 17vh, 140px)' }}
               data-testid="shred-crowd"
             >
-              <CrowdRow energy={energy} burstId={tierFlash ? tierFlash.id : 0} shouts={shouts} />
+              <CrowdRow energy={energy} burstId={crowdBurst} shouts={shouts} />
             </div>
 
             {/* Guitar */}

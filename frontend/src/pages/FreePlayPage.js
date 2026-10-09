@@ -10,6 +10,8 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import UnderwaterBackdrop from '../components/UnderwaterBackdrop';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { SONG_LIBRARY } from '../data/songs';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
@@ -537,6 +539,7 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph, beatPla
 }
 
 function FreePlayPage() {
+  useVoiceTagline('jazzy.tag.jam');
   const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
   const recorder = useMp3Recorder(getAudioGraph);
   const beatPlayer = useBeatLoopPlayer({ playBellNote, playDrumSound, initAudioContext });

@@ -9,6 +9,7 @@
 // via <SpaceBackdrop />.
 
 import { useNavigate } from 'react-router-dom';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { motion } from 'framer-motion';
 import { GameHeader } from '../components/GameUI';
 import MiniCRT from '../components/MiniCRT';
@@ -160,6 +161,7 @@ function LessonsTile({ index, onClick }) {
 }
 
 export default function JMAtvHomePage() {
+  useVoiceTagline('charlie.tag.jmatv');
   const navigate = useNavigate();
   return (
     <div

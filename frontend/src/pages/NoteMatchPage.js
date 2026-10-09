@@ -15,6 +15,8 @@ import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import useNoteNames from '../hooks/useNoteNames';
 
 // All 8 bells (including High C). Note Match uses subsets per difficulty.
@@ -110,6 +112,8 @@ export default function NoteMatchPage() {
     firstFlippedRef.current = null;
   }, [initAudioContext, difficulty]);
 
+  useVoiceTagline('sharky.tag.notematch');
+
   // Daily-quest deep link: /note-match?quest=easy skips the pick screen.
   const location = useLocation();
   useEffect(() => {
@@ -135,6 +139,7 @@ export default function NoteMatchPage() {
       }
       try { earnSticker(level.sticker); } catch { /* ignore */ }
       reportQuestEvent('note_match', { difficulty });
+      say('sharky.perfect');
       // 🎧 Note Detective achievement — completing each tier proves a level
       // of ear/memory skill.
       try {

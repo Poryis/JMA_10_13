@@ -18,6 +18,7 @@ import { useEffect, useRef } from 'react';
 import useStickers from '../hooks/useStickers';
 import useRank from '../hooks/useRank';
 import { setOverlayActive } from '../hooks/useGamePause';
+import { say } from '../lib/voice';
 import { STICKER_MAP } from '../data/stickers';
 import { ALL_ACHIEVEMENT_IDS } from '../data/achievements';
 
@@ -72,7 +73,12 @@ export default function StickerToast() {
   const toastVisible = !!toast && !suppressForRankUp;
   useEffect(() => {
     setOverlayActive('sticker-toast', toastVisible);
+    if (toastVisible && primary) {
+      const line = primary.id.startsWith('gem_') ? 'charlie.meta.gem' : isAchievement ? 'charlie.meta.badge' : 'charlie.meta.sticker';
+      say(line, { interrupt: false, delayMs: 250 });
+    }
     return () => setOverlayActive('sticker-toast', false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toastVisible]);
 
   const handleTap = () => {

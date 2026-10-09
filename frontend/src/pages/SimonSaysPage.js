@@ -9,6 +9,8 @@ import useAudio from '../hooks/useAudio';
 import useGamePaused from '../hooks/useGamePause';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 
@@ -179,6 +181,8 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setShowingIndex(0);
   }, [initAudioContext, resetGame, difficulty]);
 
+  useVoiceTagline('stew.tag.kazoo');
+
   // Daily-quest deep link: /simon-says?quest=easy starts straight away.
   const location = useLocation();
   useEffect(() => {
@@ -270,6 +274,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           // 🎹 Keyboard Scout achievements via Stew Kazoo Says level milestones
           if (level >= 1) earnAchievement('keyboard', 'cadet');
           reportQuestEvent('stew_level', { level });
+          say(level >= 4 ? 'stew.perfect' : 'stew.correct');
           if (level >= 4) earnAchievementUpTo('keyboard', 'pro');
           if (level >= 8) earnAchievementUpTo('keyboard', 'master');
           if (level >= 8) {
@@ -312,6 +317,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       
       setFeedback('miss');
       playFeedbackSound('miss');
+      say('stew.miss');
       setMessage('Oops! Try again!');
       setGameState('fail');
 

@@ -22,6 +22,7 @@ import BlimpFlyby from './BlimpFlyby';
 import UnderwaterBackdrop, { UNDERWATER_BG_COLOR } from './UnderwaterBackdrop';
 import TileDecoration from './TileDecoration';
 import useUnlocks from '../hooks/useUnlocks';
+import { say } from '../lib/voice';
 
 /**
  * Single-line uppercase title with UNIFORM size across every tile on the
@@ -74,6 +75,7 @@ function Tile({ tile, index, navigate, locked = false }) {
     if (disabled) return;
     if (locked) {
       shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.5 } });
+      say('charlie.hub.lockbadge');
       return;
     }
     if (tile.sfx) {

@@ -14,6 +14,8 @@ import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudi
 import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 
 const SONGS_KEY = 'jma_songs_v1';
 const REST = 'REST'; // sentinel value for a rest slot — renders the seahorse PNG and plays nothing
@@ -69,6 +71,7 @@ function ColoredKey({ keyDef, scaleHighlighted, isTonic, onTap, playingNow }) {
 
 export default function SongStudioPage() {
   const { nameFor } = useNoteNames();
+  useVoiceTagline('charlie.tag.songstudio');
   const navigate = useNavigate();
   const { preload, preloadLoop, playPianoNote, playLoop, initContext, now } = usePianoAudio();
 
@@ -286,6 +289,7 @@ export default function SongStudioPage() {
     setShowSaveModal(false);
     setShowCelebration(true);
     reportQuestEvent('song_saved');
+    say('charlie.correct');
     // ✍️ Song Creator achievements
     try {
       // Cadet: first saved song

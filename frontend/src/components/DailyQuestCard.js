@@ -9,6 +9,8 @@ import { Check, ChevronRight, ChevronDown, ChevronUp, Gem } from 'lucide-react';
 import useDailyQuests from '../hooks/useDailyQuests';
 import { DOMAIN_MAP } from '../data/achievements';
 import { STICKER_MAP } from '../data/stickers';
+import { say } from '../lib/voice';
+import { questVoiceId } from '../data/voiceLines';
 
 const WEEKDAY = new Date().toLocaleDateString(undefined, { weekday: 'long' });
 const SEEN_KEY = 'jma_quest_seen_done_v1'; // { date, done } — last doneCount the kid saw
@@ -104,7 +106,7 @@ function QuestRow({ quest, index, navigate, baseDelay = 0.5 }) {
       data-testid={`daily-quest-${index}`}
       data-quest-id={quest.id}
       data-done={done ? 'true' : 'false'}
-      onClick={() => navigate(quest.route)}
+      onClick={() => { if (!done) { const v = questVoiceId(quest.id); if (v) say(v); } navigate(quest.route); }}
       className="w-full flex items-center gap-2.5 md:gap-3 rounded-2xl px-2.5 md:px-3 text-left cursor-pointer touch-manipulation"
       style={{
         height: 54,

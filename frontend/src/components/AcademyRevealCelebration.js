@@ -1,9 +1,11 @@
 // AcademyRevealCelebration — one-time "the doors are open" ceremony shown
 // on the Home page the first time LEARN and CREATE unlock.
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Unlock } from 'lucide-react';
 import Confetti from './Confetti';
+import { say } from '../lib/voice';
 
 const ROOMS = [
   { label: 'LEARN', icon: 'assets/home/learn/storybook no accents.png', bg: '#C8A8F2' },
@@ -11,6 +13,7 @@ const ROOMS = [
 ];
 
 export default function AcademyRevealCelebration({ open, onClose }) {
+  useEffect(() => { if (open) say('charlie.meta.academyopen', { delayMs: 500 }); }, [open]);
   return (
     <AnimatePresence>
       {open && (

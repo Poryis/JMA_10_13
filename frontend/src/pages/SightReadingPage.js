@@ -27,6 +27,8 @@ import useAudio from '../hooks/useAudio';
 import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 
 const LOW_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -194,6 +196,7 @@ export default function SightReadingPage() {
       } catch { /* ignore */ }
       reportQuestEvent('sight_read', { difficulty });
       try { playFeedbackSound('perfect'); } catch { /* ignore */ }
+      say('finn.perfect');
       setGameState('run-complete');
       return;
     }
@@ -234,6 +237,7 @@ export default function SightReadingPage() {
     } else {
       setWrongAt(currentIndex);
       try { playFeedbackSound('miss'); } catch { /* ignore */ }
+      say('finn.miss', { minGapMs: 2500 });
       setTimeout(() => setWrongAt(-1), 500);
     }
   }, [gameState, currentIndex, sequence, secsLeft, finishCard, playBellNote, playFeedbackSound]);
@@ -251,6 +255,8 @@ export default function SightReadingPage() {
     setIsNewBest(false);
     beginCard(diff, 0);
   }, [initAudioContext, stopAllTimers, difficulty, beginCard]);
+
+  useVoiceTagline('finn.tag.sightread');
 
   // Daily-quest deep link: /sight-reading?quest=cadet skips the pick screen.
   const location = useLocation();

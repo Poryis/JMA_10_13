@@ -15,6 +15,8 @@ import { DETECTIVE_TUNES, SCALE_ORDER } from '../data/detectiveMelodies';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import useNoteNames from '../hooks/useNoteNames';
 
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
@@ -331,6 +333,8 @@ export default function DetectivePage() {
     setTimeout(() => playRound(r), 350);
   }, [initAudioContext, difficulty, playRound]);
 
+  useVoiceTagline('doctor.tag.detective');
+
   // Daily-quest deep link: /detective?quest=easy skips the pick screen.
   const location = useLocation();
   useEffect(() => {
@@ -370,10 +374,12 @@ export default function DetectivePage() {
       try { earnAchievement('ear', 'cadet'); } catch { /* ignore */ }
       reportQuestEvent('detective_case');
       playFeedbackSound('perfect');
+      say(streak + 1 >= 3 ? 'doctor.perfect' : 'doctor.correct');
     } else {
       setLives((l) => l - 1);
       setStreak(0);
       playFeedbackSound('error');
+      say('doctor.miss');
     }
   }, [phase, round, guessSlot, streak, playFeedbackSound, playbackIdx]);
 

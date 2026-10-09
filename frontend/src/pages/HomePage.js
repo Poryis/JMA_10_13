@@ -14,6 +14,9 @@ import HomeProgressCard from '../components/HomeProgressCard';
 import DailyQuestCard from '../components/DailyQuestCard';
 import AcademyRevealCelebration from '../components/AcademyRevealCelebration';
 import useUnlocks from '../hooks/useUnlocks';
+import usePracticeStreak from '../hooks/usePracticeStreak';
+import useDailyQuests from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
 import { pickFeaturedEpisode } from '../data/jmatv';
 
 // Easter-egg animation variants for the shield. Click cycles through them.
@@ -197,6 +200,7 @@ function PrimaryCard({ card, index, navigate, wide = false, locked = false }) {
   const handleClick = () => {
     if (locked) {
       shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.5 } });
+      say('charlie.hub.lockbadge');
       return;
     }
     if (card.sfx) {
@@ -426,6 +430,22 @@ function HomePage() {
   const { unlocked, revealPending, dismissReveal } = useUnlocks();
   // Cards stay greyed while the reveal ceremony is up, then glow open on dismiss.
   const cardsLocked = !unlocked || revealPending;
+  const { count: streakCount } = usePracticeStreak();
+  const { doneCount, allDone } = useDailyQuests();
+
+  // Charlie greets once per app session (not on every return to Home).
+  useEffect(() => {
+    if (revealPending) return;
+    try { if (sessionStorage.getItem('jma_voice_greeted') === '1') return; sessionStorage.setItem('jma_voice_greeted', '1'); } catch (_) {}
+    const hour = new Date().getHours();
+    let line = hour < 12 ? 'charlie.hub.morning' : hour < 17 ? 'charlie.hub.afternoon' : 'charlie.hub.evening';
+    if (!localStorage.getItem('jma_voice_welcomed')) { line = 'charlie.hub.first'; try { localStorage.setItem('jma_voice_welcomed', '1'); } catch (_) {} }
+    else if (allDone) line = 'charlie.hub.alldone';
+    else if (streakCount >= 3) line = 'charlie.hub.streak';
+    else if (doneCount === 0) line = Math.random() < 0.5 ? 'charlie.hub.quests' : line;
+    say(line, { delayMs: 900, minGapMs: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealPending]);
 
   // Shield intro: tilt-in spring on first paint. After that, clicks replace
   // the animation with one of SHIELD_ANIMS for the easter-egg flourish.

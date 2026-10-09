@@ -9,6 +9,7 @@
 
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { Lock, CheckCircle2, PlayCircle } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { LESSONS } from '../data/lessons';
@@ -113,6 +114,7 @@ function LessonCard({ lesson, index, locked, watched, onPlay }) {
 }
 
 export default function LessonsPage() {
+  useVoiceTagline('charlie.tag.music101');
   const navigate = useNavigate();
   const { isUnlocked, isWatched, watched } = useLessonsProgress();
   const total = LESSONS.length;

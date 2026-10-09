@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useRank from '../hooks/useRank';
 import { setOverlayActive } from '../hooks/useGamePause';
 import Confetti from './Confetti';
+import { say } from '../lib/voice';
 
 export default function RankUpCelebration() {
   const { rankUp, dismissRankUp } = useRank({ withCelebration: true });
@@ -14,6 +15,7 @@ export default function RankUpCelebration() {
   // Freeze any game underneath while the full-screen celebration is up.
   useEffect(() => {
     setOverlayActive('rank-up', !!rankUp);
+    if (rankUp) say('charlie.meta.rankup', { delayMs: 500 });
     return () => setOverlayActive('rank-up', false);
   }, [rankUp]);
 

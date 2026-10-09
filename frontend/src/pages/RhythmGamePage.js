@@ -10,6 +10,8 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { SONG_LIBRARY, SPEED_SETTINGS, getSongsByCategory } from '../data/songs';
 import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
 import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
@@ -105,6 +107,7 @@ function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, r
 
 function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame }) {
   const { nameFor } = useNoteNames();
+  useVoiceTagline('jazzy.tag.jukebox');
   const navigate = useNavigate();
   const { playBellNote, playDrumSound, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -409,6 +412,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       const id = `song_${selectedSong.id}`;
       earnSticker(id);
       reportQuestEvent('jukebox_song', { accuracy, speed });
+      say(accuracy >= 90 ? 'jazzy.perfect' : 'jazzy.correct', { delayMs: 500 });
       // 🎯 Rhythm Reader achievements
       // Cadet: 20+ perfect hits in a single song
       if (gameStats.perfect >= 20) earnAchievement('rhythm', 'cadet');

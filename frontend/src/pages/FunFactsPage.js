@@ -4,6 +4,8 @@ import { X, Sparkles, Search, RotateCcw } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { GameHeader } from '../components/GameUI';
 
 // Characters placed IN the clubhouse scene at specific spots.
@@ -67,6 +69,7 @@ function writeFound(set) {
 const INTRO_KEY = 'jma_clubhouse_intro_seen_v1';
 
 function FunFactsPage() {
+  useVoiceTagline('stew.tag.funfacts');
   const [activeFact, setActiveFact] = useState(null);
   const [found, setFound] = useState(() => readFound());
   const [poppingName, setPoppingName] = useState(null); // for first-find animation
@@ -141,6 +144,7 @@ function FunFactsPage() {
         setActiveFact({ character: characterName, ...fact });
         if (charObj?.stickerId) earnSticker(charObj.stickerId);
         reportQuestEvent('fun_fact');
+        say('stew.correct', { minGapMs: 2500 });
         noteFactSeen();
       }, 350);
     } else {

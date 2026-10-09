@@ -10,6 +10,8 @@ import useShredBand, { SONGS } from '../hooks/useShredBand';
 import useGamePaused from '../hooks/useGamePause';
 import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { useNavigate } from 'react-router-dom';
 
 const SONG_SECONDS = 45;
@@ -274,6 +276,7 @@ function StageLights({ energy, style = 'rock' }) {
 }
 
 export default function ShredLegendPage() {
+  useVoiceTagline('charlie.tag.shred');
   const navigate = useNavigate();
   const { getAudioGraph, initAudioContext } = useAudio();
   const band = useShredBand(getAudioGraph, initAudioContext);
@@ -364,6 +367,7 @@ export default function ShredLegendPage() {
       meterRef.current = Math.max(0, meterRef.current - 1.5); setMeter(meterRef.current);
       if (inEncore) encoreRef.current.misses += 1;
       pushFloat('TOO WILD!', '#FF3B30');
+      say('charlie.shred.toowild', { minGapMs: 4000 });
       return;
     }
 
@@ -417,6 +421,7 @@ export default function ShredLegendPage() {
         setTimeout(() => setTierFlash((f) => (f && f.id === id ? null : f)), 1500);
         setBurst({ id, mega: newIdx >= 2 });
         setCrowdBurst(id);
+        say(newIdx >= 3 ? 'charlie.shred.legend' : newIdx === 2 ? 'charlie.shred.headliner' : 'charlie.shred.opening', { delayMs: 350 });
         setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 2600);
         pushShout(newIdx >= 2 ? CROWD_MEMBERS.length : 3);
       }
@@ -498,6 +503,7 @@ export default function ShredLegendPage() {
     setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 2600);
     setCrowdBurst(id);
     pushShout(CROWD_MEMBERS.length);
+    say('charlie.shred.encore', { delayMs: 300 });
     setScreen('encore');
   }, [band, cheer, pushShout]);
 
@@ -526,7 +532,7 @@ export default function ShredLegendPage() {
     }
     // Flawless encore (no OFF BEAT / TOO WILD, at least 8 timed hits) = double stickers.
     const enc = encoreRef.current;
-    if (enc.played && enc.misses === 0 && enc.hits >= 8) earnSticker('shred_encore');
+    if (enc.played && enc.misses === 0 && enc.hits >= 8) { earnSticker('shred_encore'); say('charlie.shred.flawless', { delayMs: 600 }); }
   }, [band]);
 
   useEffect(() => () => band.stop(), [band]);

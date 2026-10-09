@@ -35,6 +35,8 @@ import LightningStage from '../components/LightningStage';
 import { BACKGROUNDS } from '../components/RobotBoogieBackgrounds';
 import { earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 
 // ============================================================
 // Character config
@@ -916,6 +918,7 @@ const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return 
 const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; return acc; }, {});
 
 export default function RobotBoogiePage() {
+  useVoiceTagline('chunk.tag.robot');
   const {
     setStemActive, muteAll, getAudioClock,
     triggerStab, startRiser, stopRiser, setPlaybackRate,
@@ -1034,6 +1037,7 @@ export default function RobotBoogiePage() {
       // async; do the arithmetic here directly).
       const willBeDancingCount = Object.values(dancing).filter(Boolean).length + 1;
       reportQuestEvent('robot_dancers', { count: willBeDancingCount });
+      if (willBeDancingCount >= 4) say('chunk.perfect', { minGapMs: 6000 });
       if (willBeDancingCount === CHARACTERS.length) {
         earnSticker('boogie_full_band');
       }

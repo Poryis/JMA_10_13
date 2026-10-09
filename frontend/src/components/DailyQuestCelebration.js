@@ -8,6 +8,7 @@ import useDailyQuests from '../hooks/useDailyQuests';
 import { setOverlayActive } from '../hooks/useGamePause';
 import { STICKER_MAP } from '../data/stickers';
 import Confetti from './Confetti';
+import { say } from '../lib/voice';
 
 export default function DailyQuestCelebration() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function DailyQuestCelebration() {
 
   useEffect(() => {
     setOverlayActive('daily-quest', show);
+    if (show) say('charlie.meta.questsdone', { delayMs: 600 });
     return () => setOverlayActive('daily-quest', false);
   }, [show]);
 

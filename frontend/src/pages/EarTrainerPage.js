@@ -9,6 +9,8 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
 import TempoListeningGame from '../components/TempoListeningGame';
 import useNoteNames from '../hooks/useNoteNames';
@@ -24,6 +26,7 @@ const LEVELS = {
 function EarTrainerPage() {
   const { nameFor, mode: nameMode } = useNoteNames();
   const nameOf = (note) => { const b = BELLS.find(x => x.note === note); return b ? nameFor(b.note, b.solfege) : note; };
+  useVoiceTagline('doctor.tag.earquest');
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -128,10 +131,12 @@ function EarTrainerPage() {
         return next;
       });
       playFeedbackSound('perfect');
+      say('doctor.correct', { minGapMs: 1800 });
     } else {
       setStreak(0);
       setResults(prev => ({ ...prev, wrong: prev.wrong + 1 }));
       playFeedbackSound('miss');
+      say('doctor.miss', { minGapMs: 1800 });
       // Play the correct note after a delay so they learn
       timeoutRef.current = setTimeout(() => playBellNote(targetNote), 800);
     }

@@ -22,6 +22,8 @@ import useAudio from '../hooks/useAudio';
 import { isGamePaused } from '../hooks/useGamePause';
 import { earnAchievement, earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { formatNoteName, getNoteNameMode, NOTE_NAME_MODES } from '../hooks/useNoteNames';
 
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -272,6 +274,7 @@ function FinnBubble({ text, mood }) {
 // Page
 // ---------------------------------------------------------------------------
 export default function NameThatNotePage() {
+  useVoiceTagline('finn.tag.namenote');
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -479,6 +482,7 @@ export default function NameThatNotePage() {
     const name = labelFor(target, answerMode);
     if (isCorrect) {
       try { playFeedbackSound('perfect'); } catch { /* ignore */ }
+      say(nextStreak >= 3 ? 'finn.perfect' : 'finn.correct', { minGapMs: 1800 });
       playSfx('assets/audio/sfx-twinkle.mp3', 0.35);
       setBurst({ key: Date.now(), yPct: NOTE_Y[target] + HEAD_Y_NUDGE, color: BELL_BY_NOTE[target].color });
       setPop({ key: Date.now(), text: `+${gained}`, yPct: NOTE_Y[target] });
@@ -493,6 +497,7 @@ export default function NameThatNotePage() {
       }
     } else {
       try { playFeedbackSound('miss'); } catch { /* ignore */ }
+      say('finn.miss', { minGapMs: 1800 });
       setShakeKey((k) => k + 1);
       setMoodFor('shrug', 600);
       const lead = note === 'timeout' ? "Time's up!" : MISSES[Math.floor(Math.random() * MISSES.length)];

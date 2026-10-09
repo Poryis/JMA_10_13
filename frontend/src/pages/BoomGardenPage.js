@@ -29,6 +29,8 @@ import CountInOverlay from '../components/CountInOverlay';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import {
   PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS as BASE_BEAT_MS, TOLERANCE_MS,
   patternBeats, noteStartTimes, ROUNDS_PER_SESSION,
@@ -202,6 +204,7 @@ function ModeTile({ mode, index, onPick }) {
 }
 
 export default function BoomGardenPage() {
+  useVoiceTagline('chunk.tag.boom');
   const { playDrumSound, playCountInBeep, initAudioContext } = useAudio();
 
   const [mode, setMode] = useState(null);
@@ -490,6 +493,7 @@ export default function BoomGardenPage() {
         victoryDanceTimerRef.current = setTimeout(() => setVictoryDance(false), 3000);
       }
       reportQuestEvent('boom_round', { level });
+      say('chunk.correct');
       try {
         earnAchievement('rhythm', 'cadet');
         if (level === 'pro')    earnAchievementUpTo('rhythm', 'pro');
@@ -498,6 +502,7 @@ export default function BoomGardenPage() {
     } else {
       setStreak(0);
       setFeedback({ tone: 'miss', text: 'Almost! Try again.' });
+      say('chunk.miss');
     }
     // Auto-advance after a longer reveal so the kid actually sees the
     // result. The "Play Again" button in the round-summary card lets them
@@ -776,6 +781,7 @@ export default function BoomGardenPage() {
       setTimeout(() => setShowCelebration(false), 1800);
       setFeedback({ tone: 'great', text: 'Sharp ears!' });
       reportQuestEvent('boom_round', { level });
+      say('chunk.correct');
       try {
         earnAchievement('rhythm', 'cadet');
         if (level !== 'cadet') earnAchievementUpTo('rhythm', 'pro');
@@ -783,6 +789,7 @@ export default function BoomGardenPage() {
     } else {
       setStreak(0);
       setFeedback({ tone: 'miss', text: `Not quite — option ${matchAnswer + 1} was right!` });
+      say('chunk.miss');
     }
     const isLastRound = currentRound >= ROUNDS_PER_SESSION;
     const next = setTimeout(() => {

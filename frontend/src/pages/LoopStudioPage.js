@@ -10,6 +10,8 @@ import useMp3Recorder from '../hooks/useMp3Recorder';
 import usePlayer from '../hooks/usePlayer';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
+import { say } from '../lib/voice';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { saveBeat, loadSavedBeats, renameSavedBeat } from '../hooks/useSavedBeats';
 
 const DEFAULT_BPM = 100;
@@ -228,6 +230,7 @@ const StepRow = memo(function StepRow({ voiceKey, color, steps, totalSteps, mute
 });
 
 function LoopStudioPage() {
+  useVoiceTagline('chunk.tag.beatlab');
   const navigate = useNavigate();
   const { getAudioGraph, initAudioContext } = useAudio();
   const lab = useBeatLabAudio(getAudioGraph, initAudioContext);
@@ -309,6 +312,7 @@ function LoopStudioPage() {
     earnAchievement('beat', 'cadet');
     const activeCount = Object.values(gridRef.current).filter((s) => s.some(Boolean)).length;
     reportQuestEvent('beat_loop', { tracks: activeCount });
+    say(activeCount >= 3 ? 'chunk.perfect' : 'chunk.correct', { minGapMs: 8000 });
     if (activeCount >= 3) earnAchievementUpTo('beat', 'pro');
     if (activeCount >= 4 && bpm >= 140) earnAchievementUpTo('beat', 'master');
     try {

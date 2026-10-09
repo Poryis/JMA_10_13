@@ -8,7 +8,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2, Music2, Unlock } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2, Music2, Unlock, Volume2 } from 'lucide-react';
 import {
   downloadSnapshotJson,
   importPlayerSnapshot,
@@ -17,6 +17,33 @@ import {
 } from '../lib/playerStorage';
 import useNoteNames, { NOTE_NAME_MODES } from '../hooks/useNoteNames';
 import useUnlocks from '../hooks/useUnlocks';
+import { voiceEnabled, setVoiceEnabled } from '../lib/voice';
+
+function VoiceSetting() {
+  const [on, setOn] = useState(voiceEnabled());
+  const toggle = () => { setVoiceEnabled(!on); setOn(!on); };
+  return (
+    <div data-testid="voice-setting" className="rounded-2xl border-2 p-3 mb-3" style={{ borderColor: 'var(--jma-dark)', backgroundColor: '#F2F8FF' }}>
+      <div className="flex items-center gap-2 mb-1.5">
+        <Volume2 className="w-4 h-4" style={{ color: '#4285F4' }} />
+        <span className="text-sm font-black font-display" style={{ color: 'var(--jma-dark)' }}>Character Voices</span>
+      </div>
+      <p className="text-[11px] md:text-xs font-bold opacity-70 mb-2" style={{ color: 'var(--jma-dark)' }}>
+        Charlie and friends cheer, greet and react out loud. Turn off for quiet rooms.
+      </p>
+      <button
+        type="button"
+        data-testid="voice-toggle"
+        onClick={toggle}
+        aria-pressed={on}
+        className="w-full rounded-xl border-2 py-1.5 text-xs md:text-sm font-black"
+        style={{ borderColor: 'var(--jma-dark)', backgroundColor: on ? '#FFCC00' : 'white', color: 'var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
+      >
+        {on ? 'Voices on ✓ (tap to mute)' : 'Voices off (tap to turn on)'}
+      </button>
+    </div>
+  );
+}
 
 function UnlockSetting() {
   const { unlocked, override, toggleUnlockAll } = useUnlocks();
@@ -207,6 +234,7 @@ export default function ManageDataModal({ open, onClose }) {
 
             {/* Note-name display (non-destructive device setting) */}
             <NoteNamesSetting />
+            <VoiceSetting />
             <UnlockSetting />
 
             {/* Action rows */}

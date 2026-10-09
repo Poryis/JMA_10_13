@@ -47,8 +47,9 @@ export const AVATARS = [
     outfit('marching', 'Marching', 'jazzy-marching', RHYTHM_PRO),
   ] },
   { id: 'stew',    name: 'Stew',          color: '#FF9500', outfits: [
-    outfit('classic', 'Classic', 'stew'),
-    outfit('swing',   'Swing',   'stew-swing', APPRENTICE),
+    outfit('classic',  'Classic',   'stew'),
+    { id: 'kazoo', name: 'Kazoo', src: 'assets/stew/stew-neutral.png', unlock: { kind: 'sticker', value: 'ach_keyboard_cadet', hint: 'Earn the Keyboard Cadet badge' } },
+    outfit('drumline', 'Drum Line', 'stew-drumline', RHYTHM_PRO),
   ] },
   { id: 'doctor',  name: 'Dr. Jellybone', color: '#0FA3B1', outfits: [
     outfit('classic',   'Classic',   'dr-jellybone'),

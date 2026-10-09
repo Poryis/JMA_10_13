@@ -1,6 +1,11 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): **Avatar + Dressing Room** (tested iteration_34, 100%) · first campus prop
+## Latest (Jun 2026): voice personalities fixed · Stew outfits · campus props #2/#3
+- Voice bios/lines rewritten to the user's character voices: Charlie = Sinatra/Louis Prima NY wise guy; Dr. Jellybone = smooth jazz cat, never loud; Jazzy = loud boisterous pun-teller; **Finn & Sharky = same character/voice** (Jerry Lewis "HEY LADY" giddy); Chunk = surfer bro; Stew unchanged. Script regenerated (`/app/memory/voice_script.md`).
+- Stew outfits: Classic / Kazoo (`assets/stew/stew-neutral.png`, Keyboard Cadet) / Drum Line (`characters/stew-drumline.png` cropped from `animations/stew-drum/right-1.png`, Rhythm Pro). `stew-swing.png` is a duplicate of `stew.png` — unused now.
+- Campus props: **Dr. Jellybone's office APPROVED by user** ("err slightly simpler" for future ones). Generated `campus/stew-room.png` and `campus/jukebox-diner.png` (pending approval). Pipeline: `scripts/chromaKey.py in.jpg out.png` on a magenta-background Gemini render; pass `campus/detective-office.png` as the style reference.
+
+## Jun 2026: **Avatar + Dressing Room** (tested iteration_34, 100%) · first campus prop
 - `data/avatars.js` (8 Jellies, 30 outfits from existing art; unlock kinds free/badge/rank/sticker), `hooks/useAvatar.js` (`jma_avatar_v1`, `readAvatarSrc()`), `pages/DressingRoomPage.js` at `/dressing-room` (character row + wardrobe, locked outfits show hint). Avatar appears in the Home rank bar (`home-avatar`, pulses "NEW" until chosen, tap → Dressing Room), as the YOU member in the Shred City crowd, and the Sticker Book has a Dressing Room button. Backup includes `progress.avatar`.
 - **Campus prop #1** generated from the user's art as reference: `public/assets/campus/detective-office.png` (Dr. Jellybone's office, keyed from magenta → transparent via PIL; recipe: ask Gemini for solid #FF00FF background, then chroma-key — the "transparent" option bakes a checkerboard). AWAITING USER APPROVE/REJECT.
 - Known noise: "two children with the same key" React warning (pre-existing, source not yet found).

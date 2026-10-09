@@ -34,7 +34,7 @@ export const QUEST_POOL = [
   { id: 'q_name_note',      event: 'name_note',      game: 'namenote',  domain: 'scholar',  starter: false, title: 'Score 8/10 in Name That Note',     where: 'Name That Note',          route: '/name-that-note' },
   { id: 'q_lesson',         event: 'lesson',         game: 'lessons',   domain: 'scholar',  starter: false, title: 'Watch a Music 101 lesson',         where: 'Music 101',               route: '/lessons' },
   { id: 'q_song_save',      event: 'song_saved',     game: 'songstudio',domain: 'song',     starter: false, title: "Save a song in Charlie's Studio",  where: "Charlie's Song Studio",   route: '/song-studio' },
-  { id: 'q_shred',          event: 'shred_show',     game: 'shred',     domain: 'rhythm',   starter: false, title: 'Play a show in Shred Legend',      where: 'Shred Legend',            route: '/shred-legend' },
+  { id: 'q_shred',          event: 'shred_show',     game: 'shred',     domain: 'rhythm',   starter: false, title: 'Play a show in Shred City',        where: 'Shred City',            route: '/shred-legend' },
   { id: 'q_ear_quest',      event: 'ear_quest',      game: 'earquest',  domain: 'ear',      starter: false, title: 'Get 5 right in Ear Quest',         where: 'Ear Quest',               route: '/ear-trainer', when: { correct: 5 } },
 ];
 

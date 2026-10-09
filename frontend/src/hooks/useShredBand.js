@@ -288,6 +288,7 @@ export default function useShredBand(getAudioGraph, initAudioContext) {
   if (!apiRef.current) apiRef.current = {};
   Object.assign(apiRef.current, {
     start, stop, preload, nearestEighthOffsetMs, nearestEighthIndex,
+    beatMs: () => stepSecRef.current * 4000,
     isPlaying: () => playingRef.current,
     songs: SONGS,
   });

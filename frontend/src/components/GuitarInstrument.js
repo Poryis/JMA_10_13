@@ -275,7 +275,11 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
   const [bending, setBending] = useState(false);
 
   const bendActiveRef = useRef(false);
-  const bendTargetsRef = useRef([]);   // [{ voice, baseFreq, nextFreq }]
+  const bendTargetsRef = useRef([]);   // [{ id, voice, baseFreq, nextFreq }] — every note still sounding
+  const setBendTarget = (id, entry) => {
+    bendTargetsRef.current = bendTargetsRef.current.filter(t => t.id !== id && t.voice && !t.voice.released);
+    if (entry) bendTargetsRef.current.push({ id, ...entry });
+  };
 
   const toneRef = useRef(tone); toneRef.current = tone;
   const modeRef = useRef(mode); modeRef.current = mode;
@@ -359,9 +363,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90, ring: 4.6 });
     if (!voice) return;
     activeVoicesRef.current.set(id, [voice]);
-    // This note becomes the bend target and STAYS bendable while it rings out,
-    // so a bend works whether you hold the note or just tapped it.
-    bendTargetsRef.current = [{ voice, baseFreq: note.freq, nextFreq: nextPentaFreq(idx) }];
+    setBendTarget(id, { voice, baseFreq: note.freq, nextFreq: nextPentaFreq(idx) });
     if (bendActiveRef.current) voice.bendTo(nextPentaFreq(idx));
     setHeldIds(prev => new Set(prev).add(id));
     triggerStrings();
@@ -374,7 +376,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     // fast (~0.15s) so notes don't pile up and ring over each other.
     const voices = activeVoicesRef.current.get(id);
     if (voices) { voices.forEach(v => v.release()); activeVoicesRef.current.delete(id); }
-    bendTargetsRef.current = [];
+    setBendTarget(id, null);
     setHeldIds(prev => { if (!prev.has(id)) return prev; const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
@@ -417,7 +419,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       guitarVoicesRef.current = v ? [v] : [];
       label = note.label;
       heldId = `note-${zone}`;
-      bendTargetsRef.current = v ? [{ voice: v, baseFreq: note.freq, nextFreq: nextPentaFreq(zone) }] : [];
+      setBendTarget('art', v ? { voice: v, baseFreq: note.freq, nextFreq: nextPentaFreq(zone) } : null);
       if (bendActiveRef.current && v) v.bendTo(nextPentaFreq(zone));
       if (onPlay) onPlay({ type: 'guitar-note', note: note.label });
     }
@@ -468,7 +470,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     dragRef.current = { active: false, last: null };
     setPick(null);
     setGuitarHeld(null);
-    bendTargetsRef.current = [];
+    setBendTarget('art', null);
     // Release whatever's sounding (notes or chords) the moment the finger lifts.
     releaseGuitarVoices();
   }, [setGuitarHeld, releaseGuitarVoices]);

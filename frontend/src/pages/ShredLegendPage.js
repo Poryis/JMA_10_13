@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, ChevronLeft } from 'lucide-react';
+import { Play, RotateCcw, ChevronLeft, Star, Flame } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
+import Confetti from '../components/Confetti';
 import { FullscreenButton } from '../components/FullscreenButton';
 import GuitarInstrument from '../components/GuitarInstrument';
 import useAudio from '../hooks/useAudio';
@@ -132,6 +133,9 @@ export default function ShredLegendPage() {
   const [floats, setFloats] = useState([]);         // floating feedback words
   const [readyCount, setReadyCount] = useState(3);
   const [songIndex, setSongIndex] = useState(() => Math.floor(Math.random() * SONGS.length));
+  const [tierFlash, setTierFlash] = useState(null);   // { label, color, id } tier-up banner
+  const [legendBurst, setLegendBurst] = useState(false);
+  const [hitPulse, setHitPulse] = useState(0);        // bumps on every scored hit (meter pop)
 
   const meterRef = useRef(0);
   const comboRef = useRef(0);
@@ -142,6 +146,8 @@ export default function ShredLegendPage() {
   const holdingRef = useRef(false);          // a note is being sustained
   const lastOnsetRef = useRef(0);            // time of last note hit (ms)
   const lastScoredRef = useRef(0);           // time of last hit that EARNED meter (ms)
+  const onsetsRef = useRef([]);              // recent onset times (ms) — mash guard
+  const holdStartRef = useRef(0);            // when the current sustain began (ms)
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
 
@@ -169,10 +175,11 @@ export default function ShredLegendPage() {
     src.start(t); src.stop(t + (big ? 1.1 : 0.6));
   }, [getAudioGraph]);
 
-  const pushFloat = useCallback((text, color) => {
+  const pushFloat = useCallback((text, color, big = false) => {
     const id = Date.now() + Math.random();
-    setFloats((f) => [...f, { id, text, color }]);
-    setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 750);
+    const dx = Math.round((Math.random() - 0.5) * 180);
+    setFloats((f) => [...f.slice(-5), { id, text, color, big, dx }]);
+    setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), big ? 850 : 700);
   }, []);
 
   // ---- guitar NOTE HIT (onset) → always adds energy; a little extra sparkle
@@ -181,24 +188,41 @@ export default function ShredLegendPage() {
     if (screen !== 'playing' || pausedRef.current) return;
     const now = performance.now();
     lastOnsetRef.current = now;
-    const off = band.nearestEighthOffsetMs();
-    const beatIdx = band.nearestEighthIndex();
-    const onBeat = off <= 110;
-    if (onBeat) { comboRef.current += 1; inPocketRef.current += 1; }
-    else comboRef.current = 0;
-    setCombo(comboRef.current);
+    const beatMs = band.beatMs();
+    const eighthMs = beatMs / 2;
+    onsetsRef.current = onsetsRef.current.filter((t) => now - t < beatMs).concat(now);
 
-    // ONE score per beat: mashing many notes inside the same 8th-note earns
-    // nothing extra, so the meter can only climb as fast as you actually play
-    // IN TIME. Tight hits are worth much more than sloppy ones.
-    if (beatIdx === lastScoredRef.current) {
-      if (onBeat) pushFloat(off <= 65 ? 'PERFECT!' : 'NICE!', off <= 65 ? '#FFCC00' : '#0FA3B1');
+    // Mash guard: more than two notes inside one beat is button-mashing, not
+    // soloing. It scores nothing, breaks the combo and bleeds a little meter.
+    if (onsetsRef.current.length > 2) {
+      comboRef.current = 0; setCombo(0);
+      meterRef.current = Math.max(0, meterRef.current - 1.5); setMeter(meterRef.current);
+      pushFloat('TOO WILD!', '#FF3B30');
       return;
     }
+
+    // Timing windows scale with tempo so fast songs aren't a free ride.
+    const off = band.nearestEighthOffsetMs();
+    const perfectWin = Math.max(28, eighthMs * 0.18);
+    const niceWin = Math.max(55, eighthMs * 0.36);
+    if (off > niceWin) {
+      comboRef.current = 0; setCombo(0);
+      pushFloat('OFF BEAT', '#9DA3A8');
+      return;
+    }
+    const perfect = off <= perfectWin;
+
+    // ONE score per 8th-note — extra notes inside the same 8th earn nothing.
+    const beatIdx = band.nearestEighthIndex();
+    if (beatIdx === lastScoredRef.current) return;
     lastScoredRef.current = beatIdx;
-    const add = off <= 65 ? 4 : (off <= 130 ? 2 : 0.8);
-    bumpMeter(add);
-    if (onBeat) pushFloat(off <= 65 ? 'PERFECT!' : 'NICE!', off <= 65 ? '#FFCC00' : '#0FA3B1');
+
+    comboRef.current += 1; inPocketRef.current += 1;
+    setCombo(comboRef.current);
+    const mult = comboRef.current >= 12 ? 2 : comboRef.current >= 6 ? 1.5 : 1;
+    bumpMeter((perfect ? 1.2 : 0.6) * mult);
+    setHitPulse((p) => p + 1);
+    pushFloat(perfect ? 'PERFECT!' : 'NICE!', perfect ? '#FFCC00' : '#0FA3B1', perfect);
   }, [screen, band, pushFloat]);
 
   // Shared meter-raise + tier/cheer handling.
@@ -210,17 +234,26 @@ export default function ShredLegendPage() {
     if (tier !== lastTierRef.current) {
       const prevIdx = TIERS.findIndex((t) => t.label === lastTierRef.current);
       const newIdx = TIERS.findIndex((t) => t.label === tier);
-      if (newIdx > prevIdx) cheer(tier === 'SHRED LEGEND');
+      if (newIdx > prevIdx) {
+        cheer(tier === 'SHRED LEGEND');
+        const color = TIERS[newIdx].color;
+        const id = Date.now();
+        setTierFlash({ label: tier, color, id });
+        setTimeout(() => setTierFlash((f) => (f && f.id === id ? null : f)), 1500);
+      }
       lastTierRef.current = tier;
     }
     if (meterRef.current >= 100 && !reachedLegendRef.current) {
       reachedLegendRef.current = true;
       cheer(true);
+      setLegendBurst(true);
+      setTimeout(() => setLegendBurst(false), 2600);
     }
   }, [cheer]);
 
   // Parent gets told when a note is held (sustained) vs released.
   const onGuitarActive = useCallback((active) => {
+    if (active && !holdingRef.current) holdStartRef.current = performance.now();
     holdingRef.current = active;
   }, []);
 
@@ -230,11 +263,13 @@ export default function ShredLegendPage() {
     const iv = setInterval(() => {
       if (pausedRef.current) return;
       const now = performance.now();
-      const recentlyPlayed = now - lastOnsetRef.current < 350;
+      const recentlyPlayed = now - lastOnsetRef.current < 600;
       if (holdingRef.current) {
-        bumpMeter(0.6);          // ~6/sec sustained
+        // A sustained note is a flourish, not a strategy: it only feeds the
+        // meter for its first 1.5 s (~3.75 total), then just rings.
+        if (now - holdStartRef.current < 1500) bumpMeter(0.25);
       } else if (!recentlyPlayed) {
-        meterRef.current = Math.max(0, meterRef.current - 1.1); // ~11/sec idle
+        meterRef.current = Math.max(0, meterRef.current - 0.5); // ~5/sec idle
         setMeter(meterRef.current);
       }
     }, 100);
@@ -256,6 +291,7 @@ export default function ShredLegendPage() {
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0; lastScoredRef.current = -1;
+    onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setLegendBurst(false);
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
@@ -305,7 +341,7 @@ export default function ShredLegendPage() {
 
       {(screen === 'playing' || screen === 'ready') && <StageLights energy={energy} style={SONGS[songIndex].style} />}
 
-      <GameHeader title="SHRED LEGEND" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
+      <GameHeader title="SHRED CITY" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <FullscreenButton />
 
       {/* Crowd during the 3-2-1 countdown (sits on stage, bottom layer) */}
@@ -320,17 +356,52 @@ export default function ShredLegendPage() {
         {floats.map((f) => (
           <motion.div
             key={f.id}
-            className="absolute left-1/2 top-[38%] font-black pointer-events-none"
-            style={{ color: f.color, textShadow: '0 2px 0 #0A1420', fontSize: '28px', zIndex: 30 }}
-            initial={{ y: 0, opacity: 0, scale: 0.6, x: '-50%' }}
-            animate={{ y: -50, opacity: 1, scale: 1.1, x: '-50%' }}
-            exit={{ opacity: 0, y: -70 }}
-            transition={{ duration: 0.5 }}
+            className="absolute left-1/2 top-[38%] font-black font-display pointer-events-none"
+            style={{ color: f.color, textShadow: '0 3px 0 #0A1420, 0 0 18px rgba(0,0,0,0.5)', fontSize: f.big ? '40px' : '26px', zIndex: 30, marginLeft: f.dx }}
+            initial={{ y: 0, opacity: 0, scale: 0.5, x: '-50%', rotate: f.big ? -8 : 0 }}
+            animate={{ y: f.big ? -70 : -50, opacity: 1, scale: f.big ? 1.25 : 1.05, x: '-50%', rotate: f.big ? 4 : 0 }}
+            exit={{ opacity: 0, y: -90, scale: 0.9 }}
+            transition={{ duration: 0.45, type: 'spring', stiffness: 260, damping: 16 }}
           >
             {f.text}
           </motion.div>
         ))}
       </AnimatePresence>
+
+      {/* Tier-up banner + screen flash */}
+      <AnimatePresence>
+        {tierFlash && (
+          <motion.div
+            key={tierFlash.id}
+            data-testid="shred-tier-flash"
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{ zIndex: 35 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0"
+              style={{ background: tierFlash.color, mixBlendMode: 'screen' }}
+              initial={{ opacity: 0.55 }} animate={{ opacity: 0 }} transition={{ duration: 0.7 }}
+            />
+            <motion.div
+              className="relative px-6 py-3 rounded-2xl font-black font-display text-center"
+              style={{ background: 'rgba(16,24,38,0.92)', border: `4px solid ${tierFlash.color}`, color: tierFlash.color, boxShadow: `0 0 40px ${tierFlash.color}`, fontSize: 'clamp(28px, 7vw, 56px)', textShadow: '0 3px 0 #0A1420' }}
+              initial={{ scale: 0.4, rotate: -10, y: 40 }}
+              animate={{ scale: [0.4, 1.15, 1], rotate: [-10, 3, 0], y: 0 }}
+              exit={{ scale: 1.2, opacity: 0, y: -40 }}
+              transition={{ duration: 0.55 }}
+            >
+              <div className="text-[11px] md:text-xs uppercase tracking-[0.25em] text-white/80 mb-1">The crowd says</div>
+              {tierFlash.label}!
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {legendBurst && (
+        <div className="absolute left-1/2 top-[35%] pointer-events-none" style={{ zIndex: 36 }}>
+          <Confetti mega testId="shred-confetti" />
+        </div>
+      )}
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-end pt-16 pb-2 px-2">
         {/* INTRO */}
@@ -343,9 +414,9 @@ export default function ShredLegendPage() {
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               <img src="assets/characters/charlie-punk.png" alt="" className="w-28 h-28 object-contain mx-auto mb-1" />
-              <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED LEGEND</h1>
+              <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED CITY</h1>
               <p className="text-xs mb-3" style={{ color: '#9DB4CC' }}>
-                Pick your jam, then <span style={{ color: '#FFCC00' }}>solo</span> on the strip (no wrong notes!) and play in time to fill the <b>Crowd Meter</b>.
+                Pick your jam, then <span style={{ color: '#FFCC00' }}>solo</span> on the strip (no wrong notes!). Play <b>in time</b> to fill the <b>Crowd Meter</b> — keep a streak going for <span style={{ color: '#FF9500' }}>×2</span>. Mashing makes the crowd boo!
               </p>
               <div className="grid grid-cols-1 gap-2 mb-2" data-testid="shred-song-picker">
                 {SONGS.map((s, i) => (
@@ -402,22 +473,59 @@ export default function ShredLegendPage() {
                 </span>
                 <span className="text-xs font-black text-white/90" data-testid="shred-timeleft">{timeLeft}s</span>
               </div>
-              <div className="relative w-full h-5 rounded-full overflow-hidden" style={{ background: 'rgba(10,20,32,0.8)', border: '3px solid #0A1420' }}>
+              <motion.div
+                className="relative w-full h-6 rounded-full overflow-hidden"
+                style={{
+                  background: 'rgba(10,20,32,0.8)',
+                  border: '3px solid #0A1420',
+                  boxShadow: `0 0 ${Math.round(4 + energy * 22)}px rgba(255,204,0,${(0.15 + energy * 0.65).toFixed(2)})`,
+                }}
+                key={hitPulse}
+                initial={{ scale: 1 }}
+                animate={{ scale: hitPulse ? [1.035, 1] : 1 }}
+                transition={{ duration: 0.22 }}
+              >
                 <motion.div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full relative overflow-hidden"
                   style={{ background: `linear-gradient(90deg, #0FA3B1, #FF9500, #FFCC00)` }}
                   animate={{ width: `${meter}%` }}
                   transition={{ duration: 0.12 }}
                   data-testid="shred-meter-fill"
-                />
+                >
+                  <div
+                    className="absolute inset-y-0 w-1/3"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
+                      animation: `submenuSheen ${Math.max(0.9, 2.6 - energy * 1.6)}s linear infinite`,
+                    }}
+                  />
+                </motion.div>
                 {TIERS.slice(1).map((t) => (
                   <div key={t.label} className="absolute top-0 bottom-0" style={{ left: `${t.min}%`, width: 2, background: 'rgba(255,255,255,0.4)' }} />
                 ))}
-              </div>
-              {combo > 3 && (
-                <div className="text-center mt-1 text-xs font-black" style={{ color: '#FFCC00' }} data-testid="shred-combo">
-                  {combo} IN A ROW!
-                </div>
+              </motion.div>
+              {combo >= 3 && (
+                <motion.div
+                  className="flex items-center justify-center gap-2 mt-1"
+                  data-testid="shred-combo"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  <span className="text-xs md:text-sm font-black font-display" style={{ color: '#FFCC00', textShadow: '0 2px 0 #0A1420' }}>
+                    {combo} IN A ROW!
+                  </span>
+                  {combo >= 6 && (
+                    <motion.span
+                      data-testid="shred-multiplier"
+                      className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] md:text-xs font-black"
+                      style={{ background: combo >= 12 ? '#FF3B30' : '#FF9500', color: 'white', boxShadow: '0 2px 0 0 #0A1420' }}
+                      animate={{ scale: [1, 1.12, 1] }}
+                      transition={{ repeat: Infinity, duration: combo >= 12 ? 0.5 : 0.8 }}
+                    >
+                      <Flame className="w-3 h-3" fill="currentColor" /> {combo >= 12 ? '×2 ON FIRE' : '×1.5'}
+                    </motion.span>
+                  )}
+                </motion.div>
               )}
             </div>
 
@@ -452,8 +560,26 @@ export default function ShredLegendPage() {
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               {reachedLegendRef.current && (
-                <img src="assets/characters/charlie-punk.png" alt="" className="w-32 h-32 object-contain mx-auto mb-1" />
+                <>
+                  <div className="absolute left-1/2 top-1/3 pointer-events-none"><Confetti mega testId="shred-result-confetti" /></div>
+                  <motion.img
+                    src="assets/characters/charlie-punk.png" alt="" className="w-32 h-32 object-contain mx-auto mb-1"
+                    animate={{ y: [0, -10, 0], rotate: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.9 }}
+                  />
+                </>
               )}
+              <div className="flex items-center justify-center gap-1 mb-2" data-testid="shred-result-stars">
+                {[30, 60, 90].map((min, i) => (
+                  <motion.span
+                    key={min}
+                    initial={{ scale: 0, rotate: -40 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.25 + i * 0.2, type: 'spring', stiffness: 300 }}
+                  >
+                    <Star className="w-8 h-8" style={{ color: peakRef.current >= min ? '#FFCC00' : '#3A4A60' }} fill={peakRef.current >= min ? '#FFCC00' : 'transparent'} strokeWidth={2.5} />
+                  </motion.span>
+                ))}
+              </div>
               <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#9DB4CC' }}>You played the</p>
               <h1 className="font-black font-display text-4xl leading-none mb-2" style={{ color: tierFor(peakRef.current).color }} data-testid="shred-result-tier">
                 {tierFor(peakRef.current).label}
@@ -464,7 +590,7 @@ export default function ShredLegendPage() {
                   : `${inPocketRef.current} notes right in the pocket.`}
               </p>
               <p className="text-xs mb-4" style={{ color: '#9DB4CC' }}>
-                {reachedLegendRef.current ? 'Shred Legend sticker unlocked!' : 'Keep the beat longer to fill the meter all the way!'}
+                {reachedLegendRef.current ? 'Shred Legend sticker unlocked!' : 'Play in time and keep your streak going for ×2 to fill the meter!'}
               </p>
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 <button

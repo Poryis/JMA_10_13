@@ -17,8 +17,8 @@ const SONG_SECONDS = 45;
 // Crowd/rank tiers keyed off the Crowd Meter (0-100).
 const TIERS = [
   { min: 0,  label: 'Garage Band', color: '#9DA3A8' },
-  { min: 30, label: 'Opening Act', color: '#0FA3B1' },
-  { min: 60, label: 'Headliner',   color: '#FF9500' },
+  { min: 22, label: 'Opening Act', color: '#0FA3B1' },
+  { min: 58, label: 'Headliner',   color: '#FF9500' },
   { min: 90, label: 'SHRED LEGEND', color: '#FFCC00' },
 ];
 
@@ -41,31 +41,111 @@ const CROWD_MEMBERS = [
   { src: 'assets/characters/dr-jellybone.png', scale: 1.00 },
 ];
 
-function CrowdRow({ energy }) {
+// Back row that shows up once the show gets good — the crowd literally grows.
+const CROWD_BACK_ROW = [
+  { src: 'assets/characters/charlie-disco.png', scale: 0.9 },
+  { src: 'assets/characters/sharky-hiphop.png', scale: 0.95 },
+  { src: 'assets/characters/finn-disco.png',    scale: 0.88 },
+  { src: 'assets/characters/lou-disco.png',     scale: 0.9 },
+  { src: 'assets/characters/chunk-disco.png',   scale: 0.95 },
+  { src: 'assets/characters/jazzy-disco.png',   scale: 0.86 },
+];
+
+export const CROWD_SHOUTS = ['WOOO!', 'YEAH!', 'ROCK ON!', 'ENCORE!', 'SHRED!', 'GO GO GO!', 'SO GOOD!'];
+
+function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
+  const delay = (i % 4) * 0.07;
+  return (
+    <motion.div
+      key={burstId}
+      className="relative h-full flex items-end"
+      style={{ height: '100%' }}
+      initial={{ y: 0 }}
+      animate={burstId ? { y: [0, -70, 0, -36, 0], rotate: [0, i % 2 ? 10 : -10, 0, i % 2 ? -6 : 6, 0] } : { y: 0 }}
+      transition={{ duration: 0.9, delay: i * 0.05, ease: 'easeOut' }}
+    >
+      <AnimatePresence>
+        {shout && (
+          <motion.div
+            key={shout.id}
+            className="absolute left-1/2 font-black font-display whitespace-nowrap px-2 py-0.5 rounded-xl"
+            style={{ top: '-18%', background: 'white', color: '#0A1420', border: '2px solid #0A1420', fontSize: 'clamp(9px, 1.4vw, 13px)', boxShadow: '0 2px 0 0 #0A1420', zIndex: 5 }}
+            initial={{ opacity: 0, y: 10, scale: 0.6, x: '-50%' }}
+            animate={{ opacity: 1, y: -6, scale: 1, x: '-50%' }}
+            exit={{ opacity: 0, y: -24, scale: 0.8, x: '-50%' }}
+            transition={{ type: 'spring', stiffness: 320, damping: 16 }}
+          >
+            {shout.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {glow && (
+          <motion.div
+            className="absolute left-1/2 pointer-events-none"
+            style={{ top: '-6%', width: 6, height: '34%', borderRadius: 4, background: 'linear-gradient(180deg, #FFF7B0, #FFCC00)', boxShadow: '0 0 10px 3px rgba(255,204,0,0.75)', transformOrigin: 'bottom center', marginLeft: i % 2 ? 14 : -18 }}
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1, rotate: [-22, 22, -22] }}
+            exit={{ opacity: 0, scaleY: 0 }}
+            transition={{ rotate: { repeat: Infinity, duration: Math.max(0.5, dur * 1.6), ease: 'easeInOut', delay }, opacity: { duration: 0.3 } }}
+          />
+        )}
+      </AnimatePresence>
+      <motion.img
+        src={m.src}
+        alt=""
+        draggable={false}
+        className="object-contain object-bottom"
+        style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', willChange: 'transform' }}
+        animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
+        transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
+      />
+    </motion.div>
+  );
+}
+
+function CrowdRow({ energy, burstId = 0, shouts = [] }) {
   // Bucket the energy so the jump height/speed only change at a few
   // thresholds — continuously-changing framer targets caused the taller
   // sprites (Finn, Lou) to jitter/glitch while celebrating.
   const e = Math.round(energy * 3) / 3;
   const lift = 6 + e * 42;
   const dur = Math.max(0.28, 0.72 - e * 0.4);
+  const glow = energy >= 0.55;
+  const backRow = energy >= 0.55;
+  const shoutFor = (idx) => shouts.find((s) => s.member === idx) || null;
   return (
-    <div className="w-full h-full flex items-end justify-center gap-1 md:gap-3 pointer-events-none select-none">
-      {CROWD_MEMBERS.map((m, i) => {
-        const delay = (i % 4) * 0.07;
-        const tilt = e * 5 * (i % 2 === 0 ? 1 : -1);
-        return (
-          <motion.img
-            key={i}
-            src={m.src}
-            alt=""
-            draggable={false}
-            className="object-contain object-bottom"
-            style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center', willChange: 'transform' }}
-            animate={{ y: [0, -lift, 0], rotate: [0, tilt, 0] }}
-            transition={{ repeat: Infinity, duration: dur, delay, ease: 'easeInOut' }}
+    <div className="relative w-full h-full pointer-events-none select-none" data-testid="shred-crowd-row" data-back-row={backRow ? 'true' : 'false'}>
+      <AnimatePresence>
+        {backRow && (
+          <motion.div
+            className="absolute inset-x-0 flex items-end justify-center gap-2 md:gap-5"
+            style={{ bottom: '28%', height: '72%', filter: 'brightness(0.72) saturate(0.9)', zIndex: 0 }}
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+          >
+            {CROWD_BACK_ROW.map((m, i) => (
+              <motion.img
+                key={i} src={m.src} alt="" draggable={false}
+                className="object-contain object-bottom"
+                style={{ width: 'auto', height: `${Math.round(m.scale * 100)}%`, transformOrigin: 'bottom center' }}
+                animate={{ y: [0, -(lift * 0.7), 0], rotate: [0, (i % 2 ? -1 : 1) * e * 4, 0] }}
+                transition={{ repeat: Infinity, duration: dur * 1.1, delay: (i % 3) * 0.09, ease: 'easeInOut' }}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="relative w-full h-full flex items-end justify-center gap-1 md:gap-3" style={{ zIndex: 1 }}>
+        {CROWD_MEMBERS.map((m, i) => (
+          <CrowdMember
+            key={i} m={m} i={i} lift={lift} dur={dur}
+            tilt={e * 5 * (i % 2 === 0 ? 1 : -1)}
+            burstId={burstId}
+            shout={shoutFor(i)}
+            glow={glow}
           />
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
@@ -134,7 +214,8 @@ export default function ShredLegendPage() {
   const [readyCount, setReadyCount] = useState(3);
   const [songIndex, setSongIndex] = useState(() => Math.floor(Math.random() * SONGS.length));
   const [tierFlash, setTierFlash] = useState(null);   // { label, color, id } tier-up banner
-  const [legendBurst, setLegendBurst] = useState(false);
+  const [burst, setBurst] = useState(null);           // { id, mega } confetti burst on tier-up
+  const [shouts, setShouts] = useState([]);           // crowd speech bubbles [{ id, member, text }]
   const [hitPulse, setHitPulse] = useState(0);        // bumps on every scored hit (meter pop)
 
   const meterRef = useRef(0);
@@ -182,6 +263,13 @@ export default function ShredLegendPage() {
     setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), big ? 850 : 700);
   }, []);
 
+  const pushShout = useCallback((count) => {
+    const members = [...Array(CROWD_MEMBERS.length).keys()].sort(() => Math.random() - 0.5).slice(0, count);
+    const batch = members.map((member) => ({ id: Date.now() + Math.random(), member, text: CROWD_SHOUTS[Math.floor(Math.random() * CROWD_SHOUTS.length)] }));
+    setShouts((prev) => [...prev.filter((p) => !members.includes(p.member)), ...batch]);
+    setTimeout(() => setShouts((prev) => prev.filter((p) => !batch.includes(p))), 1100);
+  }, []);
+
   // ---- guitar NOTE HIT (onset) → always adds energy; a little extra sparkle
   // if it lands on the beat. The crowd just loves that you're PLAYING. ----
   const onGuitarPlay = useCallback(() => {
@@ -192,9 +280,9 @@ export default function ShredLegendPage() {
     const eighthMs = beatMs / 2;
     onsetsRef.current = onsetsRef.current.filter((t) => now - t < beatMs).concat(now);
 
-    // Mash guard: more than two notes inside one beat is button-mashing, not
-    // soloing. It scores nothing, breaks the combo and bleeds a little meter.
-    if (onsetsRef.current.length > 2) {
+    // Mash guard: a quick 3-note run inside one beat is cool; FOUR or more is
+    // button-mashing. It scores nothing, breaks the combo and bleeds meter.
+    if (onsetsRef.current.length > 3) {
       comboRef.current = 0; setCombo(0);
       meterRef.current = Math.max(0, meterRef.current - 1.5); setMeter(meterRef.current);
       pushFloat('TOO WILD!', '#FF3B30');
@@ -223,10 +311,16 @@ export default function ShredLegendPage() {
     bumpMeter((perfect ? 1.2 : 0.6) * mult);
     setHitPulse((p) => p + 1);
     pushFloat(perfect ? 'PERFECT!' : 'NICE!', perfect ? '#FFCC00' : '#0FA3B1', perfect);
-  }, [screen, band, pushFloat]);
+    if (perfect && comboRef.current >= 3 && comboRef.current % 4 === 0) pushShout(1 + (comboRef.current >= 12 ? 1 : 0));
+  }, [screen, band, pushFloat, pushShout]);
 
   // Shared meter-raise + tier/cheer handling.
-  const bumpMeter = useCallback((amount) => {
+  const bumpMeter = useCallback((raw) => {
+    // Easy to get the crowd warmed up (Opening Act), then each tier is a
+    // steeper climb — the meter is a curve, not a straight line.
+    const m = meterRef.current;
+    const zone = m < 22 ? 1.6 : m < 58 ? 1.0 : m < 90 ? 0.72 : 0.55;
+    const amount = raw * zone;
     meterRef.current = Math.min(100, meterRef.current + amount);
     setMeter(meterRef.current);
     if (meterRef.current > peakRef.current) peakRef.current = meterRef.current;
@@ -240,16 +334,17 @@ export default function ShredLegendPage() {
         const id = Date.now();
         setTierFlash({ label: tier, color, id });
         setTimeout(() => setTierFlash((f) => (f && f.id === id ? null : f)), 1500);
+        setBurst({ id, mega: newIdx >= 2 });
+        setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 2600);
+        pushShout(newIdx >= 2 ? CROWD_MEMBERS.length : 3);
       }
       lastTierRef.current = tier;
     }
     if (meterRef.current >= 100 && !reachedLegendRef.current) {
       reachedLegendRef.current = true;
       cheer(true);
-      setLegendBurst(true);
-      setTimeout(() => setLegendBurst(false), 2600);
     }
-  }, [cheer]);
+  }, [cheer, pushShout]);
 
   // Parent gets told when a note is held (sustained) vs released.
   const onGuitarActive = useCallback((active) => {
@@ -291,7 +386,7 @@ export default function ShredLegendPage() {
     meterRef.current = 0; comboRef.current = 0; peakRef.current = 0;
     inPocketRef.current = 0; reachedLegendRef.current = false; lastTierRef.current = 'Garage Band';
     holdingRef.current = false; lastOnsetRef.current = 0; lastScoredRef.current = -1;
-    onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setLegendBurst(false);
+    onsetsRef.current = []; holdStartRef.current = 0; setTierFlash(null); setBurst(null); setShouts([]);
     setMeter(0); setCombo(0); setTimeLeft(SONG_SECONDS);
     setScreen('ready'); setReadyCount(3);
   }, [initAudioContext]);
@@ -397,9 +492,9 @@ export default function ShredLegendPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      {legendBurst && (
-        <div className="absolute left-1/2 top-[35%] pointer-events-none" style={{ zIndex: 36 }}>
-          <Confetti mega testId="shred-confetti" />
+      {burst && (
+        <div key={burst.id} className="absolute left-1/2 top-[35%] pointer-events-none" style={{ zIndex: 36 }} data-testid="shred-confetti-burst">
+          <Confetti mega={burst.mega} count={burst.mega ? 40 : 26} testId="shred-confetti" />
         </div>
       )}
 
@@ -416,7 +511,7 @@ export default function ShredLegendPage() {
               <img src="assets/characters/charlie-punk.png" alt="" className="w-28 h-28 object-contain mx-auto mb-1" />
               <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED CITY</h1>
               <p className="text-xs mb-3" style={{ color: '#9DB4CC' }}>
-                Pick your jam, then <span style={{ color: '#FFCC00' }}>solo</span> on the strip (no wrong notes!). Play <b>in time</b> to fill the <b>Crowd Meter</b> — keep a streak going for <span style={{ color: '#FF9500' }}>×2</span>. Mashing makes the crowd boo!
+                Pick your jam, then <span style={{ color: '#FFCC00' }}>solo</span> on the strip (no wrong notes!). Play <b>in time</b> to fill the <b>Crowd Meter</b> — keep a streak going for <span style={{ color: '#FF9500' }}>×2</span>. Quick runs are cool — but mashing makes the crowd boo!
               </p>
               <div className="grid grid-cols-1 gap-2 mb-2" data-testid="shred-song-picker">
                 {SONGS.map((s, i) => (
@@ -537,7 +632,7 @@ export default function ShredLegendPage() {
               style={{ height: 'clamp(84px, 17vh, 140px)' }}
               data-testid="shred-crowd"
             >
-              <CrowdRow energy={energy} />
+              <CrowdRow energy={energy} burstId={tierFlash ? tierFlash.id : 0} shouts={shouts} />
             </div>
 
             {/* Guitar */}

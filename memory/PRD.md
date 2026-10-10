@@ -1,5 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Robot Boogie building redrawn
+- Old PNG had speckled transparency (the old chromaKey.py `g<120` rule ate the purple). Regenerated on magenta and keyed with a stricter rule (r>200,b>200,g<110,|r-b|<50). Use that stricter key for any future purple/violet art.
+
 ## Jun 2026: Home JMAtv card → outer-space
 - Desktop `components/RetroTV.js` card too (data-testid home-retro-tv-space).
 - `JmatvCrtMobile` card in HomePage uses `SPACE_BG_STYLE` + exported `Nebula`/`Starfield` from SpaceBackdrop (data-testid home-card-jmatv-space); copy is cream on dark.

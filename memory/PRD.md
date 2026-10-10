@@ -1,6 +1,7 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
 ## Jun 2026: Home JMAtv card → outer-space
+- Desktop `components/RetroTV.js` card too (data-testid home-retro-tv-space).
 - `JmatvCrtMobile` card in HomePage uses `SPACE_BG_STYLE` + exported `Nebula`/`Starfield` from SpaceBackdrop (data-testid home-card-jmatv-space); copy is cream on dark.
 
 ## Jun 2026: Campus v4.1 — user feedback ("I LOVE THIS")

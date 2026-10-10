@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { pickFeaturedEpisode } from '../data/jmatv';
+import { Nebula, Starfield, SPACE_BG_STYLE } from './SpaceBackdrop';
 
 // CSS-only bubble-letter "JMAtv" wordmark. Uses `Bagel Fat One` — a
 // balloon/puffy cartoon display face — with a chunky dark stroke and a
@@ -101,14 +102,17 @@ export default function RetroTV() {
       whileTap={{ scale: 0.995, y: 2 }}
     >
       <div
-        className="relative rounded-3xl px-4 md:px-8 pt-8 md:pt-16 pb-4 md:pb-8"
+        className="relative rounded-3xl px-4 md:px-8 pt-8 md:pt-16 pb-4 md:pb-8 overflow-hidden"
+        data-testid="home-retro-tv-space"
         style={{
-          background:
-            'linear-gradient(180deg, #FFF9E9 0%, #FFF1CE 100%)',
+          ...SPACE_BG_STYLE,
           border: '4px solid var(--jma-dark)',
           boxShadow: '0 8px 0 0 var(--jma-dark)',
         }}
       >
+        {/* outer-space sky — same nebula + stars as the JMAtv pages */}
+        <Nebula />
+        <Starfield />
         {/* Content row — on desktop it's a side-by-side flex-row; on
             phones it stacks vertically. Extra `mt-6` on the TV block
             in mobile mode keeps the rabbit-ear antennas from slashing
@@ -148,15 +152,16 @@ export default function RetroTV() {
             <p
               className="mt-2 md:mt-3 font-black font-display leading-tight"
               style={{
-                color: 'var(--jma-dark)',
+                color: '#FFF9E9',
                 fontSize: 'clamp(15px, 1.6vw, 20px)',
+                textShadow: '0 2px 0 rgba(0,0,0,0.35)',
               }}
             >
               Watch today&apos;s episode!
             </p>
             <p
               className="mt-1 text-[11px] md:text-xs font-bold leading-snug"
-              style={{ color: 'var(--jma-dark)', opacity: 0.7 }}
+              style={{ color: '#FFE7C2', opacity: 0.9 }}
             >
               Songs, stories and music adventures with the JMA crew.
             </p>
@@ -363,7 +368,7 @@ export default function RetroTV() {
         />
         <span
           className="text-[10px] md:text-xs font-black uppercase tracking-widest"
-          style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
+          style={{ color: '#FFE7C2' }}
         >
           Streaming Now
         </span>

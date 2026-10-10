@@ -13,7 +13,7 @@ import ShootingStar from './ShootingStar';
 
 const JMA_DARK = '#0A2540';
 
-function Nebula() {
+export function Nebula() {
   return (
     <div
       aria-hidden="true"
@@ -29,7 +29,7 @@ function Nebula() {
   );
 }
 
-function Starfield() {
+export function Starfield() {
   return (
     <>
       {/* Layer A: main starfield — dense, mid-brightness stars pulsing

@@ -11,6 +11,7 @@ import { Lock } from 'lucide-react';
 import RetroTV from '../components/RetroTV';
 import BlimpFlyby from '../components/BlimpFlyby';
 import UnderwaterBackdrop from '../components/UnderwaterBackdrop';
+import { Nebula, Starfield, SPACE_BG_STYLE } from '../components/SpaceBackdrop';
 import HomeProgressCard from '../components/HomeProgressCard';
 import DailyQuestCard from '../components/DailyQuestCard';
 import AcademyRevealCelebration from '../components/AcademyRevealCelebration';
@@ -360,14 +361,18 @@ function JmatvCrtMobile({ navigate }) {
     >
       <div
         className="relative rounded-[22px] overflow-hidden flex items-center gap-3 px-3 py-3"
+        data-testid="home-card-jmatv-space"
         style={{
-          background: 'linear-gradient(180deg,#FFF9E9 0%,#FFF1CE 100%)',
+          ...SPACE_BG_STYLE,
           border: '4px solid var(--jma-dark)',
           boxShadow: '0 8px 0 0 var(--jma-dark)',
         }}
       >
+        {/* outer-space sky — same nebula + stars as the JMAtv pages */}
+        <Nebula />
+        <Starfield />
         {/* CRT */}
-        <div className="relative flex-shrink-0" style={{ width: '46%' }}>
+        <div className="relative flex-shrink-0" style={{ width: '46%', zIndex: 1 }}>
           {/* Rabbit ears */}
           <div aria-hidden="true" className="absolute" style={{ top: '-14%', left: '50%', transform: 'translateX(-50%)', width: '52%', height: '20%', zIndex: 0 }}>
             <div style={{ position: 'absolute', top: 0, left: '18%', width: 5, height: '100%', background: '#6B7280', transform: 'rotate(-22deg)', transformOrigin: 'bottom center', borderRadius: 4 }} />
@@ -409,14 +414,14 @@ function JmatvCrtMobile({ navigate }) {
         </div>
 
         {/* Text side */}
-        <div className="flex-1 flex flex-col items-start min-w-0">
-          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.18))' }} />
-          <p className="mt-1 font-black font-display leading-tight" style={{ color: 'var(--jma-dark)', fontSize: 'clamp(14px, 4vw, 18px)' }}>
+        <div className="relative flex-1 flex flex-col items-start min-w-0" style={{ zIndex: 1 }}>
+          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))' }} />
+          <p className="mt-1 font-black font-display leading-tight" style={{ color: '#FFF9E9', fontSize: 'clamp(14px, 4vw, 18px)', textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}>
             Watch today&apos;s episode!
           </p>
           <div className="flex items-center gap-1.5 mt-1">
-            <span aria-hidden="true" className="inline-block rounded-full" style={{ width: 9, height: 9, backgroundColor: '#FF3B30', boxShadow: '0 0 8px rgba(255,59,48,0.7)', animation: 'jma-pulse 1.4s ease-in-out infinite' }} />
-            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--jma-dark)', opacity: 0.75 }}>Streaming Now</span>
+            <span aria-hidden="true" className="inline-block rounded-full" style={{ width: 9, height: 9, backgroundColor: '#FF3B30', boxShadow: '0 0 8px rgba(255,59,48,0.9)', animation: 'jma-pulse 1.4s ease-in-out infinite' }} />
+            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#FFE7C2' }}>Streaming Now</span>
           </div>
         </div>
       </div>

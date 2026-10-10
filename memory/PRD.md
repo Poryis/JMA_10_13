@@ -1,5 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Home JMAtv card → outer-space
+- `JmatvCrtMobile` card in HomePage uses `SPACE_BG_STYLE` + exported `Nebula`/`Starfield` from SpaceBackdrop (data-testid home-card-jmatv-space); copy is cream on dark.
+
 ## Jun 2026: Campus v4.1 — user feedback ("I LOVE THIS")
 - Front dune no longer starts mid-slope: `SandStrip shift={FRONT_TROUGH}` (0.249 of tile width) slides the tile so x=0 is a dune trough (campus + home backdrop).
 - Floating lucide music notes restored on open buildings (user asked). Window glow stays removed.

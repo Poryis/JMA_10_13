@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download, Mic } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
@@ -15,6 +16,8 @@ import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
 import useBeatLoopPlayer from '../hooks/useBeatLoopPlayer';
 import { loadSavedBeats } from '../hooks/useSavedBeats';
+import useSongLoopPlayer, { loadSavedSongs } from '../hooks/useSongLoopPlayer';
+import MyMusicShelf from '../components/MyMusicShelf';
 
 const GUIDED_SONGS = [
   { name: 'Do Re Mi', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'] },
@@ -398,21 +401,16 @@ function DrumKitPlayable({ onDrumDown, onDrumUp, registerDrumRef }) {
 // JamAlongControls: tiny dropdown to pick a JMA Original backing track to jam to.
 // Plays the song while the kid plays any instrument on top.
 // ============================================================================
-function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph, beatPlayer }) {
+function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph, beatPlayer, songPlayer }) {
+  const location = useLocation();
   const [beats, setBeats] = useState(() => loadSavedBeats());
+  const [songs, setSongs] = useState(() => loadSavedSongs());
   const [open, setOpen] = useState(false);
+  const [initialTab, setInitialTab] = useState('beats');
   const [isPlaying, setIsPlaying] = useState(false);
   const sourceWiredRef = useRef(false);
-  // Jam Along: all JMA Originals that aren't drum-mode variants for the rhythm
-  // game. Includes the new pure drum loops (`jamOnly`). All audio is now in
-  // C-diatonic-friendly keys (C major / A minor) so it works with our scale.
-  const jamSongs = SONG_LIBRARY.filter(s =>
-    s.category === 'JMA Originals' && !s.instrumentMode
-  );
+  const jamSongs = SONG_LIBRARY.filter(s => s.category === 'JMA Originals' && !s.instrumentMode);
 
-  // Pipe the <audio> element through the Web Audio master gain so the backing
-  // track is captured by the MP3 recorder. Once wired (first time), the audio
-  // element is tied to the AudioContext until page unmount.
   const wireSourceIfNeeded = useCallback(() => {
     if (sourceWiredRef.current) return;
     const el = audioRef.current;
@@ -425,53 +423,53 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph, beatPla
     } catch (_) { /* element may already be wired or context unavailable */ }
   }, [audioRef, getAudioGraph]);
 
-  // Sync isPlaying with the audio element
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    const onEnded = () => setIsPlaying(false);
-    a.addEventListener('play', onPlay);
-    a.addEventListener('pause', onPause);
-    a.addEventListener('ended', onEnded);
-    return () => {
-      a.removeEventListener('play', onPlay);
-      a.removeEventListener('pause', onPause);
-      a.removeEventListener('ended', onEnded);
-    };
+    a.addEventListener('play', onPlay); a.addEventListener('pause', onPause); a.addEventListener('ended', onPause);
+    return () => { a.removeEventListener('play', onPlay); a.removeEventListener('pause', onPause); a.removeEventListener('ended', onPause); };
   }, [audioRef, jamTrackId]);
 
-  const handlePickBeat = (beat) => {
-    onPick(`beat:${beat.id}`);
-    setOpen(false);
-    beatPlayer.start(beat);
-  };
-
-  const handlePick = (id) => {
-    wireSourceIfNeeded();
-    onPick(id);
-    setOpen(false);
-    setTimeout(() => {
-      const a = audioRef.current;
-      if (a) {
-        a.currentTime = 0;
-        a.volume = 0.55;
-        a.play().catch(() => {});
-      }
-    }, 50);
-  };
-
-  const handleStop = () => {
+  const stopAll = useCallback(() => {
     const a = audioRef.current;
     if (a) { a.pause(); a.currentTime = 0; }
     beatPlayer.stop();
-    onPick(null);
+    songPlayer.stop();
+  }, [audioRef, beatPlayer, songPlayer]);
+
+  const handlePickBeat = useCallback((beat) => { stopAll(); onPick(`beat:${beat.id}`); setOpen(false); beatPlayer.start(beat); }, [stopAll, onPick, beatPlayer]);
+  const handlePickSong = useCallback((song) => { stopAll(); onPick(`song:${song.id}`); setOpen(false); songPlayer.start(song); }, [stopAll, onPick, songPlayer]);
+  const handlePick = (id) => {
+    stopAll(); wireSourceIfNeeded(); onPick(id); setOpen(false);
+    setTimeout(() => { const a = audioRef.current; if (a) { a.currentTime = 0; a.volume = 0.55; a.play().catch(() => {}); } }, 50);
   };
+  const handleStop = () => { stopAll(); onPick(null); };
+
+  // Arrived from Beat Lab / Song Studio with "Jam on it!" → start that one right away.
+  const autoRef = useRef(false);
+  useEffect(() => {
+    if (autoRef.current) return;
+    const q = new URLSearchParams(location.search);
+    const beatId = q.get('beat'); const songId = q.get('song');
+    if (!beatId && !songId) return;
+    autoRef.current = true;
+    setBeats(loadSavedBeats()); setSongs(loadSavedSongs());
+    const go = () => {
+      if (beatId) { const b = loadSavedBeats().find(x => x.id === beatId); if (b) handlePickBeat(b); }
+      else { const sg = loadSavedSongs().find(x => x.id === songId); if (sg) handlePickSong(sg); }
+    };
+    try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') { setTimeout(go, 150); return undefined; } } catch (_) { /* ignore */ }
+    const once = () => setTimeout(go, 150);
+    document.addEventListener('pointerdown', once, { once: true, capture: true });
+    return () => document.removeEventListener('pointerdown', once, { capture: true });
+  }, [location.search, handlePickBeat, handlePickSong]);
 
   const currentBeat = beats.find(b => `beat:${b.id}` === jamTrackId);
-  const current = currentBeat || jamSongs.find(s => s.id === jamTrackId);
-  const nowPlaying = currentBeat ? beatPlayer.playingId === currentBeat.id : isPlaying;
+  const currentSong = songs.find(sg => `song:${sg.id}` === jamTrackId);
+  const current = currentBeat || currentSong || jamSongs.find(s => s.id === jamTrackId);
+  const nowPlaying = currentBeat ? beatPlayer.playingId === currentBeat.id : currentSong ? songPlayer.playingId === currentSong.id : isPlaying;
 
   return (
     <div className="relative">
@@ -479,59 +477,32 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph, beatPla
         <button
           data-testid="jam-along-toggle"
           className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
-          onClick={() => { setBeats(loadSavedBeats()); setOpen(o => !o); }}
+          onClick={() => { setBeats(loadSavedBeats()); setSongs(loadSavedSongs()); setInitialTab(loadSavedBeats().length || !loadSavedSongs().length ? 'beats' : 'songs'); setOpen(true); }}
         >
-          <Headphones className="w-3 h-3" /> Play a Song
+          <Headphones className="w-3 h-3" /> My Music
         </button>
       ) : (
         <div className="flex items-center gap-1">
-          <button
-            data-testid="jam-along-stop"
-            className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
-            onClick={handleStop}
-          >
+          <button data-testid="jam-along-stop" className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation" onClick={handleStop}>
             <Square className="w-3 h-3 fill-current" /> Stop
           </button>
-          <span className="text-xs font-bold max-w-[120px] truncate" style={{ color: 'var(--jma-dark)' }}>
+          <button type="button" data-testid="jam-along-change" className="text-xs font-bold max-w-[140px] truncate underline decoration-dotted bg-transparent border-0 p-0" style={{ color: 'var(--jma-dark)' }} onClick={() => setOpen(true)}>
             {nowPlaying ? '🎶 ' : ''}{current.name}
-          </span>
+          </button>
         </div>
       )}
-      {open && !current && (
-        <div
-          data-testid="jam-along-menu"
-          className="absolute top-full left-0 mt-1 z-50 bg-white border-2 border-[var(--jma-dark)] rounded-xl shadow-[0_4px_0_0_var(--jma-dark)] p-2 min-w-[180px]"
-        >
-          <p className="text-[10px] font-bold uppercase tracking-wide opacity-60 mb-1 px-1">Pick a track</p>
-          {jamSongs.map(s => (
-            <button
-              key={s.id}
-              data-testid={`jam-pick-${s.id}`}
-              onClick={() => handlePick(s.id)}
-              className="block w-full text-left px-2 py-1.5 rounded-lg text-sm font-bold hover:bg-[var(--jma-yellow)]/30 touch-manipulation"
-              style={{ color: 'var(--jma-dark)' }}
-            >
-              {s.name}
-            </button>
-          ))}
-          {beats.length > 0 && (
-            <>
-              <p className="text-[10px] font-bold uppercase tracking-wide opacity-60 mt-2 mb-1 px-1 border-t border-black/10 pt-2">My Beats (from Beat Lab)</p>
-              {beats.map(b => (
-                <button
-                  key={b.id}
-                  data-testid={`jam-pick-beat-${b.id}`}
-                  onClick={() => handlePickBeat(b)}
-                  className="block w-full text-left px-2 py-1.5 rounded-lg text-sm font-bold hover:bg-[var(--jma-yellow)]/30 touch-manipulation"
-                  style={{ color: 'var(--jma-dark)' }}
-                >
-                  {b.name} <span className="opacity-50 text-[10px]">{b.bpm} bpm</span>
-                </button>
-              ))}
-            </>
-          )}
-        </div>
-      )}
+      {/* Banner: what we're jamming to — big and obvious for the kid. */}
+      <AnimatePresence>
+        {current && nowPlaying && (
+          <motion.div key={current.id} data-testid="jam-along-banner" className="fixed left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full px-4 py-1.5 font-black font-display text-sm md:text-base whitespace-nowrap pointer-events-none"
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 60px)', background: 'var(--jma-dark)', color: 'white', border: '3px solid white', boxShadow: '0 4px 0 0 rgba(0,0,0,0.35)' }}
+            initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
+            <Headphones className="w-4 h-4" strokeWidth={3} /> Jamming to: {current.name}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <MyMusicShelf open={open} onClose={() => setOpen(false)} beats={beats} songs={songs} jelly={jamSongs} currentId={jamTrackId} initialTab={initialTab}
+        onPickBeat={handlePickBeat} onPickSong={handlePickSong} onPickJelly={(sg) => handlePick(sg.id)} onStop={handleStop} />
     </div>
   );
 }
@@ -541,6 +512,7 @@ function FreePlayPage() {
   const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
   const recorder = useMp3Recorder(getAudioGraph);
   const beatPlayer = useBeatLoopPlayer({ playBellNote, playDrumSound, initAudioContext });
+  const songPlayer = useSongLoopPlayer();
 
   const [particles, setParticles] = useState([]);
   const [streak, setStreak] = useState(0);
@@ -873,6 +845,7 @@ function FreePlayPage() {
             audioRef={jamAudioRef}
             getAudioGraph={getAudioGraph}
             beatPlayer={beatPlayer}
+            songPlayer={songPlayer}
           />
           {/* Unified "Capture this Jam" — starts BOTH the in-app note loop
               and the audio MP3 recorder in lockstep. After stopping, an inline

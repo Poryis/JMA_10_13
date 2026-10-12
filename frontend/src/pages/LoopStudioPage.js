@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight, Eraser } from 'lucide-react';
+import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight, Eraser, Headphones } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import useAudio from '../hooks/useAudio';
 import useBeatLabAudio from '../hooks/useBeatLabAudio';
@@ -361,6 +361,7 @@ function LoopStudioPage() {
 
   // --- recording / saving ---
   const [savedBeatName, setSavedBeatName] = useState(null);
+  const [savedBeatId, setSavedBeatId] = useState(null);
   const [namingBeat, setNamingBeat] = useState(null);
   const [beatNameInput, setBeatNameInput] = useState('');
 
@@ -396,6 +397,7 @@ function LoopStudioPage() {
     const name = beatNameInput.trim().slice(0, 24) || namingBeat.name;
     if (name !== namingBeat.name) renameSavedBeat(namingBeat.id, name);
     setSavedBeatName(name);
+    setSavedBeatId(namingBeat.id);
     setNamingBeat(null);
   }, [namingBeat, beatNameInput]);
 
@@ -625,7 +627,12 @@ function LoopStudioPage() {
                 </form>
               )}
               {savedBeatName && !namingBeat && !recorder.isRecording && !recorder.isProcessing && (
-                <span data-testid="loop-saved-to-jam" className="text-[10px] font-black text-[#4CD964] whitespace-nowrap">✓ {savedBeatName} → Jam Session</span>
+                <motion.button type="button" data-testid="loop-jam-on-it" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                  className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs md:text-sm font-black whitespace-nowrap touch-manipulation"
+                  style={{ background: '#FFCC00', color: '#0A1626', border: '2px solid #000', boxShadow: '0 3px 0 rgba(0,0,0,0.55)' }}
+                  onClick={() => { say('charlie.jam.takeit', { minGapMs: 0 }); try { sessionStorage.setItem('jma_just_saved_beat_v1', '1'); } catch (_) {} navigate(`/free-play?beat=${savedBeatId}`); }}>
+                  <Headphones className="w-3.5 h-3.5" /> Jam on it! →
+                </motion.button>
               )}
               {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
                 <button data-testid="loop-download-mp3" className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs md:text-sm font-black" style={{ background: '#4CD964', color: '#0A1626', border: '2px solid #000', boxShadow: '0 3px 0 rgba(0,0,0,0.55)' }} onClick={() => recorder.download(`my-loop-${Date.now()}.mp3`)}><Download className="w-3 h-3" /> MP3</button>

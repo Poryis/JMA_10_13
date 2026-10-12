@@ -15,6 +15,8 @@ import AvatarSprite from '../components/AvatarSprite';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
 import { readAvatarOutfit } from '../hooks/useAvatar';
+import { loadSavedBeats } from '../hooks/useSavedBeats';
+import { loadSavedSongs } from '../hooks/useSongLoopPlayer';
 import { say, voiceEnabled } from '../lib/voice';
 
 // Shelf layout scales with the viewport: a building is ~46% of the screen
@@ -94,7 +96,7 @@ function RoofBubbles({ index }) {
   );
 }
 
-function Building({ b, index, locked, onEnter, shout, L, entering }) {
+function Building({ b, index, locked, onEnter, shout, L, entering, badge }) {
   const [shake, setShake] = useState(0);
   const lift = index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
   const scale = index % 3 === 1 ? 0.86 : 1;
@@ -130,6 +132,13 @@ function Building({ b, index, locked, onEnter, shout, L, entering }) {
           ))}
           {!locked && b.host && <Host src={b.host} shout={shout} />}
         </motion.div>
+        {!locked && badge && (
+          <motion.span data-testid={`campus-building-${b.id}-badge`} className="absolute -top-3 right-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] md:text-xs font-black whitespace-nowrap"
+            style={{ background: '#FFCC00', color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)', zIndex: 6 }}
+            initial={{ scale: 0 }} animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.6 }}>
+            <Music className="w-3 h-3" strokeWidth={3} /> {badge}
+          </motion.span>
+        )}
         {locked && (
           <span data-testid={`campus-building-${b.id}-lock`} className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] md:text-[10px] font-black text-white whitespace-nowrap" style={{ background: 'rgba(10,37,64,0.92)', border: '2px solid white', zIndex: 6 }}>
             <Lock className="w-3 h-3" strokeWidth={3} /> Earn 1 badge
@@ -169,6 +178,19 @@ export default function CampusMapPage() {
   const YOU_W = L.you;
   const YOU_LEFT = Math.round(L.bw * 0.45); // breathing room: sign → you → first building
   const nowPlaying = useStreetMusic(zone.tracks);
+  const jamCount = useMemo(() => loadSavedBeats().length + loadSavedSongs().length, []);
+  const jamBadge = jamCount > 0 ? `${jamCount} to jam` : null;
+  // Just saved a beat? Chunk points next door.
+  useEffect(() => {
+    let flag = null;
+    try { flag = sessionStorage.getItem('jma_just_saved_beat_v1'); } catch (_) { /* ignore */ }
+    if (!flag || zone.id !== 'create') return undefined;
+    try { sessionStorage.removeItem('jma_just_saved_beat_v1'); } catch (_) { /* ignore */ }
+    const s = { id: Date.now(), buildingId: 'beat-lab', text: 'Take your beat next door!' };
+    const t1 = setTimeout(() => setShout(s), 900);
+    const t2 = setTimeout(() => setShout((cur) => (cur && cur.id === s.id ? null : cur)), 4500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [zone.id]);
   // New street: start at the near end (or the far end when walking in from the right).
   useEffect(() => {
     const el = scroller.current; if (!el) return;
@@ -299,7 +321,7 @@ export default function CampusMapPage() {
           <StreetSign zone={nextZone} dir="right" onClick={() => goStreet(nextZone, 'start')} style={{ left: width - Math.round(L.bw * 0.62), bottom: floor + 4, zIndex: 11 }} />
           {/* buildings */}
           {buildings.map((b, i) => (
-            <Building key={b.id} b={b} index={i} L={L} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
+            <Building key={b.id} b={b} index={i} L={L} badge={b.id === 'jam-session' ? jamBadge : null} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">

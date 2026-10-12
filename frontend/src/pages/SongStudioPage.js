@@ -84,6 +84,8 @@ export default function SongStudioPage() {
   const [pendingName, setPendingName] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [songs, setSongs] = useState(loadSongs);
+  const [lastSavedId, setLastSavedId] = useState(null);
+  const jamOnIt = useCallback((id) => { say('charlie.jam.takeit', { minGapMs: 0 }); navigate(`/free-play?song=${id}`); }, [navigate]);
   // Accompaniment toggles — kids can solo their melody by switching these off
   const [drumsOn, setDrumsOn] = useState(true);
   const [chordsOn, setChordsOn] = useState(true);
@@ -283,6 +285,7 @@ export default function SongStudioPage() {
       createdAt: new Date().toISOString(),
     };
     const next = [newSong, ...songs];
+    setLastSavedId(newSong.id);
     saveSongs(next);
     setSongs(next);
     setShowSaveModal(false);
@@ -300,7 +303,7 @@ export default function SongStudioPage() {
       const fullCount = newSong.slots.filter((s) => s != null).length;
       if (fullCount >= newSong.slots.length) earnAchievementUpTo('song', 'master');
     } catch { /* ignore */ }
-    setTimeout(() => setShowCelebration(false), 2200);
+    setTimeout(() => setShowCelebration(false), 6000);
   }, [pendingName, moodId, slots, mood.bpm, songs]);
 
   // Load a saved song
@@ -767,6 +770,14 @@ export default function SongStudioPage() {
                             <Play className="w-3 h-3" /> Open
                           </button>
                           <button
+                            data-testid={`song-gallery-jam-${song.id}`}
+                            onClick={() => jamOnIt(song.id)}
+                            className="chunky-btn bg-[#FFCC00] px-3 py-1.5 text-xs flex items-center gap-1 font-black"
+                            style={{ color: 'var(--jma-dark)' }}
+                          >
+                            Jam on it!
+                          </button>
+                          <button
                             onClick={() => deleteSong(song.id)}
                             className="text-red-600 hover:text-red-800 p-1"
                             aria-label="Delete song"
@@ -805,6 +816,13 @@ export default function SongStudioPage() {
                 <div className="text-xs font-bold opacity-70 mt-1" style={{ color: 'var(--jma-dark)' }}>
                   + Songwriter sticker
                 </div>
+                {lastSavedId && (
+                  <button type="button" data-testid="song-jam-on-it" onClick={() => jamOnIt(lastSavedId)}
+                    className="mt-3 pointer-events-auto flex items-center gap-1.5 mx-auto rounded-full px-4 py-2 font-black font-display text-sm"
+                    style={{ background: 'var(--jma-dark)', color: '#FFCC00', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 rgba(0,0,0,0.4)' }}>
+                    Jam on it! →
+                  </button>
+                )}
               </motion.div>
             </motion.div>
           )}

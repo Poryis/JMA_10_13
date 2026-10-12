@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download, Mic } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader } from '../components/GameUI';
-import RoomCharacters from '../components/RoomCharacters';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import GuitarInstrument from '../components/GuitarInstrument';
 import { FullscreenButton } from '../components/FullscreenButton';
@@ -839,7 +838,6 @@ function FreePlayPage() {
       <FullscreenButton />
       <AnimatePresence>{particles.map(p => <ParticleBurst key={p.id} color={p.color} />)}</AnimatePresence>
       <CharacterReaction streak={streak} />
-      <RoomCharacters room="jam-hall" />
 
       {/* Mobile vertically centers content (was justify-start which left empty space
           below the circle on phones, making it feel "bunched up" at the top).

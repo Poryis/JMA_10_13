@@ -1,6 +1,7 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
 ## Jun 2026: Campus de-clutter
+- Jam Session (FreePlayPage) no longer renders `<RoomCharacters room="jam-hall" />` (corner cast removed at user request).
 - Removed building name pills (buttons keep `aria-label={b.name}`) and the street-name chip ("Jelly Jam Boulevard" etc.). Lock chips remain.
 - `assets/campus/jukebox-diner.png` sign now reads JELLY JUKEBOX (PIL edit: red text erased to cream, re-rendered Liberation Sans Narrow Bold stretched tall + rotated 7°). Original saved at `/app/memory/jukebox-diner.orig.png`.
 

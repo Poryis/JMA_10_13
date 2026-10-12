@@ -232,8 +232,8 @@ export default function CampusMapPage() {
     const n = Math.ceil((width + 600) / (slot * 1.5));
     for (let i = 0; i < n; i++) {
       const x = i * slot * 1.5 + 200;
-      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: Math.round(130 * acc), bottom: 0, delay: i * 0.7 });
-      if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + Math.round(160 * acc), w: Math.round(48 * acc), bottom: 10 });
+      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: Math.round(70 * acc), bottom: 0, delay: i * 0.7 });
+      if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + Math.round(120 * acc), w: Math.round(36 * acc), bottom: 10 });
     }
     return items;
   }, [width, slot, acc]);

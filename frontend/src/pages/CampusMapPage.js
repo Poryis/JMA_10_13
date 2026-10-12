@@ -185,9 +185,9 @@ export default function CampusMapPage() {
     let flag = null;
     try { flag = sessionStorage.getItem('jma_just_saved_beat_v1'); } catch (_) { /* ignore */ }
     if (!flag || zone.id !== 'create') return undefined;
-    try { sessionStorage.removeItem('jma_just_saved_beat_v1'); } catch (_) { /* ignore */ }
     const s = { id: Date.now(), buildingId: 'beat-lab', text: 'Take your beat next door!' };
-    const t1 = setTimeout(() => setShout(s), 900);
+    // consume the flag inside the timer so StrictMode's effect re-run can't eat the one-shot
+    const t1 = setTimeout(() => { try { sessionStorage.removeItem('jma_just_saved_beat_v1'); } catch (_) { /* ignore */ } setShout(s); }, 900);
     const t2 = setTimeout(() => setShout((cur) => (cur && cur.id === s.id ? null : cur)), 4500);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [zone.id]);

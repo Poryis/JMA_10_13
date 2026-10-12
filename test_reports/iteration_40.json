@@ -1,0 +1,47 @@
+{
+  "summary": "Frontend-only verification of the 'make it → jam on it' pipeline. Bug fix (Beat Lab sax lane replays as sax in Jam Session) VERIFIED. My Music shelf, Song Studio pipeline, Campus Create order/badge all PASS. One residual bug: Chunk's 'Take your beat next door!' shout never renders on /#/campus?zone=create after the Beat Lab Jam flow.",
+  "verified_fixes": [
+    {
+      "bug": "Saved Beat Lab beats replayed with wrong sounds (sax lane played as bell) in Jam Session",
+      "verification": "Full Beat Lab REC flow (Drums tab kick on steps 0/4/8/12 + Melody tab sax:C3 and sax:E3), stopped via loop-stop-rec-btn, named 'Sax Jam' via beat-name-form/beat-name-save, clicked loop-jam-on-it → navigated to /#/free-play?beat=<id> and banner [data-testid=jam-along-banner] shows 'Jamming to: Sax Jam'. Saved beat in localStorage jma_saved_beats_v1 has tracks: {id:'kick',type:'drum'}, {id:'sax:C3',type:'bell',note:'C'}, {id:'sax:E3',type:'bell',note:'E'} — track.id values are the Beat Lab keys. On a second seeded run (beat with sax:C3, sax:E3, kick) performance.getEntriesByType('resource') after beat auto-start showed 15 /assets/audio/sax/*.mp3 requests (incl. C3.mp3 and E3.mp3) + 4 drum requests (Bass drum - kick.mp3 etc.), and ZERO /assets/bells/* requests. Fix confirmed: useBeatLoopPlayer uses lab.playNote(inst,note) and lab.playDrum(id) via track Beat Lab keys. No console errors from the beat loop.",
+      "status": "PASS"
+    },
+    {
+      "bug": "Song Studio MOODS.find crash on jam flow",
+      "verification": "Filled 4 piano slots (C5-F5), Save → song-name-input='Jam Song' → song-confirm-save → celebration with song-jam-on-it button → navigates to /#/free-play?song=song_<ts>, banner 'Jamming to: Jam Song'. Also song-gallery-jam-<id> button in Song Studio gallery navigates and shows banner. No runtime/console errors.",
+      "status": "PASS"
+    }
+  ],
+  "feature_checks": [
+    {"feature": "My Music shelf", "status": "PASS", "notes": "jam-along-toggle opens my-music-shelf with tabs 'My Beats 0', 'My Songs 0', 'Jelly Songs 7'. Empty state (my-music-empty) shows CTA (my-music-empty-cta) which navigates to /#/loop-studio for beats and /#/song-studio for songs. tape-beat-<id> tap starts the beat, closes the shelf, banner appears, Stop (jam-along-stop) clears it, Change (jam-along-change) visible."},
+    {"feature": "Campus Create order + badge", "status": "PASS", "notes": "campus-building-beat-lab left=386px < campus-building-jam-session left=864px (Beat Lab first). With 1 saved beat, campus-building-jam-session-badge shows '1 to jam'."}
+  ],
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CampusMapPage (Chunk Beat Lab shout)", "issue": "'Take your beat next door!' never appears on /#/campus?zone=create after Beat Lab jam flow. sessionStorage flag jma_just_saved_beat_v1 IS consumed (reads as null after mount) but no bubble ever renders. Root cause: React.StrictMode double-invokes the useEffect in dev. First run reads flag, removes it, schedules t1 (900ms setShout) and t2; cleanup fires immediately, clearTimeout kills t1/t2; second run finds flag null and no-ops. Polling every 200ms up to 5s only shows the periodic random SHOUTS ('Woo!') from the other interval effect, never the targeted shout. Fix: do NOT consume the flag in the effect body (move sessionStorage.removeItem into the t1 setTimeout callback), or use a useRef guard so strict-mode re-run doesn't lose it.", "selector": "[data-testid=campus-building-beat-lab]", "priority": "MEDIUM", "file": "/app/frontend/src/pages/CampusMapPage.js lines 183-194"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "console_warnings": [
+    "'Encountered two children with the same key' — fires on multiple pages (also reported in iteration_39). Likely AnimatePresence children sharing keys.",
+    "'An empty string (\"\") was passed to the src attribute' — fires on /#/free-play. Some <img> is being rendered with src=\"\" (probably when there is no current jam/avatar/host). Should pass undefined/null or skip the <img> entirely.",
+    "'Could not load audio for <note>: TypeError: Failed to fetch' spam from posthog-recorder.js on /#/loop-studio — this appears to come from PostHog session recording trying to replay/clone fetches; not a product bug, but noisy."
+  ],
+  "action_items": [
+    "Fix the Chunk 'Take your beat next door!' shout: delay sessionStorage.removeItem('jma_just_saved_beat_v1') until inside the 900ms setTimeout callback (or guard the effect with a module-level ref) so React.StrictMode's effect double-invoke doesn't eat the one-shot shout.",
+    "Audit empty-string <img src=\"\"> on FreePlayPage (likely the current-creation thumbnail or host avatar when none is selected).",
+    "Carry-over from iteration_39: duplicate React keys inside AnimatePresence on multiple pages."
+  ],
+  "critical_code_review_comments": [
+    "CampusMapPage.js: the 'just saved beat' effect eagerly consumes the sessionStorage flag before the state has had a chance to update, which is unsafe under React.StrictMode. Pattern should defer the removeItem until the setShout actually fires, or guard with useRef.",
+    "useBeatLoopPlayer.js: the lab-replay path cleanly derives instruments from track IDs (track.id.includes(':') → split 'sax:C4') and preloads per-instrument samples before starting the loop — good. The fallback (!useLab) still uses playBellNote which is only safe for jelly bell patterns."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "~95% (bug fix PASSES; one unrelated regression in Chunk shout)"},
+  "test_credentials": "None required",
+  "seed_data_creation": "Set localStorage: jma_unlock_all_v1='1', jma_reveal_seen_v1='1', jma_player_name_skipped_v1='1', jma_audio_unlocked_v1='1'. For specific tests: jma_saved_beats_v1 with a sax:C3/sax:E3/kick beat, jma_saved_songs_v1, sessionStorage jma_just_saved_beat_v1='1'.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The AudioUnlockOverlay still appears on every load even with jma_audio_unlocked_v1='1'; dismiss it with a click (data-testid=audio-unlock-overlay) BEFORE clicking player-name-skip. In Beat Lab the REC button has data-testid=loop-record-btn; the STOP button that appears while recording is data-testid=loop-stop-rec-btn (NOT loop-stop-btn). Rank-up modals (data-testid=rank-up-overlay, dismiss via rank-up-dismiss) may fire while recording — be ready to dismiss them in a loop. Saved beats are keyed with the Beat Lab key per track (e.g. 'sax:C3', 'kick') — this is intentional and part of the fix. Chunk's 'Take your beat next door!' shout bug reproduces 100% on the preview env (React.StrictMode); verify fix by polling document.body.innerText for the string between 900ms and 4500ms after /#/campus?zone=create loads with sessionStorage flag set."
+}

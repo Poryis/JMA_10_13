@@ -360,7 +360,7 @@ function JmatvCrtMobile({ navigate, compact = false }) {
       whileTap={{ scale: 0.98, y: 2 }}
     >
       <div
-        className={`relative rounded-[22px] overflow-hidden flex items-center gap-3 ${compact ? 'px-3 py-1.5' : 'px-3 py-3'}`}
+        className={`relative rounded-[22px] overflow-hidden flex items-center ${compact ? 'justify-center gap-5 px-4 py-2' : 'gap-3 px-3 py-3'}`}
         data-testid="home-card-jmatv-space"
         style={{
           ...SPACE_BG_STYLE,
@@ -414,8 +414,8 @@ function JmatvCrtMobile({ navigate, compact = false }) {
         </div>
 
         {/* Text side */}
-        <div className="relative flex-1 flex flex-col items-start min-w-0" style={{ zIndex: 1 }}>
-          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: compact ? 'min(50%, 80px)' : 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))' }} />
+        <div className={`relative flex flex-col min-w-0 ${compact ? 'flex-none items-center text-center' : 'flex-1 items-start'}`} style={{ zIndex: 1 }}>
+          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: compact ? 96 : 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))' }} />
           <p className="mt-1 font-black font-display leading-tight" style={{ color: '#FFF9E9', fontSize: compact ? '12px' : 'clamp(14px, 4vw, 18px)', textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}>
             Watch today&apos;s episode!
           </p>

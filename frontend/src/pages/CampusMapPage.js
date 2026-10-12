@@ -17,13 +17,13 @@ import useUnlocks from '../hooks/useUnlocks';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import { say, voiceEnabled } from '../lib/voice';
 
-// Shelf layouts: wide (tablet/desktop), narrow (phone portrait), short (phone landscape — little headroom).
-const LAYOUTS = {
-  wide:   { slot: 300, bw: 230, left: 120, sandBack: 190, sandFront: 118, floor: 56, lift: 1,    you: 64 },
-  narrow: { slot: 220, bw: 170, left: 96,  sandBack: 130, sandFront: 84,  floor: 46, lift: 0.7,  you: 64 },
-  short:  { slot: 176, bw: 132, left: 72,  sandBack: 84,  sandFront: 56,  floor: 30, lift: 0.4,  you: 46 },
+// Shelf layout scales with the viewport: a building is ~46% of the screen
+// height (capped by width) and everything else is derived from that.
+const layoutFor = (w, h) => {
+  const bw = Math.round(Math.max(120, Math.min(h * 0.46, w * 0.55, 440)));
+  const k = bw / 230;
+  return { bw, k, slot: Math.round(bw * 1.3), left: Math.round(bw * 0.5), sandBack: Math.round(bw * 0.8), sandFront: Math.round(bw * 0.5), floor: Math.round(bw * 0.24), lift: k, you: Math.round(Math.max(44, Math.min(72, bw * 0.28))) };
 };
-const layoutFor = (w, h) => (h < 520 ? LAYOUTS.short : w < 640 ? LAYOUTS.narrow : LAYOUTS.wide);
 const SHOUTS = ['Hey!', 'Come in!', 'Over here!', 'Woo!', 'Jam time!', 'Psst!'];
 const YOU_LEFT = 16;
 
@@ -134,9 +134,8 @@ export default function CampusMapPage() {
   const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
   useEffect(() => { const f = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
   const L = layoutFor(vp.w, vp.h);
-  const short = L === LAYOUTS.short;
   const { slot, sandBack, sandFront, floor } = L;
-  const acc = short ? 0.62 : L === LAYOUTS.narrow ? 0.72 : 1; // accent art scale
+  const acc = Math.min(1.4, L.k); // accent art scale
   const width = 200 + buildings.length * slot;
   const youBottom = floor + 2;
   const YOU_W = L.you;
@@ -275,7 +274,7 @@ export default function CampusMapPage() {
       {/* swipe hint */}
       <AnimatePresence>
         {hint && buildings.length > 3 && (
-          <motion.div data-testid="campus-swipe-hint" className="absolute bottom-6 right-4 z-20 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black pointer-events-none" style={{ background: 'white', color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
+          <motion.div data-testid="campus-swipe-hint" className="absolute bottom-5 right-16 md:right-20 z-20 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black pointer-events-none" style={{ background: 'white', color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
             initial={{ opacity: 0 }} animate={{ opacity: 1, x: [0, 8, 0] }} exit={{ opacity: 0 }} transition={{ x: { repeat: Infinity, duration: 1.2 } }}>
             Swipe to explore <ChevronsRight className="w-4 h-4" />
           </motion.div>

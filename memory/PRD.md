@@ -1,5 +1,9 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Bigger campus buildings + centred compact JMAtv card
+- `CampusMapPage.layoutFor(w,h)` now derives everything from `bw = clamp(120, min(0.46·h, 0.55·w), 440)`: slot 1.3bw, left 0.5bw, sandBack 0.8bw, sandFront 0.5bw, floor 0.24bw, lift k=bw/230, avatar 0.28bw (44–72). Buildings fill ~half the screen height on every device (LAYOUTS wide/narrow/short removed). Swipe hint moved left of the fullscreen button.
+- Compact JMAtv card (phone landscape) is centred: `justify-center gap-5`, text column `flex-none items-center text-center`, logo 96px.
+
 ## Jun 2026: Home phone-landscape layout + always-collapsible quests
 - `DailyQuestCard` starts COLLAPSED on every screen size (strip `daily-quest-strip`), collapse chevron always shown; still auto-expands when a quest was just completed.
 - `HomePage.useShortLandscape()` (innerHeight < 520 && landscape) → `data-layout="short"`, root class `home-short`, renders `home-short-layout`: progress pill + quest strip in one row, PLAY/LEARN/CREATE as `wide` cards in one row, `JmatvCrtMobile compact` (CRT 24%, logo 80px, 12px copy) centred at maxWidth 400 below. CSS in index.css shrinks hero (`home-finn` 52px, `jma-logo` 104px, `home-charlie` 64px) and card title/sub (`.home-card-title/.home-card-sub`). Verified 844×390 and 740×360.

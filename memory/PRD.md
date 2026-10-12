@@ -1,5 +1,10 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Jukebox misses + Shred crowd dedupe (tested iteration_39, pass)
+- RhythmGamePage: `FallingBellNote` gets `onMiss` via `onAnimationComplete` → `handleNoteMiss` (previously never wired — notes that fell past were never counted NOR removed, and could still be "hit" late). Wrong-bell taps now count as misses too. handleNoteMiss decides from `fallingNotesRef` (no side effects inside state updaters).
+- ShredLegendPage: `charOf(src)` + CrowdRow drops the regular matching the kid's avatar character → front row never repeats a character. Back row (disco costumes) unchanged.
+- Ambient street loops: user wants Jelly instrumentals instead of the synth loops in `assets/ambient/*.mp3` — WAITING on audio uploads.
+
 ## Jun 2026: Bigger campus buildings + centred compact JMAtv card
 - `CampusMapPage.layoutFor(w,h)` now derives everything from `bw = clamp(120, min(0.46·h, 0.55·w), 440)`: slot 1.3bw, left 0.5bw, sandBack 0.8bw, sandFront 0.5bw, floor 0.24bw, lift k=bw/230, avatar 0.28bw (44–72). Buildings fill ~half the screen height on every device (LAYOUTS wide/narrow/short removed). Swipe hint moved left of the fullscreen button.
 - Compact JMAtv card (phone landscape) is centred: `justify-center gap-5`, text column `flex-none items-center text-center`, logo 96px.

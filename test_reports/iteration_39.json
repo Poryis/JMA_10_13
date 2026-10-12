@@ -1,0 +1,38 @@
+{
+  "summary": "Frontend-only verification of two bug fixes: (1) Jelly Jukebox miss counter and (2) Shred City front-row crowd duplicate avatar. Both fixes verified end-to-end via Playwright on the live preview URL.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_fixes": [
+    {
+      "bug": "Jelly Jukebox results always showed 0 misses",
+      "verification": "Started /#/rhythm-game, Turbo speed, selected JMA 'Play One Skip One' and did NOT tap any bell for the entire song. Results screen (data-testid=rhythm-results) showed Hit=0, Miss=50, Streak=0x => misses correctly accumulate via FallingBellNote onAnimationComplete -> handleNoteMiss. Accuracy effectively 0% (< 100%).",
+      "regression_check": "Monitored concurrent falling-note DOM nodes under .rhythm-lanes while NOT tapping; max concurrent was 9 and the count oscillated (never monotonically grew), confirming notes are removed from the DOM once they reach the bottom and are not left as ever-growing ghosts.",
+      "status": "PASS"
+    },
+    {
+      "bug": "Shred City front row duplicated the kid's avatar character (e.g. two Jazzys)",
+      "verification": "Set localStorage jma_avatar_v1 for 3 cases and opened /#/shred-legend, picked song 0 (Garage Stomp). Collected img srcs of the 7 front-row sprites (data-testid=shred-crowd-row, data-back-row='false') and computed character prefixes using the same rule as charOf (sharky|shark|finn => finn, dr-jellybone => jellybone).\n  - jazzy/classic: front row = finn, chunk, charlie, jazzy(YOU), lou, stew, jellybone. No duplicates, exactly one jazzy, YOU tag present.\n  - charlie/classic: front row = finn, chunk, jazzy, charlie(YOU), lou, stew, jellybone. No duplicates.\n  - finn/plain (uses shark.png): front row = chunk, jazzy, charlie(-punk), shark(YOU=finn), lou, stew, jellybone. No duplicates when collapsed by character prefix; exactly one 'finn' member and it is the YOU sprite.",
+      "status": "PASS"
+    }
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "Low priority: React warning 'Encountered two children with the same key' fires repeatedly on both /#/rhythm-game (during play) and /#/shred-legend (during play). Not blocking; likely stems from an AnimatePresence child list reusing an index/burstId as key (e.g. CrowdMember uses key={i} while motion.div inside also uses key={burstId}, or floats/shouts arrays). Worth auditing to silence the console."
+  ],
+  "critical_code_review_comments": [
+    "RhythmGamePage.js is ~990 lines - above the 700-line guideline; consider splitting the FallingBellNote and the menu/finished/playing screens into separate files.",
+    "ShredLegendPage.js is ~886 lines - similar split opportunity (CrowdRow / StageLights / CameraFlashes could live in their own module).",
+    "React warning about duplicate keys inside AnimatePresence appears on both pages during gameplay (see action_items)."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "n/a", "frontend": "100% (both targeted bug fixes verified)" },
+  "test_credentials": "None required",
+  "seed_data_creation": "localStorage keys set per test: jma_unlock_all_v1='1', jma_reveal_seen_v1='1', jma_player_name_skipped_v1='1', jma_player_v1={name:'Test'}, jma_audio_unlocked_v1='1', jma_avatar_v1 set per case.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "On this preview, the AudioUnlockOverlay still appears on every load even with jma_audio_unlocked_v1='1' (it only hides after a real pointer click). Dismiss it with: await page.query_selector('[data-testid=\"audio-unlock-overlay\"]').click() BEFORE trying to click [data-testid=\"player-name-skip\"] - otherwise the name prompt's skip button is intercepted by the overlay. Vimeo 401s in the sandbox are expected. HashRouter is used so routes are /#/..."
+}

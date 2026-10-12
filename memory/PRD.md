@@ -1,5 +1,14 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: "Make it → Jam on it" pipeline (tested iteration_40/41, all pass)
+- Beat Lab: after naming a saved beat → yellow **Jam on it! →** (`loop-jam-on-it`) → `/free-play?beat=<id>`; sets `sessionStorage jma_just_saved_beat_v1`. Song Studio: celebration (now 6 s) + gallery rows have **Jam on it!** (`song-jam-on-it`, `song-gallery-jam-<id>`) → `/free-play?song=<id>`. Voice line `charlie.jam.takeit`.
+- Jam Session: `JamAlongControls` rewritten — "My Music" button opens `components/MyMusicShelf.js` (tabs My Beats · My Songs · Jelly Songs, cassette `TapeCard`s, empty-state CTAs to Beat Lab / Song Studio). Auto-starts from `?beat=`/`?song=` (after audio unlock), fixed banner `jam-along-banner` "Jamming to: <name>". Naming deliberately plain ("My Music") — user wants zero cute jargon for kids.
+- `hooks/useSongLoopPlayer.js` loops a Song Studio song (slots + mood chords + mood drum loop via usePianoAudio; MOODS is an object keyed by id). `loadSavedSongs()` exported there.
+- `hooks/useBeatLoopPlayer.js` now takes `lab` (useBeatLabAudio) and replays by track.id (= Beat Lab key 'sax:C4' / 'kick') with the real sax/bass/guitar/piano/drum samples — fixed "my sax came back as a bell".
+- Campus Create street: Beat Lab before Jam Session; Jam Session badge "<n> to jam" (`campus-building-jam-session-badge`); Chunk shouts "Take your beat next door!" after a save (flag consumed inside the timer — StrictMode-safe).
+- Street signs (`campus-sign-left/right`, StreetSign) hop between streets (prev lands at far end via location.state.enterAt); shelf is overflow-hidden with exact width → no over-scroll; now-playing chip `campus-now-playing`; avatar starts at 0.45·bw, first building at 1.05·bw; front seaweed 70·acc.
+- Known low-priority: duplicate-key React warning inside AnimatePresence on Jukebox/Shred (pre-existing); an empty-src <img> somewhere on FreePlayPage.
+
 ## Jun 2026: Jukebox misses + Shred crowd dedupe (tested iteration_39, pass)
 - RhythmGamePage: `FallingBellNote` gets `onMiss` via `onAnimationComplete` → `handleNoteMiss` (previously never wired — notes that fell past were never counted NOR removed, and could still be "hit" late). Wrong-bell taps now count as misses too. handleNoteMiss decides from `fallingNotesRef` (no side effects inside state updaters).
 - ShredLegendPage: `charOf(src)` + CrowdRow drops the regular matching the kid's avatar character → front row never repeats a character. Back row (disco costumes) unchanged.

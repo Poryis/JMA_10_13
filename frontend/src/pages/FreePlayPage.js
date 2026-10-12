@@ -17,6 +17,7 @@ import useMp3Recorder from '../hooks/useMp3Recorder';
 import useBeatLoopPlayer from '../hooks/useBeatLoopPlayer';
 import { loadSavedBeats } from '../hooks/useSavedBeats';
 import useSongLoopPlayer, { loadSavedSongs } from '../hooks/useSongLoopPlayer';
+import useBeatLabAudio from '../hooks/useBeatLabAudio';
 import MyMusicShelf from '../components/MyMusicShelf';
 
 const GUIDED_SONGS = [
@@ -511,7 +512,8 @@ function FreePlayPage() {
   useVoiceTagline('jazzy.tag.jam');
   const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
   const recorder = useMp3Recorder(getAudioGraph);
-  const beatPlayer = useBeatLoopPlayer({ playBellNote, playDrumSound, initAudioContext });
+  const lab = useBeatLabAudio(getAudioGraph, initAudioContext);
+  const beatPlayer = useBeatLoopPlayer({ playBellNote, playDrumSound, initAudioContext, lab });
   const songPlayer = useSongLoopPlayer();
 
   const [particles, setParticles] = useState([]);

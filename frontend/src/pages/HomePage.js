@@ -341,7 +341,7 @@ function PrimaryCard({ card, index, navigate, wide = false, locked = false }) {
   );
 }
 
-function JmatvCrtMobile({ navigate }) {
+function JmatvCrtMobile({ navigate, compact = false }) {
   const featured = useMemo(() => pickFeaturedEpisode(), []);
   const previewSrc = featured
     ? `https://player.vimeo.com/video/${featured.vimeoId}?autoplay=1&loop=1&muted=1&background=1&controls=0&app_id=122963&title=0&byline=0&portrait=0&dnt=1`
@@ -360,7 +360,7 @@ function JmatvCrtMobile({ navigate }) {
       whileTap={{ scale: 0.98, y: 2 }}
     >
       <div
-        className="relative rounded-[22px] overflow-hidden flex items-center gap-3 px-3 py-3"
+        className={`relative rounded-[22px] overflow-hidden flex items-center gap-3 ${compact ? 'px-3 py-1.5' : 'px-3 py-3'}`}
         data-testid="home-card-jmatv-space"
         style={{
           ...SPACE_BG_STYLE,
@@ -372,7 +372,7 @@ function JmatvCrtMobile({ navigate }) {
         <Nebula />
         <Starfield />
         {/* CRT */}
-        <div className="relative flex-shrink-0" style={{ width: '46%', zIndex: 1 }}>
+        <div className="relative flex-shrink-0" style={{ width: compact ? '24%' : '46%', zIndex: 1 }}>
           {/* Rabbit ears */}
           <div aria-hidden="true" className="absolute" style={{ top: '-14%', left: '50%', transform: 'translateX(-50%)', width: '52%', height: '20%', zIndex: 0 }}>
             <div style={{ position: 'absolute', top: 0, left: '18%', width: 5, height: '100%', background: '#6B7280', transform: 'rotate(-22deg)', transformOrigin: 'bottom center', borderRadius: 4 }} />
@@ -415,8 +415,8 @@ function JmatvCrtMobile({ navigate }) {
 
         {/* Text side */}
         <div className="relative flex-1 flex flex-col items-start min-w-0" style={{ zIndex: 1 }}>
-          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))' }} />
-          <p className="mt-1 font-black font-display leading-tight" style={{ color: '#FFF9E9', fontSize: 'clamp(14px, 4vw, 18px)', textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}>
+          <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="object-contain" style={{ width: compact ? 'min(50%, 80px)' : 'min(80%, 150px)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))' }} />
+          <p className="mt-1 font-black font-display leading-tight" style={{ color: '#FFF9E9', fontSize: compact ? '12px' : 'clamp(14px, 4vw, 18px)', textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}>
             Watch today&apos;s episode!
           </p>
           <div className="flex items-center gap-1.5 mt-1">
@@ -613,7 +613,9 @@ function HomePage() {
               <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} wide locked={card.id !== 'play' && cardsLocked} />
             ))}
           </div>
-          <JmatvCrtMobile navigate={navigate} />
+          <div className="mx-auto w-full" style={{ maxWidth: 400 }}>
+            <JmatvCrtMobile navigate={navigate} compact />
+          </div>
         </div>
       ) : (
         <>

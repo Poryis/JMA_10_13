@@ -13,7 +13,6 @@ import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
 import AvatarSprite from '../components/AvatarSprite';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
-import { CAMPUS_LIGHTS } from '../data/campusLights';
 import useUnlocks from '../hooks/useUnlocks';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import { say, voiceEnabled } from '../lib/voice';
@@ -57,48 +56,6 @@ function Host({ src, shout }) {
   );
 }
 
-const LIGHT_STYLE = {
-  warm:  { bg: 'radial-gradient(ellipse at 50% 55%, rgba(255,226,140,0.95) 0%, rgba(255,200,80,0.55) 55%, rgba(255,180,40,0) 100%)', blend: 'screen' },
-  bulb:  { bg: 'radial-gradient(circle, rgba(255,245,200,1) 0%, rgba(255,210,90,0.7) 40%, rgba(255,180,40,0) 75%)', blend: 'screen' },
-  disco: { bg: 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(180,230,255,0.5) 40%, rgba(180,230,255,0) 70%)', blend: 'screen' },
-  spot:  { bg: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,80,160,0.6) 40%, rgba(255,80,160,0) 75%)', blend: 'screen' },
-  neon:  { bg: 'radial-gradient(ellipse at 50% 50%, rgba(255,120,200,0.55) 0%, rgba(120,220,255,0.35) 50%, rgba(120,220,255,0) 100%)', blend: 'screen' },
-  pads:  { bg: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%)', blend: 'overlay' },
-};
-const LIGHT_ANIM = {
-  warm:  (i) => ({ animate: { opacity: [0.75, 0.9, 0.7, 0.85, 0.75] }, transition: { repeat: Infinity, duration: 6 + i, ease: 'easeInOut' } }),
-  bulb:  (i) => ({ animate: { opacity: [0.8, 1, 0.8], scale: [1, 1.12, 1] }, transition: { repeat: Infinity, duration: 2.4 + i * 0.3, ease: 'easeInOut' } }),
-  disco: (i) => ({ animate: { opacity: [0.4, 1, 0.3, 0.9, 0.4], scale: [1, 1.25, 0.9, 1.2, 1], rotate: [0, 90, 180, 270, 360] }, transition: { repeat: Infinity, duration: 3.2, ease: 'linear' } }),
-  spot:  (i) => ({ animate: { opacity: [1, 0.35, 1], filter: ['hue-rotate(0deg)', 'hue-rotate(160deg)', 'hue-rotate(360deg)'] }, transition: { repeat: Infinity, duration: 1.6 + i * 0.4, ease: 'easeInOut' } }),
-  neon:  (i) => ({ animate: { filter: ['hue-rotate(0deg)', 'hue-rotate(360deg)'], opacity: [0.8, 1, 0.8] }, transition: { repeat: Infinity, duration: 6, ease: 'linear' } }),
-  pads:  (i) => ({ animate: { opacity: [0, 0.9, 0, 0, 0.8, 0], x: ['0%', '0%', '0%', '45%', '45%', '45%'], y: ['0%', '0%', '0%', '-40%', '-40%', '-40%'] }, transition: { repeat: Infinity, duration: 1.4, ease: 'linear' } }),
-};
-
-// Lights on inside: warm window glows + a few signature effects, placed in
-// the drawn-image rect (art is object-contain/bottom inside a square slot).
-function BuildingLights({ id, night, index }) {
-  const spec = CAMPUS_LIGHTS[id];
-  if (!spec || !spec.lights.length) return null;
-  const a = spec.aspect;
-  const box = a >= 1
-    ? { left: 0, width: '100%', bottom: 0, height: `${(100 / a).toFixed(2)}%` }
-    : { left: `${((1 - a) * 50).toFixed(2)}%`, width: `${(a * 100).toFixed(2)}%`, top: 0, height: '100%' };
-  return (
-    <div aria-hidden="true" className="absolute pointer-events-none" style={{ ...box, zIndex: 2, opacity: night ? 1 : 0.85 }} data-testid={`campus-lights-${id}`}>
-      {spec.lights.map((l, i) => {
-        const st = LIGHT_STYLE[l.kind];
-        const an = LIGHT_ANIM[l.kind](i + (index % 3));
-        const pad = l.kind === 'pads';
-        return (
-          <motion.div key={i} className="absolute" {...an}
-            style={{ left: `${l.x}%`, top: `${l.y}%`, width: pad ? `${l.w * 0.45}%` : `${l.w}%`, height: pad ? `${l.h * 0.5}%` : `${l.h}%`, background: st.bg, mixBlendMode: st.blend,
-              borderRadius: l.shape === 'circle' ? '50%' : '12%', filter: l.kind === 'warm' ? 'blur(1.5px)' : 'blur(1px)' }} />
-        );
-      })}
-    </div>
-  );
-}
-
 // Tiny air bubbles leaking from the roofline — it's underwater after all.
 function RoofBubbles({ index }) {
   return (
@@ -112,7 +69,7 @@ function RoofBubbles({ index }) {
   );
 }
 
-function Building({ b, index, locked, onEnter, shout, L, entering, night }) {
+function Building({ b, index, locked, onEnter, shout, L, entering }) {
   const [shake, setShake] = useState(0);
   const lift = index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
   const scale = index % 3 === 1 ? 0.86 : 1;
@@ -136,7 +93,6 @@ function Building({ b, index, locked, onEnter, shout, L, entering, night }) {
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
           <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />
-          {!locked && <BuildingLights id={b.id} night={night} index={index} />}
           {!locked && <RoofBubbles index={index} />}
           {/* floating notes from the door */}
           {!locked && [0, 1, 2].map((n) => (
@@ -311,7 +267,7 @@ export default function CampusMapPage() {
           </motion.div>
           {/* buildings */}
           {buildings.map((b, i) => (
-            <Building key={b.id} b={b} index={i} L={L} night={night} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
+            <Building key={b.id} b={b} index={i} L={L} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">

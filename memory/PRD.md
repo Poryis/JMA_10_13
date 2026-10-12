@@ -2,7 +2,7 @@
 
 ## Jun 2026: Campus buildings alive + host scale
 - Hosts sized by HEIGHT (34% of slot) not width → Jazzy (tall/narrow art) is now the same scale as everyone.
-- `data/campusLights.js`: hand-placed window/lamp coords (% of art, with aspect) per building. `BuildingLights` renders warm window glows (screen blend, slow flicker), bulb pulses (Fun Facts, Jellybone lantern, Music 101 bell), disco-ball sparkle (Robot Boogie), colour-cycling spotlights (Shred City), hue-cycling neon (Jukebox arch, Jam garage), blinking beat pads (Beat Lab). Brighter at night. `RoofBubbles` leak from every open roof.
+- Window-light overlays (BuildingLights / campusLights.js) were tried and REVERTED at user request ("don't look right"). Do not re-add glow overlays on the building art. Small `RoofBubbles` from each roofline remain.
 
 ## Jun 2026: Robot Boogie building redrawn
 - Old PNG had speckled transparency (the old chromaKey.py `g<120` rule ate the purple). Regenerated on magenta and keyed with a stricter rule (r>200,b>200,g<110,|r-b|<50). Use that stricter key for any future purple/violet art.

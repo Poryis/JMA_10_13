@@ -29,15 +29,20 @@ const YOU_LEFT = 16;
 
 function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 
-function useAmbient(src) {
+// Street music: a Jelly instrumental playlist per street. Shuffles, fades
+// in, never repeats the same track back-to-back, stops when you leave.
+function useStreetMusic(tracks) {
   useEffect(() => {
-    if (!src || !voiceEnabled()) return undefined;
-    const a = new Audio(src); a.loop = true; a.volume = 0.22;
-    const start = () => a.play().catch(() => {});
-    let armed = false;
+    if (!tracks || !tracks.length || !voiceEnabled()) return undefined;
+    const a = new Audio(); a.preload = 'auto'; a.volume = 0;
+    let last = -1; let fade = null; let armed = false; let alive = true;
+    const pick = () => { let i; do { i = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && i === last); last = i; return tracks[i]; };
+    const fadeIn = () => { clearInterval(fade); fade = setInterval(() => { if (!alive) return clearInterval(fade); a.volume = Math.min(0.28, a.volume + 0.02); if (a.volume >= 0.28) clearInterval(fade); }, 80); };
+    const start = () => { if (!alive) return; a.src = pick(); a.play().then(fadeIn).catch(() => {}); };
+    a.addEventListener('ended', start);
     try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') start(); else { armed = true; document.addEventListener('pointerdown', start, { once: true, capture: true }); } } catch (_) { start(); }
-    return () => { a.pause(); if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
-  }, [src]);
+    return () => { alive = false; clearInterval(fade); a.pause(); a.src = ''; if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
+  }, [tracks]);
 }
 
 function Host({ src, shout }) {
@@ -139,7 +144,7 @@ export default function CampusMapPage() {
   const width = 200 + buildings.length * slot;
   const youBottom = floor + 2;
   const YOU_W = L.you;
-  useAmbient(zone.ambient);
+  useStreetMusic(zone.tracks);
 
   // Hosts shout now and then.
   useEffect(() => {

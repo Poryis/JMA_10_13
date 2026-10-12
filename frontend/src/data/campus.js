@@ -1,12 +1,13 @@
 // The Academy campus — every room as a building on the map.
 // Every building has illustrated art; `kiosk` remains supported as a fallback.
 
+const MU = 'assets/music/'; // Jelly instrumentals — each street spins its own playlist
 const CH = 'assets/characters/';
 
 export const CAMPUS_ZONES = [
-  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', ambient: 'assets/ambient/play.mp3',   strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
-  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', ambient: 'assets/ambient/learn.mp3',  strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
-  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', ambient: 'assets/ambient/create.mp3', strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', tracks: [`${MU}play-one-skip-one.mp3`, `${MU}goody-bag.mp3`, `${MU}food-fight.mp3`],   strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', tracks: [`${MU}magic.mp3`, `${MU}brand-new-friend.mp3`],  strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', tracks: [`${MU}faster-as-we-go.mp3`, `${MU}food-fight.mp3`, `${MU}goody-bag.mp3`], strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
 ];
 
 export const CAMPUS_BUILDINGS = [

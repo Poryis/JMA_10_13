@@ -291,7 +291,7 @@ function PrimaryCard({ card, index, navigate, wide = false, locked = false }) {
         {/* Title + subtitle stack */}
         <div className="relative flex flex-col items-center" style={{ zIndex: 30 }}>
           <h2
-            className="font-black font-display leading-none text-center"
+            className="font-black font-display leading-none text-center home-card-title"
             style={{
               fontSize: wide ? 'clamp(36px, 10vw, 60px)' : 'clamp(28px, 5.2vw, 56px)',
               color: card.titleColor,
@@ -304,7 +304,7 @@ function PrimaryCard({ card, index, navigate, wide = false, locked = false }) {
           </h2>
           {card.subtitle && (
             <span
-              className="font-black font-display uppercase text-center leading-none mt-1"
+              className="font-black font-display uppercase text-center leading-none mt-1 home-card-sub"
               style={{
                 fontSize: wide ? 'clamp(10px, 2.6vw, 16px)' : 'clamp(8px, 1.5vw, 13px)',
                 color: card.titleColor,
@@ -429,8 +429,21 @@ function JmatvCrtMobile({ navigate }) {
   );
 }
 
+// Phone landscape: short viewport, wide screen → compact home layout.
+function useShortLandscape() {
+  const calc = () => window.innerHeight < 520 && window.innerWidth > window.innerHeight;
+  const [short, setShort] = useState(calc);
+  useEffect(() => {
+    const f = () => setShort(calc());
+    window.addEventListener('resize', f); window.addEventListener('orientationchange', f);
+    return () => { window.removeEventListener('resize', f); window.removeEventListener('orientationchange', f); };
+  }, []);
+  return short;
+}
+
 function HomePage() {
   const navigate = useNavigate();
+  const shortLandscape = useShortLandscape();
   const shieldControls = useAnimationControls();
   const shieldHitsRef = useRef(0);
   const { unlocked, revealPending, dismissReveal } = useUnlocks();
@@ -480,7 +493,8 @@ function HomePage() {
   return (
     <div
       data-testid="home-page"
-      className="min-h-screen w-full flex flex-col items-center px-3 sm:px-6 pt-4 pb-6 relative overflow-x-hidden"
+      data-layout={shortLandscape ? 'short' : 'normal'}
+      className={`min-h-screen w-full flex flex-col items-center px-3 sm:px-6 pb-6 relative overflow-x-hidden ${shortLandscape ? 'home-short pt-1' : 'pt-4'}`}
       style={{
         // Fallback color underneath the underwater layer so the top of
         // the page never flashes white during initial paint / while the
@@ -585,6 +599,24 @@ function HomePage() {
           PracticeStreakChip is folded INSIDE HomeProgressCard now, so
           the Home page only carries the single-row banner + Next Mission
           + the three big destination cards. */}
+      {shortLandscape ? (
+        /* ===== PHONE LANDSCAPE — little height, lots of width: progress +
+             quests share one row, the three destinations go wide-format in
+             one row, and the compact JMAtv card closes it out. */
+        <div className="relative z-10 w-full max-w-5xl flex flex-col gap-2 px-1" data-testid="home-short-layout">
+          <div className="grid grid-cols-2 gap-2 items-start">
+            <HomeProgressCard />
+            <DailyQuestCard />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {CARDS.map((card, idx) => (
+              <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} wide locked={card.id !== 'play' && cardsLocked} />
+            ))}
+          </div>
+          <JmatvCrtMobile navigate={navigate} />
+        </div>
+      ) : (
+        <>
       <div className="relative z-10 mb-2 md:mb-4 w-full max-w-4xl">
         <HomeProgressCard />
       </div>
@@ -619,6 +651,8 @@ function HomePage() {
         </div>
         <RetroTV />
       </div>
+        </>
+      )}
     </div>
   );
 }

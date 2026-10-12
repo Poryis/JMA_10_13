@@ -890,3 +890,11 @@ h1, h2, h3, h4, h5, h6 {
 .jma-safe-center {
   justify-content: safe center;
 }
+
+/* Phone-landscape Home: shrink the hero so the cards fit above the fold. */
+.home-short [data-testid="home-finn"] { width: 52px !important; }
+.home-short [data-testid="jma-logo"] { width: 104px !important; }
+.home-short [data-testid="home-charlie"] { width: 64px !important; }
+.home-short [data-testid="home-for-parents-link"] { top: 6px; right: 8px; padding-top: 4px; padding-bottom: 4px; }
+.home-short .home-card-title { font-size: clamp(26px, 4.2vw, 40px) !important; }
+.home-short .home-card-sub { font-size: clamp(8px, 1.3vw, 12px) !important; }

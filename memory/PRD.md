@@ -1,5 +1,9 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Home phone-landscape layout + always-collapsible quests
+- `DailyQuestCard` starts COLLAPSED on every screen size (strip `daily-quest-strip`), collapse chevron always shown; still auto-expands when a quest was just completed.
+- `HomePage.useShortLandscape()` (innerHeight < 520 && landscape) → `data-layout="short"`, root class `home-short`, renders `home-short-layout`: progress pill + quest strip in one row, PLAY/LEARN/CREATE as `wide` cards in one row, `JmatvCrtMobile` below. CSS in index.css shrinks hero (`home-finn` 52px, `jma-logo` 104px, `home-charlie` 64px) and card title/sub (`.home-card-title/.home-card-sub`). Verified 844×390 and 740×360.
+
 ## Jun 2026: Landscape + fullscreen (PWA groundwork)
 - `public/manifest.json` (display fullscreen, orientation landscape, start_url/scope `./` for GitHub Pages, icons icon-192/512 + maskable). index.html: manifest link, apple-mobile-web-app-capable/status-bar/title, viewport-fit=cover, theme #0A2540. No service worker (avoids stale deploys on Pages).
 - `lib/fullscreen.js` helpers (enterFullscreen = requestFullscreen + screen.orientation.lock('landscape'), isStandalone, isIOS, canFullscreen…).

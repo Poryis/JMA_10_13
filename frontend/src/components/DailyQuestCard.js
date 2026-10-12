@@ -26,7 +26,7 @@ function useIsDesktop() {
   return desktop;
 }
 
-// Phones start collapsed, but pop the card open when a quest was just finished.
+// Starts collapsed everywhere; pops open when a quest was just finished.
 function shouldAutoExpand(date, doneCount) {
   try {
     const seen = JSON.parse(localStorage.getItem(SEEN_KEY));
@@ -173,7 +173,7 @@ export default function DailyQuestCard() {
 
   useEffect(() => { rememberSeen(date, doneCount); }, [date, doneCount]);
 
-  if (!isDesktop && !expanded) {
+  if (!expanded) {
     return (
       <CompactQuestStrip
         quests={quests}
@@ -228,7 +228,7 @@ export default function DailyQuestCard() {
         >
           {allDone ? '3 / 3 ✓' : `${doneCount} / ${quests.length}`}
         </div>
-        {!isDesktop && (
+        {(
           <button
             type="button"
             data-testid="daily-quest-collapse"

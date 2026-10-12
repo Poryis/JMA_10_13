@@ -22,10 +22,9 @@ import { say, voiceEnabled } from '../lib/voice';
 const layoutFor = (w, h) => {
   const bw = Math.round(Math.max(120, Math.min(h * 0.46, w * 0.55, 440)));
   const k = bw / 230;
-  return { bw, k, slot: Math.round(bw * 1.3), left: Math.round(bw * 0.5), sandBack: Math.round(bw * 0.8), sandFront: Math.round(bw * 0.5), floor: Math.round(bw * 0.24), lift: k, you: Math.round(Math.max(44, Math.min(72, bw * 0.28))) };
+  return { bw, k, slot: Math.round(bw * 1.3), left: Math.round(bw * 1.05), sandBack: Math.round(bw * 0.8), sandFront: Math.round(bw * 0.5), floor: Math.round(bw * 0.24), lift: k, you: Math.round(Math.max(44, Math.min(72, bw * 0.28))) };
 };
 const SHOUTS = ['Hey!', 'Come in!', 'Over here!', 'Woo!', 'Jam time!', 'Psst!'];
-const YOU_LEFT = 16;
 
 function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 
@@ -168,6 +167,7 @@ export default function CampusMapPage() {
   const prevZone = CAMPUS_ZONES[(zi + CAMPUS_ZONES.length - 1) % CAMPUS_ZONES.length];
   const youBottom = floor + 2;
   const YOU_W = L.you;
+  const YOU_LEFT = Math.round(L.bw * 0.45); // breathing room: sign → you → first building
   const nowPlaying = useStreetMusic(zone.tracks);
   // New street: start at the near end (or the far end when walking in from the right).
   useEffect(() => {

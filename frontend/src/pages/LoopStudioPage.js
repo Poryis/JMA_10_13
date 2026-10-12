@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Square, Plus, Minus, Circle, Download, Drum, Music2, ChevronLeft, ChevronRight, Eraser } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import useBeatLabAudio from '../hooks/useBeatLabAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
@@ -541,7 +540,6 @@ function LoopStudioPage() {
       style={{ background: 'radial-gradient(circle at 50% 8%, #243B5C 0%, #0A1626 72%)' }}
     >
       <GameHeader title="Beat Lab" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
-      <FullscreenButton />
 
       <div
         aria-hidden="true"

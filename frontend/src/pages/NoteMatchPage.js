@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Trophy, Clock, RotateCcw, Sparkles, ChevronUp } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 import { BELLS } from '../components/JellyBells';
@@ -217,7 +216,6 @@ export default function NoteMatchPage() {
         style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-        <FullscreenButton />
         <RoomCharacters room="note-match" />
 
         <motion.h1

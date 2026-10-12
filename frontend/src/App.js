@@ -33,6 +33,8 @@ import RankUpCelebration from "./components/RankUpCelebration";
 import DailyQuestCelebration from "./components/DailyQuestCelebration";
 import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
 import PlayerNamePrompt from "./components/PlayerNamePrompt";
+import OrientationGate from "./components/OrientationGate";
+import FullscreenButton from "./components/FullscreenButton";
 import usePlayTime from "./hooks/usePlayTime";
 
 // RootGate — always send visitors straight to the app Home. The
@@ -60,6 +62,8 @@ function App() {
     <div className="App min-h-screen">
       <AudioUnlockOverlay />
       <PlayerNamePrompt />
+      <OrientationGate />
+      <FullscreenButton />
       <HashRouter>
         <StickerToast />
         <RankUpCelebration />

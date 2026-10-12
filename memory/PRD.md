@@ -1,5 +1,14 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Landscape + fullscreen (PWA groundwork)
+- `public/manifest.json` (display fullscreen, orientation landscape, start_url/scope `./` for GitHub Pages, icons icon-192/512 + maskable). index.html: manifest link, apple-mobile-web-app-capable/status-bar/title, viewport-fit=cover, theme #0A2540. No service worker (avoids stale deploys on Pages).
+- `lib/fullscreen.js` helpers (enterFullscreen = requestFullscreen + screen.orientation.lock('landscape'), isStandalone, isIOS, canFullscreen…).
+- `components/OrientationGate.js` (App root, z-190): on touch devices in portrait with width < 600 shows "Turn me sideways!" card with Go-fullscreen button (if API) and iPhone Add-to-Home-Screen tip; "Keep it upright for now" dismisses for the session (`jma_portrait_ok_v1`).
+- `components/FullscreenButton.js` rewritten (uses lib, hides when unsupported/standalone) and mounted ONCE in App.js; per-page mounts removed from 13 pages.
+- AudioUnlockOverlay first tap on touch devices also calls enterFullscreen().
+- Campus header title is now just PLAY / LEARN / CREATE (no "STREET").
+- LIMITS: web pages cannot force orientation; iPhone Safari has no fullscreen API — only Add to Home Screen hides the URL bar there.
+
 ## Jun 2026: Campus de-clutter
 - Jam Session (FreePlayPage) no longer renders `<RoomCharacters room="jam-hall" />` (corner cast removed at user request).
 - Removed building name pills (buttons keep `aria-label={b.name}`) and the street-name chip ("Jelly Jam Boulevard" etc.). Lock chips remain.

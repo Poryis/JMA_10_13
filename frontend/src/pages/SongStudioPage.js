@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Trash2, Save, ArrowLeft, BookOpen, Music, Drum, Piano, Dices } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import usePianoAudio from '../hooks/usePianoAudio';
 import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudio';
@@ -344,7 +343,6 @@ export default function SongStudioPage() {
         }}
       />
       <GameHeader title="Charlie's Song Studio" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
-      <FullscreenButton />
 
       <main className="relative z-10 flex-1 flex flex-col items-center pt-20 md:pt-20 pb-3 md:pb-6 px-2 md:px-3 max-w-4xl mx-auto w-full">
 

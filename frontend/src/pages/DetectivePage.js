@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, Volume2, Trophy, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 import { BELLS } from '../components/JellyBells';
@@ -457,7 +456,6 @@ export default function DetectivePage() {
         }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-        <FullscreenButton />
         <RoomCharacters room="detective" />
 
         <motion.div className="text-center mb-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>

@@ -15,7 +15,6 @@ import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/st
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId, DOMAIN_MAP } from '../data/achievements';
 import useStickers from '../hooks/useStickers';
 import { MISSIONS } from '../hooks/useNextMission';
-import { FullscreenButton } from '../components/FullscreenButton';
 import RankBadge from '../components/RankBadge';
 import AchievementBadge from '../components/AchievementBadge';
 import HarpIcon from '../components/HarpIcon';
@@ -268,7 +267,6 @@ export default function StickerBookPage() {
         </div>
       </div>
 
-      <FullscreenButton />
 
       <main className="flex-1 pt-20 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
           {/* Rank badge with progress meter inside it, plus a compact

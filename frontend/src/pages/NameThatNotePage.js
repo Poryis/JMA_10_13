@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Music2, MapPin, Clock, RotateCcw, Play, Volume2, Check, Lightbulb, Star, X } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 import SolfegeStaff, { NOTE_Y, STAFF_NOTE_AREA_LEFT } from '../components/SolfegeStaff';
@@ -574,7 +573,6 @@ export default function NameThatNotePage() {
         style={{ backgroundImage: 'url(assets/backgrounds/chalkboard.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
-        <FullscreenButton />
         <RoomCharacters room="name-that-note" />
 
         <motion.h1

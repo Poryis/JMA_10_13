@@ -5,7 +5,6 @@ import { Play, Ear, RotateCcw, Volume2, Trophy, Rabbit } from 'lucide-react';
 import { JellyBellsRow, BELLS } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
-import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
@@ -187,7 +186,6 @@ function EarTrainerPage() {
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader title="SNAIL OR CHEETAH?" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
-        <FullscreenButton />
         <RoomCharacters room="ear-quest" />
         <motion.h1 className="text-2xl md:text-3xl font-black mb-4 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           Snail or Cheetah?
@@ -206,7 +204,6 @@ function EarTrainerPage() {
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
-        <FullscreenButton />
         <RoomCharacters room="ear-quest" />
 
         <motion.h1 className="text-3xl md:text-5xl font-black mb-4 text-center font-display uppercase" style={{ color: 'var(--jma-dark)' }} initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>

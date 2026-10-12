@@ -5,7 +5,6 @@ import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader } from '../components/GameUI';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import GuitarInstrument from '../components/GuitarInstrument';
-import { FullscreenButton } from '../components/FullscreenButton';
 import UnderwaterBackdrop from '../components/UnderwaterBackdrop';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
@@ -835,7 +834,6 @@ function FreePlayPage() {
       <UnderwaterBackdrop deep />
 
       <GameHeader title="Jam Session" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
-      <FullscreenButton />
       <AnimatePresence>{particles.map(p => <ParticleBurst key={p.id} color={p.color} />)}</AnimatePresence>
       <CharacterReaction streak={streak} />
 

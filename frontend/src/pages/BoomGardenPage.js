@@ -19,7 +19,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Volume2, RotateCcw, Sparkles } from 'lucide-react';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RhythmStrip from '../components/RhythmStrip';
 import ScrollingRhythmStrip from '../components/ScrollingRhythmStrip';
@@ -1043,7 +1042,6 @@ export default function BoomGardenPage() {
           }}
         />
         <GameHeader showHomeButton={true} />
-        <FullscreenButton />
         <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
           <div className="text-center mb-4 md:mb-6">
             <h1
@@ -1170,7 +1168,6 @@ export default function BoomGardenPage() {
       />
       <div className="relative z-10 flex flex-col flex-1">
       <GameHeader title="Who's Got the Rhythm" subtitle={modeConfig.label} showHomeButton={true} score={score} streak={streak} />
-      <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
         {/* Back + level row */}
         <div className="flex items-center justify-between mb-3 md:mb-4">

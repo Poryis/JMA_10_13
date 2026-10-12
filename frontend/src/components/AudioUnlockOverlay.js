@@ -7,16 +7,19 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Hand } from 'lucide-react';
 import useAudioUnlock from '../hooks/useAudioUnlock';
+import { enterFullscreen, isTouchDevice, canFullscreen, isStandalone } from '../lib/fullscreen';
 
 export default function AudioUnlockOverlay() {
   const { needsUnlock, unlock } = useAudioUnlock();
+  // First tap is a real user gesture — on tablets/phones use it to go fullscreen + landscape too.
+  const start = () => { if (isTouchDevice() && canFullscreen() && !isStandalone()) enterFullscreen(); unlock(); };
 
   return (
     <AnimatePresence>
       {needsUnlock && (
         <motion.button
           data-testid="audio-unlock-overlay"
-          onClick={unlock}
+          onClick={start}
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center cursor-pointer touch-manipulation border-0"
           style={{
             background: 'radial-gradient(circle at 50% 40%, rgba(10,37,64,0.7) 0%, rgba(10,37,64,0.92) 100%)',

@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Play, Eye, RotateCcw } from 'lucide-react';
 import { KazoosRow, KAZOOS } from '../components/Kazoos';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import useGamePaused from '../hooks/useGamePause';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
@@ -348,7 +347,6 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-        <FullscreenButton />
         <RoomCharacters room="kazoo-room" />
 
         <motion.h1

@@ -18,7 +18,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, RotateCcw, Trophy, Play, Volume2, Check } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 import SolfegeStaff from '../components/SolfegeStaff';
@@ -292,7 +291,6 @@ export default function SightReadingPage() {
         }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-        <FullscreenButton />
         <RoomCharacters room="sight-reading" />
 
         <motion.h1

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, ChevronLeft, Star, Flame } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import Confetti from '../components/Confetti';
-import { FullscreenButton } from '../components/FullscreenButton';
 import GuitarInstrument from '../components/GuitarInstrument';
 import useAudio from '../hooks/useAudio';
 import useShredBand, { SONGS } from '../hooks/useShredBand';
@@ -572,7 +571,6 @@ export default function ShredLegendPage() {
       {(screen === 'playing' || screen === 'ready' || screen === 'encore') && <StageLights energy={screen === 'encore' ? 1 : energy} style={screen === 'encore' ? 'punk' : SONGS[songIndex].style} />}
 
       <GameHeader title="SHRED CITY" showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-      <FullscreenButton />
 
       {/* Crowd during the 3-2-1 countdown (sits on stage, bottom layer) */}
       {screen === 'ready' && (

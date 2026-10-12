@@ -55,7 +55,7 @@ const DRUM_KEY_TO_NOTE = Object.fromEntries(
 // halo timing is also driven by the parent's measured `glowDelayMs` (it knows
 // where the target bell sits on this device, so the glow peaks at the visual
 // overlap moment regardless of screen size).
-function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, registerRef, glowDelayMs, glowDurationMs }) {
+function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, registerRef, glowDelayMs, glowDurationMs, onMiss }) {
   const lane = isDrum ? DRUM_LANES[note] : null;
   const bell = isDrum ? null : BELLS.find(b => b.note === note);
   const img = isDrum ? lane?.img1 : bell?.image1;
@@ -81,6 +81,7 @@ function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, r
       initial={{ top: -80 }}
       animate={{ top: 'calc(100% + 80px)' }}
       transition={{ duration: speed / 1000, ease: 'linear' }}
+      onAnimationComplete={() => { if (onMiss) onMiss(noteId); }}
     >
       <div className="relative">
         <div
@@ -312,7 +313,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       // Penalty is half the value of a correct hit (-50, since correct = +100).
       // Score is clamped at 0 so kids can't go negative.
       setScore(prev => Math.max(0, prev - 50));
-      setGameStats(prev => ({ ...prev, streak: 0 }));
+      setGameStats(prev => ({ ...prev, miss: prev.miss + 1, streak: 0 }));
       setFeedback('miss');
     }
     setTimeout(() => setFeedback(null), 400);
@@ -387,16 +388,13 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
 
   // Handle missed notes
   const handleNoteMiss = useCallback((noteId) => {
-    setFallingNotes(prev => {
-      const note = prev.find(n => n.id === noteId);
-      if (note && !note.hit) {
-        setGameStats(p => ({ ...p, miss: p.miss + 1, streak: 0 }));
-        setFeedback('miss');
-        playFeedbackSound('miss');
-        setTimeout(() => setFeedback(null), 400);
-      }
-      return prev.filter(n => n.id !== noteId);
-    });
+    const note = fallingNotesRef.current.find(n => n.id === noteId);
+    if (!note) return; // already hit + removed
+    setFallingNotes(prev => prev.filter(n => n.id !== noteId));
+    setGameStats(p => ({ ...p, miss: p.miss + 1, streak: 0 }));
+    setFeedback('miss');
+    playFeedbackSound('miss');
+    setTimeout(() => setFeedback(null), 400);
   }, [playFeedbackSound, setGameStats]);
 
   // Save score when game ends + award stickers
@@ -977,6 +975,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                   registerRef={registerFallingRef}
                   glowDelayMs={reachMsRef.current || 0.55 * speedConfig.fallSpeed}
                   glowDurationMs={0.40 * speedConfig.fallSpeed}
+                  onMiss={handleNoteMiss}
                 />
               ))}
             </AnimatePresence>

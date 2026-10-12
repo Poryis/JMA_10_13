@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, ChevronLeft, Star, Flame } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
@@ -121,10 +121,21 @@ function CrowdMember({ m, i, lift, dur, tilt, burstId, shout, glow }) {
   );
 }
 
+// Which Jelly a sprite is, from its file name (finn-disco → finn, sharky-* → finn …).
+function charOf(src = '') {
+  const f = src.split('/').pop().replace(/\.png$/, '');
+  if (/^(sharky|shark|finn)/.test(f)) return 'finn';
+  if (f.startsWith('dr-jellybone')) return 'jellybone';
+  return f.split('-')[0];
+}
+
 function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc, avatarHelmet = false }) {
-  const members = avatarSrc
-    ? [...CROWD_MEMBERS.slice(0, 3), { src: avatarSrc, scale: 1.08, you: true, helmet: avatarHelmet }, ...CROWD_MEMBERS.slice(3, 6)]
-    : CROWD_MEMBERS;
+  // The front row never repeats a character — drop whoever the kid IS from the regulars.
+  const members = useMemo(() => {
+    if (!avatarSrc) return CROWD_MEMBERS.slice(0, 7);
+    const rest = CROWD_MEMBERS.filter((m) => charOf(m.src) !== charOf(avatarSrc)).slice(0, 6);
+    return [...rest.slice(0, 3), { src: avatarSrc, scale: 1.08, you: true, helmet: avatarHelmet }, ...rest.slice(3, 6)];
+  }, [avatarSrc, avatarHelmet]);
   // Bucket the energy so the jump height/speed only change at a few
   // thresholds — continuously-changing framer targets caused the taller
   // sprites (Finn, Lou) to jitter/glitch while celebrating.

@@ -1,5 +1,10 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Back button fix (phone / typed URLs)
+- `/play`, `/learn`, `/create` now `<Navigate replace>` to `/campus?zone=…` (old Play/Learn/CreateMenuPage routes removed from App.js; files still exist but unused).
+- Campus header uses `backTo="/home"` so Back always goes Home regardless of history.
+- `GameHeader.handleBack`: when there is no history (`history.state.idx === 0`, e.g. typed URL / fresh tab) it navigates to `/home` instead of doing nothing.
+
 ## Jun 2026: Campus buildings alive + host scale
 - Hosts sized by HEIGHT (34% of slot) not width → Jazzy (tall/narrow art) is now the same scale as everyone.
 - Window-light overlays (BuildingLights / campusLights.js) were tried and REVERTED at user request ("don't look right"). Do not re-add glow overlays on the building art. Small `RoofBubbles` from each roofline remain.

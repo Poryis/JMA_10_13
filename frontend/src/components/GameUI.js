@@ -90,8 +90,10 @@ function GameHeader({ title, subtitle, score, streak, showHomeButton = true, bac
     // this so mid-game "back" drops kids to the difficulty screen
     // instead of jumping all the way out to /play.
     if (typeof onBackOverride === 'function') { onBackOverride(); return; }
-    if (backTo) navigate(backTo);
-    else navigate(-1);
+    if (backTo) { navigate(backTo); return; }
+    // No history (typed URL / fresh tab) → go Home instead of doing nothing.
+    const idx = window.history.state && typeof window.history.state.idx === 'number' ? window.history.state.idx : 0;
+    if (idx > 0) navigate(-1); else navigate('/home');
   };
 
   // When the user is inside JMAtv routes, swap the harp for a tiny

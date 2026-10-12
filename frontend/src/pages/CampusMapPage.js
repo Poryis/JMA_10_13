@@ -212,7 +212,7 @@ export default function CampusMapPage() {
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
-      <GameHeader title={`${zone.label} STREET`} showHomeButton={true} />
+      <GameHeader title={`${zone.label} STREET`} showHomeButton={true} backTo="/home" />
 
       {/* street name under the header title */}
       {!short && <div className="absolute inset-x-0 top-14 md:top-[72px] z-20 flex justify-center pointer-events-none">

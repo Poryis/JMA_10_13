@@ -5,9 +5,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import { AnimatePresence } from "framer-motion";
 import HomePage from "./pages/HomePage";
 import ForParentsPage from "./pages/ForParentsPage";
-import PlayMenuPage from "./pages/PlayMenuPage";
-import LearnMenuPage from "./pages/LearnMenuPage";
-import CreateMenuPage from "./pages/CreateMenuPage";
 import LessonsPage from "./pages/LessonsPage";
 import LessonPlayerPage from "./pages/LessonPlayerPage";
 import FreePlayPage from "./pages/FreePlayPage";
@@ -82,9 +79,9 @@ function App() {
             <Route path="/" element={<RootGate />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
             <Route path="/home" element={<HomePage />} />
-            <Route path="/play" element={<PlayMenuPage />} />
-            <Route path="/learn" element={<LearnMenuPage />} />
-            <Route path="/create" element={<CreateMenuPage />} />
+            <Route path="/play" element={<Navigate to="/campus?zone=play" replace />} />
+            <Route path="/learn" element={<Navigate to="/campus?zone=learn" replace />} />
+            <Route path="/create" element={<Navigate to="/campus?zone=create" replace />} />
             <Route path="/lessons" element={<LessonsPage />} />
             <Route path="/lessons/:num" element={<LessonPlayerPage />} />
             <Route path="/free-play" element={<FreePlayPage />} />

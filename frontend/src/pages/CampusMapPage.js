@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Music, ChevronsRight } from 'lucide-react';
+import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
@@ -32,17 +32,38 @@ function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 // Street music: a Jelly instrumental playlist per street. Shuffles, fades
 // in, never repeats the same track back-to-back, stops when you leave.
 function useStreetMusic(tracks) {
+  const [nowPlaying, setNowPlaying] = useState(null);
   useEffect(() => {
+    setNowPlaying(null);
     if (!tracks || !tracks.length || !voiceEnabled()) return undefined;
     const a = new Audio(); a.preload = 'auto'; a.volume = 0;
     let last = -1; let fade = null; let armed = false; let alive = true;
     const pick = () => { let i; do { i = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && i === last); last = i; return tracks[i]; };
     const fadeIn = () => { clearInterval(fade); fade = setInterval(() => { if (!alive) return clearInterval(fade); a.volume = Math.min(0.28, a.volume + 0.02); if (a.volume >= 0.28) clearInterval(fade); }, 80); };
-    const start = () => { if (!alive) return; a.src = pick(); a.play().then(fadeIn).catch(() => {}); };
+    const start = () => { if (!alive) return; const t = pick(); a.src = t.src; a.play().then(() => { fadeIn(); setNowPlaying(t.title); }).catch(() => {}); };
     a.addEventListener('ended', start);
     try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') start(); else { armed = true; document.addEventListener('pointerdown', start, { once: true, capture: true }); } } catch (_) { start(); }
     return () => { alive = false; clearInterval(fade); a.pause(); a.src = ''; if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
   }, [tracks]);
+  return nowPlaying;
+}
+
+// Chunky signpost at either end of the street pointing to the next one.
+function StreetSign({ zone, dir, onClick, style }) {
+  const Arrow = dir === 'left' ? ArrowLeft : ArrowRight;
+  return (
+    <motion.button type="button" data-testid={`campus-sign-${dir}`} aria-label={`Go to ${zone.label}`} onClick={onClick}
+      className="absolute flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer touch-manipulation" style={style}
+      whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }} animate={{ y: [0, -4, 0] }} transition={{ y: { repeat: Infinity, duration: 2.2, ease: 'easeInOut' } }}>
+      <span className="flex items-center gap-2 rounded-2xl px-3.5 py-2 font-black font-display text-sm md:text-lg whitespace-nowrap"
+        style={{ background: zone.color, color: 'var(--jma-dark)', border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}>
+        {dir === 'left' && <Arrow className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3.5} />}
+        {zone.label}
+        {dir === 'right' && <Arrow className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3.5} />}
+      </span>
+      <span aria-hidden="true" className="block -mt-1 rounded-b-md" style={{ width: 10, height: 'clamp(40px, 9vh, 90px)', background: '#8B5A2B', border: '3px solid var(--jma-dark)', borderTop: 0 }} />
+    </motion.button>
+  );
 }
 
 function Host({ src, shout }) {
@@ -141,10 +162,20 @@ export default function CampusMapPage() {
   const L = layoutFor(vp.w, vp.h);
   const { slot, sandBack, sandFront, floor } = L;
   const acc = Math.min(1.4, L.k); // accent art scale
-  const width = 200 + buildings.length * slot;
+  const width = L.left + (buildings.length - 1) * slot + L.bw + Math.round(L.bw * 0.75);
+  const zi = CAMPUS_ZONES.findIndex((z) => z.id === zone.id);
+  const nextZone = CAMPUS_ZONES[(zi + 1) % CAMPUS_ZONES.length];
+  const prevZone = CAMPUS_ZONES[(zi + CAMPUS_ZONES.length - 1) % CAMPUS_ZONES.length];
   const youBottom = floor + 2;
   const YOU_W = L.you;
-  useStreetMusic(zone.tracks);
+  const nowPlaying = useStreetMusic(zone.tracks);
+  // New street: start at the near end (or the far end when walking in from the right).
+  useEffect(() => {
+    const el = scroller.current; if (!el) return;
+    const atEnd = location.state && location.state.enterAt === 'end';
+    el.scrollLeft = atEnd ? el.scrollWidth : 0; setScrollX(el.scrollLeft);
+  }, [zone.id, location.state]);
+  const goStreet = (z, enterAt) => navigate(`/campus?zone=${z.id}`, { state: { enterAt } });
 
   // Hosts shout now and then.
   useEffect(() => {
@@ -244,7 +275,7 @@ export default function CampusMapPage() {
         animate={leaving ? { scale: 2.6, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.6, 0, 0.8, 1] }}
       >
-        <div ref={shelfRef} className="relative h-full" style={{ width, minWidth: '100vw' }} data-testid="campus-shelf">
+        <div ref={shelfRef} className="relative h-full overflow-hidden" style={{ width, minWidth: '100vw' }} data-testid="campus-shelf">
           {/* back dune + its accents (parallax: drifts slower than the street) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 400, height: sandBack, transform: `translateX(${scrollX * 0.3}px)`, zIndex: 1 }} data-testid="campus-sand-back">
             <SandStrip src={UW_ASSETS.sandBack} height={sandBack} />
@@ -263,6 +294,9 @@ export default function CampusMapPage() {
               <AvatarSprite src={avatar.src} helmet={!!avatar.helmet} width={Math.round((avatar.helmet ? 44 : 60) * (YOU_W / 64))} imgStyle={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.35))' }} />
             </motion.div>
           </motion.div>
+          {/* street signs → previous / next street */}
+          <StreetSign zone={prevZone} dir="left" onClick={() => goStreet(prevZone, 'end')} style={{ left: 10, bottom: Math.round(sandBack * 0.6), zIndex: 2 }} />
+          <StreetSign zone={nextZone} dir="right" onClick={() => goStreet(nextZone, 'start')} style={{ left: width - Math.round(L.bw * 0.62), bottom: floor + 4, zIndex: 11 }} />
           {/* buildings */}
           {buildings.map((b, i) => (
             <Building key={b.id} b={b} index={i} L={L} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
@@ -275,6 +309,18 @@ export default function CampusMapPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* now playing */}
+      <AnimatePresence>
+        {nowPlaying && (
+          <motion.div key={nowPlaying} data-testid="campus-now-playing" className="absolute bottom-4 left-3 z-20 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] md:text-xs font-black pointer-events-none"
+            style={{ background: 'rgba(10,37,64,0.85)', color: 'white', border: '2px solid white', boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)' }}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <motion.span animate={{ rotate: [-12, 12, -12] }} transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}><Music className="w-3.5 h-3.5" strokeWidth={3} /></motion.span>
+            {nowPlaying}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* swipe hint */}
       <AnimatePresence>

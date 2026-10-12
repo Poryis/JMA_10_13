@@ -2,12 +2,13 @@
 // Every building has illustrated art; `kiosk` remains supported as a fallback.
 
 const MU = 'assets/music/'; // Jelly instrumentals — each street spins its own playlist
+const T = (file, title) => ({ src: `${MU}${file}.mp3`, title });
 const CH = 'assets/characters/';
 
 export const CAMPUS_ZONES = [
-  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', tracks: [`${MU}play-one-skip-one.mp3`, `${MU}goody-bag.mp3`, `${MU}food-fight.mp3`],   strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
-  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', tracks: [`${MU}magic.mp3`, `${MU}brand-new-friend.mp3`],  strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
-  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', tracks: [`${MU}faster-as-we-go.mp3`, `${MU}food-fight.mp3`, `${MU}goody-bag.mp3`], strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'play',   label: 'PLAY',   street: 'Jelly Jam Boulevard', color: '#FFCC00', ground: '#9BE27A', tracks: [T('play-one-skip-one', 'Play One, Skip One'), T('goody-bag', 'Goody Bag'), T('food-fight', 'Food Fight')],   strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'learn',  label: 'LEARN',  street: 'Music 101 Lane',      color: '#C8A8F2', ground: '#7FD1B9', tracks: [T('magic', 'Magic'), T('brand-new-friend', 'Brand New Friend')],  strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
+  { id: 'create', label: 'CREATE', street: 'Studio Row',          color: '#7DD3C0', ground: '#F2C878', tracks: [T('faster-as-we-go', 'Faster As We Go'), T('food-fight', 'Food Fight'), T('goody-bag', 'Goody Bag')], strollers: [`${CH}charlie-surf.png`, `${CH}sharky-snorkel.png`] },
 ];
 
 export const CAMPUS_BUILDINGS = [

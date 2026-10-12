@@ -83,6 +83,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering }) {
       data-testid={`campus-building-${b.id}`}
       data-locked={locked ? 'true' : 'false'}
       aria-disabled={locked}
+      aria-label={b.name}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       style={{ left: L.left + index * L.slot, width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: 10 - (index % 3) }}
@@ -110,9 +111,6 @@ function Building({ b, index, locked, onEnter, shout, L, entering }) {
           </span>
         )}
       </motion.div>
-      <span className="mt-1 rounded-full px-2.5 py-0.5 text-[10px] md:text-xs font-black font-display text-center leading-tight" style={{ background: 'white', color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)', opacity: locked ? 0.7 : 1 }}>
-        {b.name}
-      </span>
     </motion.button>
   );
 }
@@ -214,10 +212,6 @@ export default function CampusMapPage() {
       <BlimpFlyby />
       <GameHeader title={`${zone.label} STREET`} showHomeButton={true} backTo="/home" />
 
-      {/* street name under the header title */}
-      {!short && <div className="absolute inset-x-0 top-14 md:top-[72px] z-20 flex justify-center pointer-events-none">
-        <div className="rounded-full px-3 py-0.5 text-[10px] md:text-xs font-black" style={{ background: zone.color, color: 'var(--jma-dark)', border: '2px solid var(--jma-dark)', boxShadow: '0 2px 0 0 var(--jma-dark)' }}>{zone.street}</div>
-      </div>}
 
       {/* the user's fish — every sprite faces the way it swims */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} data-testid="campus-fish">

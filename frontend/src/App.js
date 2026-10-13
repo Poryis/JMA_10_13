@@ -84,7 +84,7 @@ function App() {
                 the PlayerNamePrompt handles first-name-only setup. */}
             <Route path="/" element={<RootGate />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
-            <Route path="/home" element={<CampusMapPage plaza />} />
+            <Route path="/home" element={<CampusMapPage key="plaza" plaza />} />
             <Route path="/home-classic" element={<HomePage />} />
             <Route path="/play" element={<Navigate to="/campus?zone=play" replace />} />
             <Route path="/learn" element={<Navigate to="/campus?zone=learn" replace />} />
@@ -115,7 +115,7 @@ function App() {
             <Route path="/jmatv/:channelId/:episodeIndex" element={<JMAtvPlayerPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
             <Route path="/dressing-room" element={<DressingRoomPage />} />
-            <Route path="/campus" element={<CampusMapPage />} />
+            <Route path="/campus" element={<CampusMapPage key="campus" />} />
           </Routes>
           </FitStage>
         </AnimatePresence>

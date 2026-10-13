@@ -1,0 +1,37 @@
+{
+  "summary": "Frontend-only verification of FitBox / landscape intro-menu changes at phone-landscape 844x390 (plus desktop regression at 1280x800). All 9 intro menus are fully visible without scrolling (document.scrollHeight == 390 on every page except /rhythm-game where the song list is intentionally scrollable). FitStage data-scale per route: simon-says=1.00, ear-trainer=0.91, note-match=1.00, detective=0.89, sight-reading=1.00, name-that-note=1.00, boom-garden=1.00, shred-legend=0.56. All difficulty buttons on all 9 pages have top>=0 and bottom<=390. Fullscreen-button bbox never overlaps a difficulty/menu button (closest case: boom-garden fs=L784-R828/T330-B374 vs boom-tempo-turbo R=722 → no overlap). Functional starts verified for /ear-trainer, /note-match, /sight-reading. Seven end cards reached and verified fully on-screen with buttons clickable: (b) Snail-or-Cheetah tempo-quiz-win FitBox t=154 b=323 scale=0.89; (c) note-match-win t=55 b=335 scale=1.51; (d) ntn-round-complete t=48 b=342 scale=1.54; (e) detective-gameover t=19 b=371 scale=1.69; (f) sight-reading-run-complete t=43 b=347 scale=1.82; (a) rhythm-results (Jukebox) two-column layout, play-again/pick-song/home buttons t=280 b=336, scale=1.00; (i) shred-result-card t=45 b=377 scale=1.72 with shred-again/pick/back buttons visible. Desktop regression on note-match-win: scale=1.00 (natural size), buttons visible, Play Again restarts the board. No new React/console errors introduced (0 captured during a 3-page traversal). Skipped per task note: (g) Stew Kazoo Says win and (h) Boom Garden session-summary (both require >5-round melody playback automation).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Note Match win (phone-landscape)", "issues": ["RankUpCelebration modal renders on top of note-match-win when a rank is earned (first-time play). The note-match-win FitBox still lays out correctly underneath (bbox 55-335) and buttons are clickable (Play Again restart worked while modal was open) but the user sees the RankUp card first. Pre-existing behavior, independent of FitBox changes — flagged only as context."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/intro_ear_trainer_landscape.png",
+    "/app/test_reports/intro_boom_garden.png",
+    "/app/test_reports/end_notematch_landscape.png",
+    "/app/test_reports/end_tempoquiz_landscape.png",
+    "/app/test_reports/end_detective_landscape.png",
+    "/app/test_reports/end_sightreading_landscape.png",
+    "/app/test_reports/end_ntn_landscape.png",
+    "/app/test_reports/end_jukebox_landscape.png",
+    "/app/test_reports/end_shred_landscape.png",
+    "/app/test_reports/end_notematch_desktop.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FitBox computes max scale as `1/stageScale`, which allows the inner card to grow larger than natural size when the parent viewport (fixed inset-0 overlay) is bigger than max-w-md. In practice this produced scale values up to 1.82 on some end cards. This is desired behaviour (cards fill the short landscape screen) but note: the Figma-style card art and typography are being enlarged by ~1.5-1.8x on landscape phones — if any end card contains raster images they may look soft. All verified cards use vector/text content so render crisp.",
+    "FitBox's useLayoutEffect depends only on [inset]. Children/text that change size after measurement (e.g., best-score counter animations) might not re-trigger a resize since the ResizeObserver watches the inner element — this is correct and did fire in practice; no stale-scale issues observed.",
+    "RhythmGamePage.js (992 lines) and DetectivePage.js (1065 lines) exceed the 700-line split guideline. Non-blocking but worth splitting."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "none (no auth)",
+  "seed_data_creation": "Pre-seeded localStorage: jma_player_name_skipped_v1='1' and jma_audio_unlocked_v1='1' via page.add_init_script to bypass PlayerNamePrompt and AudioUnlockOverlay in automation.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "9 intro menus and 7 end cards are verified at 844x390. Un-tested end cards (per task's explicit 'attempt else skip with note'): Stew Kazoo Says win and Boom Garden session-summary — both require automating melody playback over 5 rounds which exceeds practical test loop time. To exercise Simon end card quickly, consider adding a dev-only query param or shortcut in the page. End cards are reached via these driver patterns: Note Match pair IDs are deterministic (`{pairIdx}-a` / `{pairIdx}-b`) so you can match them directly. Sight-Reading cadet times out each card after ~20s; just wait ~110s to see run-complete. Tempo quiz needs guessing 'faster' repeatedly and waiting for reveal→next (~6-8s per round, ~90s total). Shred Legend 'Garage Band' song finishes in ~45s.",
+  "rca_of_the_issue": "FitBox and the game-intro CSS grid correctly address the original complaint ('end cards too zoomed-in / clipped on phone landscape'). On every tested end card, the inner card now fits within the 390px viewport (bottom ≤ 390, top ≥ 0) and all primary buttons remain clickable. On desktop (1280x800) FitBox is a no-op (scale=1.00) and buttons work normally."
+}

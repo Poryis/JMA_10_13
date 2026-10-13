@@ -84,7 +84,8 @@ function App() {
                 the PlayerNamePrompt handles first-name-only setup. */}
             <Route path="/" element={<RootGate />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route path="/home" element={<CampusMapPage plaza />} />
+            <Route path="/home-classic" element={<HomePage />} />
             <Route path="/play" element={<Navigate to="/campus?zone=play" replace />} />
             <Route path="/learn" element={<Navigate to="/campus?zone=learn" replace />} />
             <Route path="/create" element={<Navigate to="/campus?zone=create" replace />} />

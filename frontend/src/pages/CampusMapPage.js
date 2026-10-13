@@ -7,13 +7,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight, X, Flame, Star } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
 import AvatarSprite from '../components/AvatarSprite';
-import { CAMPUS_ZONES, CAMPUS_BUILDINGS } from '../data/campus';
+import DailyQuestCard from '../components/DailyQuestCard';
+import FitBox from '../components/FitBox';
+import { CAMPUS_ZONES, CAMPUS_BUILDINGS, PLAZA_ZONE, PLAZA_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
+import useRank from '../hooks/useRank';
+import usePracticeStreak from '../hooks/usePracticeStreak';
+import useStickers from '../hooks/useStickers';
+import useDailyQuests from '../hooks/useDailyQuests';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import { loadSavedBeats } from '../hooks/useSavedBeats';
 import { loadSavedSongs } from '../hooks/useSongLoopPlayer';
@@ -67,9 +73,9 @@ function StreetSign({ zone, dir, onClick, style }) {
   );
 }
 
-function Host({ src, shout }) {
+function Host({ src, shout, pos }) {
   return (
-    <motion.div className="absolute pointer-events-none flex flex-col items-center" style={{ left: '-12%', bottom: 6, height: '34%', zIndex: 4 }}
+    <motion.div className="absolute pointer-events-none flex flex-col items-center" style={pos || { left: '-12%', bottom: 6, height: '34%', zIndex: 4 }}
       animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }} transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}>
       <AnimatePresence>
         {shout && (
@@ -96,10 +102,60 @@ function RoofBubbles({ index }) {
   );
 }
 
-function Building({ b, index, locked, onEnter, shout, L, entering, badge }) {
+// Plaza: the JMAtv drive-in screen — outer-space billboard on two posts.
+function DriveIn({ live }) {
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-end" data-testid="plaza-drive-in">
+      <div className="relative w-full rounded-[14%/18%] overflow-hidden" style={{ height: '62%', background: 'radial-gradient(ellipse at 30% 20%, #2A1B5E 0%, #0B1033 55%, #05071C 100%)', border: '5px solid var(--jma-dark)', boxShadow: '0 8px 0 0 rgba(2,36,63,0.45), inset 0 0 40px rgba(120,80,255,0.25)' }}>
+        {[...Array(18)].map((_, i) => (
+          <motion.span key={i} className="absolute rounded-full bg-white" style={{ width: 2 + (i % 3), height: 2 + (i % 3), left: `${(i * 37) % 100}%`, top: `${(i * 53) % 100}%` }}
+            animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.5 + (i % 4) * 0.6, delay: (i % 5) * 0.3 }} />
+        ))}
+        <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[56%] object-contain" style={{ filter: 'drop-shadow(0 3px 0 rgba(0,0,0,0.5))' }} />
+        <motion.span className="absolute top-[7%] left-[7%] flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] md:text-[11px] font-black text-white" style={{ background: '#E11D48', border: '2px solid white' }} animate={{ opacity: [1, 0.55, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-white" /> {live || 'LIVE'}
+        </motion.span>
+      </div>
+      <div className="flex justify-between" style={{ width: '70%', height: '30%' }}>
+        {[0, 1].map((n) => <span key={n} className="block h-full" style={{ width: '12%', background: '#8B5A2B', border: '4px solid var(--jma-dark)', borderTop: 0 }} />)}
+      </div>
+    </div>
+  );
+}
+
+// Plaza: brand marquee above the bandstand + the kid's rank pennant.
+function BrandMarquee({ extras }) {
+  return (
+    <>
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '37%', left: '52.5%', top: '16%', zIndex: 5 }}>
+        <motion.img src="assets/ui/jma-stylized-logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-logo"
+          className="w-full object-contain" style={{ filter: 'drop-shadow(0 2px 0 rgba(2,36,63,0.35))' }}
+          animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3.4, ease: 'easeInOut' }} />
+      </div>
+      {extras && (
+        <div className="absolute flex flex-col items-center pointer-events-none" style={{ right: '-7%', bottom: '6%', width: '16%', zIndex: 6 }} data-testid="plaza-pennant">
+          <motion.div className="relative w-full" animate={{ skewY: [0, 3, 0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
+            <div className="w-full rounded-xl p-1 flex flex-col items-center" style={{ background: '#FFCC00', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}>
+              <img src={extras.rankIcon} alt="" className="w-[70%] object-contain" />
+              <span className="text-[8px] md:text-[10px] font-black leading-none text-center" style={{ color: 'var(--jma-dark)' }}>{extras.rankTitle}</span>
+            </div>
+          </motion.div>
+          <span className="block" style={{ width: 6, height: 'clamp(30px, 8vh, 70px)', background: '#8B5A2B', border: '2px solid var(--jma-dark)', borderTop: 0 }} />
+          {extras.streak >= 2 && (
+            <span className="absolute -right-2 top-0 flex items-center gap-0.5 rounded-full px-1.5 text-[9px] md:text-[11px] font-black text-white" style={{ background: '#FF6B35', border: '2px solid var(--jma-dark)' }} data-testid="plaza-streak">
+              <Flame className="w-3 h-3" strokeWidth={3} /> {extras.streak}
+            </span>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras, x }) {
   const [shake, setShake] = useState(0);
-  const lift = index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
-  const scale = index % 3 === 1 ? 0.86 : 1;
+  const lift = b.flat ? 0 : index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
+  const scale = b.flat ? 1 : index % 3 === 1 ? 0.86 : 1;
   const handle = () => {
     if (locked) { setShake((s) => s + 1); say('charlie.hub.lockbadge'); return; }
     onEnter(b);
@@ -113,15 +169,25 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge }) {
       aria-label={b.name}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      style={{ left: L.left + index * L.slot, width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: 10 - (index % 3) }}
+      style={{ left: x ?? (L.left + index * L.slot), width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: 10 - (index % 3) }}
       initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: entering ? 1.04 : 1 }} transition={{ delay: entering ? 0 : 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
       <motion.div key={shake} animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}} transition={{ duration: 0.45 }} className="relative w-full">
-        <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
+        <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? (b.flat ? 'grayscale(0.85) brightness(0.8)' : 'brightness(0.3) saturate(0.4)') : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
-          <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />
-          {!locked && <RoofBubbles index={index} />}
+          {b.custom === 'tv'
+            ? <DriveIn />
+            : <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />}
+          {b.sign && (
+            <span data-testid={`campus-building-${b.id}-sign`} className="absolute -translate-x-1/2 -translate-y-1/2 font-black font-display whitespace-nowrap pointer-events-none"
+              style={{ left: `${b.signPos.x}%`, top: `${b.signPos.y}%`, fontSize: Math.round(L.bw * b.size * (b.sign.length > 8 ? 0.055 : 0.085)), color: locked ? 'white' : 'var(--jma-dark)', textShadow: locked ? '0 2px 0 rgba(0,0,0,0.6)' : 'none', zIndex: 5, letterSpacing: '0.04em',
+                ...(b.signColor ? { background: b.signColor, border: '3px solid var(--jma-dark)', borderRadius: 999, padding: '2px 10px', boxShadow: '0 3px 0 0 var(--jma-dark)' } : {}) }}>
+              {b.sign}
+            </span>
+          )}
+          {b.custom === 'bandstand' && <BrandMarquee extras={extras} />}
+          {!locked && b.custom !== 'tv' && <RoofBubbles index={index} />}
           {/* floating notes from the door */}
           {!locked && [0, 1, 2].map((n) => (
             <motion.span key={n} className="absolute pointer-events-none" style={{ left: `${44 + n * 10}%`, bottom: '22%', color: ['#FFCC00', '#FF2D85', '#4FC3F7'][n] }}
@@ -130,7 +196,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge }) {
               <Music className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
             </motion.span>
           ))}
-          {!locked && b.host && <Host src={b.host} shout={shout} />}
+          {!locked && b.host && <Host src={b.host} shout={shout} pos={b.custom === 'bandstand' ? { left: '30%', bottom: '21%', height: '36%', zIndex: 4 } : undefined} />}
         </motion.div>
         {!locked && badge && (
           <motion.span data-testid={`campus-building-${b.id}-badge`} className="absolute -top-3 right-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] md:text-xs font-black whitespace-nowrap"
@@ -149,10 +215,15 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge }) {
   );
 }
 
-export default function CampusMapPage() {
+export default function CampusMapPage({ plaza = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { unlocked } = useUnlocks();
+  const { currentRank } = useRank();
+  const { count: streakCount } = usePracticeStreak();
+  const { earned } = useStickers();
+  const { quests, doneCount, allDone } = useDailyQuests();
+  const [questsOpen, setQuestsOpen] = useState(false);
   const scroller = useRef(null);
   const shelfRef = useRef(null);
   const [leaving, setLeaving] = useState(null);
@@ -161,16 +232,27 @@ export default function CampusMapPage() {
   const [shout, setShout] = useState(null); // { id, buildingId, text }
   const [hint, setHint] = useState(true);
   const zoneId = new URLSearchParams(location.search).get('zone') || 'play';
-  const zone = CAMPUS_ZONES.find((z) => z.id === zoneId) || CAMPUS_ZONES[0];
-  const buildings = useMemo(() => CAMPUS_BUILDINGS.filter((b) => b.zone === zone.id), [zone.id]);
+  const zone = plaza ? PLAZA_ZONE : (CAMPUS_ZONES.find((z) => z.id === zoneId) || CAMPUS_ZONES[0]);
+  const rawBuildings = useMemo(() => (plaza ? PLAZA_BUILDINGS : CAMPUS_BUILDINGS.filter((b) => b.zone === zone.id)), [plaza, zone.id]);
   const night = useMemo(isNight, []);
   const avatar = useMemo(readAvatarOutfit, []);
   const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
   useEffect(() => { const f = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
   const L = layoutFor(vp.w, vp.h);
+  // Plaza: the tall props (bandstand) must still clear the header on short phones.
+  const buildings = useMemo(() => (plaza ? rawBuildings.map((b) => ({ ...b, size: Math.min(b.size, Math.max(0.9, (vp.h * 0.86 - L.floor) / L.bw)) })) : rawBuildings), [plaza, rawBuildings, vp.h, L.floor, L.bw]);
   const { slot, sandBack, sandFront, floor } = L;
   const acc = Math.min(1.4, L.k); // accent art scale
-  const width = L.left + (buildings.length - 1) * slot + L.bw + Math.round(L.bw * 0.75);
+  // Plaza props vary a lot in width, so pack them by size instead of fixed slots.
+  const xs = useMemo(() => {
+    if (!plaza) return null;
+    const out = []; let x = L.left;
+    buildings.forEach((b) => { out.push(Math.round(x)); x += L.bw * b.size + L.bw * 0.22; });
+    return out;
+  }, [plaza, buildings, L.left, L.bw]);
+  const width = plaza
+    ? xs[xs.length - 1] + Math.round(L.bw * buildings[buildings.length - 1].size) + Math.round(L.bw * 0.75)
+    : L.left + (buildings.length - 1) * slot + L.bw + Math.round(L.bw * 0.75);
   const zi = CAMPUS_ZONES.findIndex((z) => z.id === zone.id);
   const nextZone = CAMPUS_ZONES[(zi + 1) % CAMPUS_ZONES.length];
   const prevZone = CAMPUS_ZONES[(zi + CAMPUS_ZONES.length - 1) % CAMPUS_ZONES.length];
@@ -180,6 +262,30 @@ export default function CampusMapPage() {
   const nowPlaying = useStreetMusic(zone.tracks);
   const jamCount = useMemo(() => loadSavedBeats().length + loadSavedSongs().length, []);
   const jamBadge = jamCount > 0 ? `${jamCount} to jam` : null;
+  const stickerCount = Object.keys(earned).length;
+  const badgeFor = (b) => {
+    if (b.id === 'jam-session') return jamBadge;
+    if (b.id === 'quest-board') return `${doneCount}/${quests.length} today`;
+    if (b.id === 'sticker-shack') return stickerCount > 0 ? `${stickerCount} stickers` : null;
+    return null;
+  };
+  const extras = plaza ? { rankIcon: currentRank.icon, rankTitle: currentRank.title, streak: streakCount } : null;
+  // Plaza: Charlie greets the kid at the bandstand (time-of-day / first visit / quests).
+  useEffect(() => {
+    if (!plaza) return undefined;
+    const hour = new Date().getHours();
+    let line = hour < 12 ? 'charlie.hub.morning' : hour < 17 ? 'charlie.hub.afternoon' : 'charlie.hub.evening';
+    if (!localStorage.getItem('jma_voice_welcomed')) { line = 'charlie.hub.first'; try { localStorage.setItem('jma_voice_welcomed', '1'); } catch (_) { /* ignore */ } }
+    else if (allDone) line = 'charlie.hub.alldone';
+    else if (streakCount >= 3) line = 'charlie.hub.streak';
+    else if (doneCount === 0 && Math.random() < 0.5) line = 'charlie.hub.quests';
+    say(line, { delayMs: 900, minGapMs: 0 });
+    const s = { id: Date.now(), buildingId: 'bandstand', text: hour < 12 ? 'Mornin\', kid!' : 'Welcome back!' };
+    const t1 = setTimeout(() => setShout(s), 700);
+    const t2 = setTimeout(() => setShout((cur) => (cur && cur.id === s.id ? null : cur)), 3200);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plaza]);
   // Just saved a beat? Chunk points next door.
   useEffect(() => {
     let flag = null;
@@ -228,6 +334,13 @@ export default function CampusMapPage() {
   // Your Jelly swims from the street entrance to the tapped door, then we go in.
   const enter = (b) => {
     if (swim || leaving) return;
+    if (b.action === 'quests') { setQuestsOpen(true); return; }
+    if (b.action === 'band') {
+      const s = { id: Date.now(), buildingId: 'bandstand', text: SHOUTS[Math.floor(Math.random() * SHOUTS.length)] };
+      setShout(s); say('charlie.hub.quests', { minGapMs: 0 });
+      setTimeout(() => setShout((cur) => (cur && cur.id === s.id ? null : cur)), 1600);
+      return;
+    }
     const el = shelfRef.current && shelfRef.current.querySelector(`[data-testid="campus-building-${b.id}"]`);
     if (!el) { zoomIn(b); return; }
     const door = { x: el.offsetLeft + el.offsetWidth * 0.5, bottom: (parseFloat(el.style.marginBottom) || 0) + el.offsetWidth * 0.1 };
@@ -261,13 +374,20 @@ export default function CampusMapPage() {
   }, [width, slot, acc]);
 
   return (
-    <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_WATER }} data-testid="campus-map-page" data-zone={zone.id} data-sky={night ? 'night' : 'day'}>
+    <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_WATER }} data-testid="campus-map-page" data-zone={zone.id} data-plaza={plaza ? 'true' : 'false'} data-sky={night ? 'night' : 'day'}>
       {/* water + wave bands (user's layers) */}
       <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '82%', zIndex: 0, backgroundImage: `url(${UW_ASSETS.bands})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: 'center bottom' }} />
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
-      <GameHeader title={zone.label} showHomeButton={true} backTo="/home" keepTitle />
+      <GameHeader title={zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
+      {plaza && (
+        <button type="button" data-testid="home-for-parents-link" onClick={() => navigate('/for-parents')}
+          className="absolute top-3 right-3 md:top-4 md:right-6 z-20 text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full transition-transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: 'rgba(255,255,255,0.8)', color: '#5A2989', border: '1.5px solid rgba(90,41,137,0.25)' }}>
+          For Grown-Ups
+        </button>
+      )}
 
 
       {/* the user's fish — every sprite faces the way it swims */}
@@ -317,11 +437,11 @@ export default function CampusMapPage() {
             </motion.div>
           </motion.div>
           {/* street signs → previous / next street */}
-          <StreetSign zone={prevZone} dir="left" onClick={() => goStreet(prevZone, 'end')} style={{ left: 10, bottom: Math.round(sandBack * 0.95), zIndex: 2 }} />
-          <StreetSign zone={nextZone} dir="right" onClick={() => goStreet(nextZone, 'start')} style={{ left: width - Math.round(L.bw * 0.62), bottom: floor + 4, zIndex: 11 }} />
+          {!plaza && <StreetSign zone={prevZone} dir="left" onClick={() => goStreet(prevZone, 'end')} style={{ left: 10, bottom: Math.round(sandBack * 0.95), zIndex: 2 }} />}
+          {!plaza && <StreetSign zone={nextZone} dir="right" onClick={() => goStreet(nextZone, 'start')} style={{ left: width - Math.round(L.bw * 0.62), bottom: floor + 4, zIndex: 11 }} />}
           {/* buildings */}
           {buildings.map((b, i) => (
-            <Building key={b.id} b={b} index={i} L={L} badge={b.id === 'jam-session' ? jamBadge : null} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
+            <Building key={b.id} b={b} index={i} L={L} x={xs ? xs[i] : undefined} badge={badgeFor(b)} extras={b.custom === 'bandstand' ? extras : null} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">
@@ -357,6 +477,24 @@ export default function CampusMapPage() {
       {leaving && (
         <motion.div data-testid="campus-door-transition" className="fixed inset-0 pointer-events-none" style={{ background: 'var(--jma-dark)', zIndex: 60 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.1 }} />
       )}
+
+      {/* Plaza: the Quest Board opens today's quests */}
+      <AnimatePresence>
+        {questsOpen && (
+          <motion.div data-testid="plaza-quests-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(2,36,63,0.7)' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setQuestsOpen(false)}>
+            <FitBox className="w-full max-w-md">
+              <motion.div className="relative" initial={{ scale: 0.7, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }} onClick={(e) => e.stopPropagation()}>
+                <button type="button" data-testid="plaza-quests-close" aria-label="Close" onClick={() => setQuestsOpen(false)}
+                  className="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center" style={{ background: '#FF2D85', color: 'white', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}>
+                  <X className="w-5 h-5" strokeWidth={3} />
+                </button>
+                <DailyQuestCard defaultExpanded />
+              </motion.div>
+            </FitBox>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

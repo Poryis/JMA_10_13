@@ -164,12 +164,12 @@ function QuestRow({ quest, index, navigate, baseDelay = 0.5 }) {
   );
 }
 
-export default function DailyQuestCard() {
+export default function DailyQuestCard({ defaultExpanded = false }) {
   const navigate = useNavigate();
   const { date, quests, doneCount, allDone, gem, questDays } = useDailyQuests();
   const gemSticker = gem ? STICKER_MAP[gem] : null;
   const isDesktop = useIsDesktop();
-  const [expanded, setExpanded] = useState(() => shouldAutoExpand(date, doneCount));
+  const [expanded, setExpanded] = useState(() => defaultExpanded || shouldAutoExpand(date, doneCount));
 
   useEffect(() => { rememberSeen(date, doneCount); }, [date, doneCount]);
 

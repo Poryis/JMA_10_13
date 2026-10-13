@@ -127,7 +127,7 @@ function DriveIn({ live }) {
 function BrandMarquee({ extras }) {
   return (
     <>
-      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '36%', left: '52.5%', top: '17.5%', zIndex: 5 }}>
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '38%', left: '56%', top: '18.5%', zIndex: 5 }}>
         <motion.img src="assets/ui/jma-stylized-logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-logo"
           className="w-full object-contain" style={{ filter: 'drop-shadow(0 2px 0 rgba(2,36,63,0.35))' }}
           animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3.4, ease: 'easeInOut' }} />
@@ -174,18 +174,19 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
       <motion.div key={shake} animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}} transition={{ duration: 0.45 }} className="relative w-full">
-        <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked ? (b.flat ? 'grayscale(0.85) brightness(0.8)' : 'brightness(0.3) saturate(0.4)') : 'none', transition: 'filter 0.6s' }}
+        <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked && !b.flat ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
           {b.custom === 'tv'
             ? <DriveIn />
             : <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />}
           {b.sign && (
             <span data-testid={`campus-building-${b.id}-sign`} className="absolute -translate-x-1/2 -translate-y-1/2 font-black font-display whitespace-nowrap pointer-events-none"
-              style={{ left: `${b.signPos.x}%`, top: `${b.signPos.y}%`, fontSize: Math.round(L.bw * b.size * (b.sign.length > 8 ? 0.055 : 0.085)), color: locked ? 'white' : 'var(--jma-dark)', textShadow: locked ? '0 2px 0 rgba(0,0,0,0.6)' : 'none', zIndex: 5, letterSpacing: '0.04em',
+              style={{ left: `${b.signPos.x}%`, top: `${b.signPos.y}%`, fontSize: Math.round(L.bw * b.size * (b.sign.length > 8 ? 0.055 : 0.085)), color: 'var(--jma-dark)', zIndex: 5, letterSpacing: '0.04em',
                 ...(b.signColor ? { background: b.signColor, border: '3px solid var(--jma-dark)', borderRadius: 999, padding: '2px 10px', boxShadow: '0 3px 0 0 var(--jma-dark)' } : {}) }}>
               {b.sign}
             </span>
           )}
+          {b.emblem && <img src="assets/ui/logo.png" alt="" draggable={false} className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ left: `${b.emblem.x}%`, top: `${b.emblem.y}%`, width: `${b.emblem.w}%`, zIndex: 4 }} data-testid={`campus-building-${b.id}-emblem`} />}
           {b.custom === 'bandstand' && <BrandMarquee extras={extras} />}
           {!locked && b.custom !== 'tv' && <RoofBubbles index={index} />}
           {/* floating notes from the door */}
@@ -196,7 +197,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
               <Music className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
             </motion.span>
           ))}
-          {!locked && b.host && <Host src={b.host} shout={shout} pos={b.custom === 'bandstand' ? { left: '30%', bottom: '21%', height: '36%', zIndex: 4 } : undefined} />}
+          {(!locked || b.flat) && b.host && <Host src={b.host} shout={shout} pos={b.custom === 'bandstand' ? { left: '30%', bottom: '21%', height: '36%', zIndex: 4 } : undefined} />}
         </motion.div>
         {!locked && badge && (
           <motion.span data-testid={`campus-building-${b.id}-badge`} className="absolute -top-3 right-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] md:text-xs font-black whitespace-nowrap"
@@ -204,6 +205,9 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             initial={{ scale: 0 }} animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.6 }}>
             <Music className="w-3 h-3" strokeWidth={3} /> {badge}
           </motion.span>
+        )}
+        {locked && b.flat && (
+          <span aria-hidden="true" data-testid={`campus-building-${b.id}-rope`} className="absolute pointer-events-none" style={{ left: '16%', right: '16%', top: '64%', height: 0, borderTop: '5px dashed #8B5A2B', filter: 'drop-shadow(0 2px 0 var(--jma-dark))', zIndex: 5 }} />
         )}
         {locked && (
           <span data-testid={`campus-building-${b.id}-lock`} className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] md:text-[10px] font-black text-white whitespace-nowrap" style={{ background: 'rgba(10,37,64,0.92)', border: '2px solid white', zIndex: 6 }}>
@@ -380,7 +384,7 @@ export default function CampusMapPage({ plaza = false }) {
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
-      <GameHeader title={zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
+      <GameHeader title={plaza ? <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="object-contain" style={{ height: 'clamp(56px, 11vh, 96px)', filter: 'drop-shadow(0 4px 0 rgba(2,36,63,0.35))' }} /> : zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
       {plaza && (
         <button type="button" data-testid="home-for-parents-link" onClick={() => navigate('/for-parents')}
           className="absolute top-3 right-3 md:top-4 md:right-6 z-20 text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full transition-transform hover:scale-105 active:scale-95"

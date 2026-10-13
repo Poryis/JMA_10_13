@@ -41,7 +41,7 @@ export const PLAZA_ZONE = {
 };
 export const PLAZA_BUILDINGS = [
   { id: 'quest-board',   zone: 'plaza', name: 'Quest Board',   action: 'quests',             art: `${PZ}quest-board.png`,    starter: true,  size: 0.78, flat: true, hangSign: { text: 'QUESTS', x: 51.5, y: 67 } },
-  { id: 'gate-play',     zone: 'plaza', name: 'Play Street',   path: '/campus?zone=play',    art: `${PZ}gate-play.png`,      host: `${CH}chunk-disco.png`,  starter: true,  size: 1.0,  flat: true, sign: 'PLAY',   signPos: { x: 53.5, y: 35 } },
+  { id: 'gate-play',     zone: 'plaza', name: 'Play Street',   path: '/campus?zone=play',    art: `${PZ}gate-play.png`,      host: `${CH}chunk-disco.png`,  starter: true,  size: 1.0,  flat: true, sign: 'PLAY',   signPos: { x: 52.5, y: 34 } },
   { id: 'bandstand',     zone: 'plaza', name: 'JMA Bandstand', action: 'band',               art: `${PZ}bandstand.png`, host: `${CH}charlie.png`, starter: true, size: 1.5, flat: true, custom: 'bandstand' },
   { id: 'gate-learn',    zone: 'plaza', name: 'Learn Street',  path: '/campus?zone=learn',   art: `${PZ}gate-learn.png`,     host: `${CH}jazzy-marching.png`, starter: false, size: 1.0, flat: true, sign: 'LEARN',  signPos: { x: 52.5, y: 39.5 }, signScale: 0.7 },
   { id: 'gate-create',   zone: 'plaza', name: 'Create Street', path: '/campus?zone=create',  art: `${PZ}gate-create.png`,    host: `${CH}sharky-hiphop.png`, starter: false, size: 1.0, flat: true, sign: 'CREATE', signPos: { x: 53, y: 33.5 } },

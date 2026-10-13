@@ -127,7 +127,7 @@ function DriveIn({ live }) {
 function BrandMarquee({ extras }) {
   return (
     <>
-      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '28%', left: '56%', top: '20%', zIndex: 5 }}>
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '28%', left: '56%', top: '19%', zIndex: 5 }}>
         <motion.img src="assets/ui/jma-stylized-logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-logo"
           className="w-full object-contain" style={{ filter: 'drop-shadow(0 2px 0 rgba(2,36,63,0.35))' }}
           animate={{ scale: [0.9, 1.14, 0.9] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }} />

@@ -1,5 +1,9 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Phone-landscape fit (FitStage) — tested iteration_42
+- `components/FitStage.js` wraps `<Routes>` in App.js. Active only when innerHeight < 520 && landscape; excluded: `/`, `/home`, `/campus` (own landscape layouts). Measures the page's natural height and CSS-scales the stage (floor 0.55; stage width 100/scale vw; internal scroll if still too tall; bounded re-measure via ResizeObserver/MutationObserver to avoid oscillation). Fixed headers inside stay aligned (transform = containing block).
+- Per-route at 844×390: rhythm-game 0.70, song-studio 0.70, loop-studio 0.59, name-that-note 0.58, shred 0.56, free-play 0.56, boom-garden 0.55 fit; STILL OVERFLOW at floor (menus are tall vertical stacks): robot-boogie, note-match, fun-facts, simon-says, detective, sight-reading → candidates for dedicated landscape (side-by-side) menu layouts.
+
 ## Jun 2026: "Make it → Jam on it" pipeline (tested iteration_40/41, all pass)
 - Beat Lab: after naming a saved beat → yellow **Jam on it! →** (`loop-jam-on-it`) → `/free-play?beat=<id>`; sets `sessionStorage jma_just_saved_beat_v1`. Song Studio: celebration (now 6 s) + gallery rows have **Jam on it!** (`song-jam-on-it`, `song-gallery-jam-<id>`) → `/free-play?song=<id>`. Voice line `charlie.jam.takeit`.
 - Jam Session: `JamAlongControls` rewritten — "My Music" button opens `components/MyMusicShelf.js` (tabs My Beats · My Songs · Jelly Songs, cassette `TapeCard`s, empty-state CTAs to Beat Lab / Song Studio). Auto-starts from `?beat=`/`?song=` (after audio unlock), fixed banner `jam-along-banner` "Jamming to: <name>". Naming deliberately plain ("My Music") — user wants zero cute jargon for kids.

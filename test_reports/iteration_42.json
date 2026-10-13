@@ -1,0 +1,49 @@
+{
+  "summary": "FitStage landscape-fit mechanism verified on iPhone-landscape viewport (844x390). FitStage mounts on all 15 valid routes with scale in [0.55, 1.00]; hit-testing works through the CSS transform (Easy/Start/song cards/back-button all registered and navigated). Non-short viewports (1280x800 desktop and 390x844 portrait) correctly render WITHOUT the fit-stage element. Rotation 844x390 -> 1280x800 -> 844x390 removes and restores the fit-stage with scale < 1 as expected. Findings for main agent: (a) /#/home scales to 0.81, below the >= 0.9 PASS criteria specified in the request; (b) several games exhibit inner-stage vertical overflow > 40px while clamped at the MIN_SCALE=0.55 floor (they fall back to internal scrolling as designed, but a dedicated landscape layout is recommended); (c) /#/ear-quest is NOT a defined route in App.js — it renders blank and was skipped.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "FitStage on /#/home", "issue": "scale=0.81 which is below the request's PASS criteria of >= 0.9 for /#/home. HomePage natural height (~594px pre-floor) exceeds 390px viewport. Consider trimming vertical padding on HomePage so it fits >= 0.9.", "selector": "[data-testid=fit-stage]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Landscape 844x390 per-route FitStage measurements", "issues": [
+        "route                  scale  scrollH  clientH  overflow",
+        "/#/home                 0.81    494      483       11",
+        "/#/campus?zone=play     1.00    390      390        0",
+        "/#/robot-boogie         0.55    884      709      175  (floor hit, scroll)",
+        "/#/note-match           0.55    756      709       47  (floor hit, scroll)",
+        "/#/rhythm-game          0.70    559      559        0",
+        "/#/shred-legend         0.56    696      696        0",
+        "/#/fun-facts            0.55    884      709      175  (floor hit, scroll)",
+        "/#/simon-says           0.55    818      709      109  (floor hit, scroll)",
+        "/#/detective            0.55    909      709      200  (floor hit, scroll)",
+        "/#/song-studio          0.70    558      558        0",
+        "/#/sight-reading        0.55    924      709      215  (floor hit, scroll)",
+        "/#/name-that-note       0.58    678      678        0",
+        "/#/boom-garden          0.55    709      709        0",
+        "/#/loop-studio          0.59    662      662        0",
+        "/#/free-play            0.56    717      702       15",
+        "/#/ear-quest            SKIPPED - route is not defined in App.js (renders blank)",
+        "Pages exceeding 40px overflow (candidates for dedicated landscape layout): robot-boogie, note-match, fun-facts, simon-says, detective, sight-reading."
+      ]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "HomePage: reduce vertical padding so FitStage scales >= 0.9 at 844x390 (currently 0.81; natural height ~594px needs to be <= ~434px to hit 0.9).",
+    "Consider dedicated landscape layouts (or vertical content trim) for the 6 games that hit the 0.55 floor with >40px internal overflow: robot-boogie (175), note-match (47), fun-facts (175), simon-says (109), detective (200), sight-reading (215).",
+    "Confirm /#/ear-quest route: the request includes it but App.js does not define it; closest route is /#/ear-trainer. If this is intentional, remove from testing checklist; otherwise add the route."
+  ],
+  "critical_code_review_comments": [
+    "FitStage.js: steps.current cap of 4 iterations prevents oscillation but means a stage whose natural height changes dynamically after 4 measurements will not re-fit until navigation. Observed stable scaling in all tested routes.",
+    "Pre-existing (not related to FitStage): console shows repeated React 'two children with the same key' warnings and some NaN format-string errors on route loads; worth triaging separately.",
+    "No console errors attributable to FitStage. Only expected Vimeo 401s and media autoplay warnings."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "FitStage mechanism: PASS (mounts, scales, hit-tests through transform, deactivates on non-short viewports, restores on rotation). PASS criteria for /#/home scale>=0.9 FAILED (0.81). 6 games fall back to internal scroll at floor."},
+  "seed_data_creation": "localStorage/sessionStorage flags per task spec",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "FitStage wraps <Routes> inside <HashRouter> in App.js. Mounted when innerHeight<520 && width>height. data-testid='fit-stage' on outer div with data-scale attribute; inner scrollable div is 'div[data-testid=fit-stage] > div'. Interactions through CSS scale transform work correctly (clicks hit-test). Routes defined are listed in App.js; /#/ear-quest is not among them. Portrait 390x844 shows OrientationGate; dismiss with [data-testid=orientation-dismiss] or set sessionStorage jma_portrait_ok_v1='1'. Audio overlay dismissed by any click."
+}

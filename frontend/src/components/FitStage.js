@@ -7,6 +7,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const MIN_SCALE = 0.55;
+// Pages with their own landscape layout are left alone.
+const EXCLUDED = ['/', '/home', '/campus'];
 const isShort = () => window.innerHeight < 520 && window.innerWidth > window.innerHeight;
 
 export default function FitStage({ children }) {
@@ -50,7 +52,7 @@ export default function FitStage({ children }) {
     return () => { ro.disconnect(); mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [active, location.pathname]);
 
-  if (!active) return children;
+  if (!active || EXCLUDED.includes(location.pathname)) return children;
   const pct = 100 / scale;
   return (
     <div data-testid="fit-stage" data-scale={scale.toFixed(2)} className="fixed inset-0 overflow-hidden" style={{ background: '#02243F' }}>

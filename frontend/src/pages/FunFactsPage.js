@@ -100,9 +100,17 @@ function FunFactsPage() {
       node.style.setProperty('--ph-x', `${x}%`);
       node.style.setProperty('--ph-y', `${y}%`);
     };
-    wrapper.addEventListener('mousemove', onMove);
-    return () => wrapper.removeEventListener('mousemove', onMove);
+    // pointermove covers the mouse AND a finger dragging around the room (phones in landscape).
+    wrapper.addEventListener('pointermove', onMove);
+    return () => wrapper.removeEventListener('pointermove', onMove);
   }, []);
+  const [wideLayout, setWideLayout] = useState(() => window.innerWidth >= 768 && !window.matchMedia('(pointer: coarse)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)'); const coarse = window.matchMedia('(pointer: coarse)');
+    const f = () => setWideLayout(mq.matches && !coarse.matches);
+    mq.addEventListener('change', f); return () => mq.removeEventListener('change', f);
+  }, []);
+  const desk = wideLayout;
 
   // Mark a character as found (persists). Returns true if this was a FIRST find.
   const markFound = useCallback((name) => {
@@ -178,13 +186,13 @@ function FunFactsPage() {
 
   return (
     <div
-      className="h-[100dvh] md:h-auto md:min-h-screen flex flex-col overflow-hidden md:overflow-visible"
+      className={`flex flex-col ${desk ? 'h-auto min-h-screen overflow-visible' : 'h-[100dvh] overflow-hidden'}`}
       data-testid="fun-facts-page"
       style={{ backgroundColor: '#3D2E1F' }}
     >
       <GameHeader title="Fun Facts Clubhouse" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
 
-      <main className="flex-1 min-h-0 pt-20 md:pt-24 pb-2 md:pb-6 px-2 sm:px-3 flex flex-col items-center">
+      <main className="funfacts-main flex-1 min-h-0 pt-20 md:pt-24 pb-2 md:pb-6 px-2 sm:px-3 flex flex-col items-center">
         {/* Progress / "find-them-all" prompt */}
         <motion.div
           className="mb-2 md:mb-3 flex flex-row flex-wrap items-center justify-center gap-2"
@@ -233,14 +241,15 @@ function FunFactsPage() {
             Desktop: a SPYGLASS — the porthole follows the mouse so kids hunt
             characters by sweeping the lens around the room. When all are
             found, the spyglass fades and the whole room is revealed. */}
-        <div ref={wrapperRef} className="relative w-full max-w-[1200px] flex-1 md:flex-none min-h-0">
+        <div ref={wrapperRef} className={`relative w-full max-w-[1200px] min-h-0 funfacts-wrapper ${desk ? 'flex-none' : 'flex-1'}`} style={{ touchAction: wideLayout ? 'none' : 'auto' }}>
           <div
-            className="w-full h-full overflow-auto md:overflow-visible rounded-2xl md:rounded-[28px] border-4 md:border-[10px] border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
-            style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+            className={`w-full h-full rounded-2xl md:rounded-[28px] border-4 md:border-[10px] border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)] ${desk ? 'overflow-visible' : 'overflow-auto'}`}
+            style={{ WebkitOverflowScrolling: 'touch', touchAction: wideLayout ? 'none' : 'pan-x pan-y' }}
             data-testid="funfacts-scene-scroller"
           >
+            <div className={!desk && !allFound ? 'funfacts-scroller-pad' : ''}>
             <div
-              className="relative mx-auto w-[2400px] aspect-[16/9] md:w-full"
+              className={`relative mx-auto aspect-[16/9] funfacts-scene ${desk || (!desk && allFound) ? 'w-full' : 'w-[2400px]'}`}
               style={{
                 backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
                 backgroundSize: 'cover',
@@ -305,13 +314,14 @@ function FunFactsPage() {
                 );
               })}
             </div>
+            </div>
           </div>
 
           {/* ============ MOBILE: PORTHOLE OVERLAY ============ */}
           {/* Circular cutout with gold ring + dark wall corners.
               pointer-events: none so taps pass through to the characters. */}
           <div
-            className="md:hidden absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30"
+            className={`${desk || allFound ? 'hidden' : 'block'} absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30`}
             data-testid="porthole-frame"
             style={{
               background: `radial-gradient(circle at 50% 50%,
@@ -349,7 +359,7 @@ function FunFactsPage() {
               the spyglass fades away in one smooth transition. */}
           <div
             ref={desktopPortholeRef}
-            className="hidden md:block absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30"
+            className={`${desk ? 'block' : 'hidden'} absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30`}
             data-testid="desktop-porthole"
             style={{
               '--ph-x': '50%',
@@ -369,7 +379,7 @@ function FunFactsPage() {
           />
         </div>
 
-        <p className="mt-2 text-[10px] md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
+        <p className="funfacts-hint mt-2 text-[10px] md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
           <span className="block sm:hidden italic">↕ pan to explore the clubhouse ↔</span>
           <span className="hidden sm:block">Each glowing shadow is a friend hiding. Tap to reveal them!</span>
         </p>

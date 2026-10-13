@@ -8,7 +8,9 @@ import { useLocation } from 'react-router-dom';
 
 const MIN_SCALE = 0.55;
 // Pages with their own landscape layout are left alone.
-const EXCLUDED = ['/', '/home', '/campus'];
+const EXCLUDED = ['/', '/home', '/campus', '/fun-facts', '/rhythm-game', '/free-play'];
+// Rooms that would rather be small than scroll (Robot Boogie needs dance room).
+const MIN_BY_ROUTE = { '/robot-boogie': 0.4 };
 const isShort = () => window.innerHeight < 520 && window.innerWidth > window.innerHeight;
 
 export default function FitStage({ children }) {
@@ -35,7 +37,8 @@ export default function FitStage({ children }) {
     const measure = () => {
       raf = 0;
       const natural = el.scrollHeight; // stage-local px (pre-transform)
-      const target = Math.max(MIN_SCALE, Math.min(1, window.innerHeight / Math.max(1, natural)));
+      const floor = MIN_BY_ROUTE[location.pathname] || MIN_SCALE;
+      const target = Math.max(floor, Math.min(1, window.innerHeight / Math.max(1, natural)));
       // damped + bounded iterations so width changes can't oscillate forever
       if (Math.abs(target - sRef.current) > 0.03 && steps.current < 4) {
         steps.current += 1;
@@ -56,7 +59,7 @@ export default function FitStage({ children }) {
   const pct = 100 / scale;
   return (
     <div data-testid="fit-stage" data-scale={scale.toFixed(2)} className="fixed inset-0 overflow-hidden" style={{ background: '#02243F' }}>
-      <div ref={ref} className="overflow-y-auto overflow-x-hidden"
+      <div ref={ref} className="fit-stage-inner overflow-y-auto overflow-x-hidden"
         style={{ width: `${pct}vw`, height: `${pct}vh`, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
         {children}
       </div>

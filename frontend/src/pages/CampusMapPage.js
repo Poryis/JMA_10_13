@@ -22,7 +22,7 @@ import { say, voiceEnabled } from '../lib/voice';
 // Shelf layout scales with the viewport: a building is ~46% of the screen
 // height (capped by width) and everything else is derived from that.
 const layoutFor = (w, h) => {
-  const bw = Math.round(Math.max(120, Math.min(h * 0.46, w * 0.55, 440)));
+  const bw = Math.round(Math.max(120, Math.min(h * (h < 520 ? 0.62 : 0.46), w * 0.55, 440)));
   const k = bw / 230;
   return { bw, k, slot: Math.round(bw * 1.3), left: Math.round(bw * 1.05), sandBack: Math.round(bw * 0.8), sandFront: Math.round(bw * 0.5), floor: Math.round(bw * 0.24), lift: k, you: Math.round(Math.max(44, Math.min(72, bw * 0.28))) };
 };
@@ -267,7 +267,7 @@ export default function CampusMapPage() {
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
-      <GameHeader title={zone.label} showHomeButton={true} backTo="/home" />
+      <GameHeader title={zone.label} showHomeButton={true} backTo="/home" keepTitle />
 
 
       {/* the user's fish — every sprite faces the way it swims */}
@@ -317,7 +317,7 @@ export default function CampusMapPage() {
             </motion.div>
           </motion.div>
           {/* street signs → previous / next street */}
-          <StreetSign zone={prevZone} dir="left" onClick={() => goStreet(prevZone, 'end')} style={{ left: 10, bottom: Math.round(sandBack * 0.6), zIndex: 2 }} />
+          <StreetSign zone={prevZone} dir="left" onClick={() => goStreet(prevZone, 'end')} style={{ left: 10, bottom: Math.round(sandBack * 0.95), zIndex: 2 }} />
           <StreetSign zone={nextZone} dir="right" onClick={() => goStreet(nextZone, 'start')} style={{ left: width - Math.round(L.bw * 0.62), bottom: floor + 4, zIndex: 11 }} />
           {/* buildings */}
           {buildings.map((b, i) => (

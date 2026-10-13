@@ -814,7 +814,7 @@ function FreePlayPage() {
       {/* Mobile vertically centers content (was justify-start which left empty space
           below the circle on phones, making it feel "bunched up" at the top).
           Desktop keeps justify-start so the layout doesn't drift around. */}
-      <main className="flex-1 flex flex-col items-center justify-center md:justify-start pt-16 md:pt-24 pb-2 px-2">
+      <main className="jam-main flex-1 flex flex-col items-center justify-center md:justify-start pt-16 md:pt-24 pb-2 px-2">
         {/* Toolbar row — wrapped in a chunky opaque card so the tab pills,
             Play-a-Song button, and Record button always stand out against
             whatever backdrop is behind (underwater sea, space, whatever).
@@ -941,7 +941,7 @@ function FreePlayPage() {
           </motion.div>
         ) : (
           <>
-            <motion.div className="w-full max-w-[1400px] flex items-center justify-center px-2 mt-6 md:mt-2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <motion.div className="jam-instrument-wrap w-full max-w-[1400px] flex items-center justify-center px-2 mt-6 md:mt-2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               {activeTab === 'bells' && <BellCircle onDown={onBellDown} onUp={onBellUp} nextGuidedNote={nextGuidedNote} registerRef={registerBellRef} />}
               {activeTab === 'xylophone' && (
                 <ResponsiveScaler nativeWidth={840} nativeHeight={440}>
@@ -972,7 +972,7 @@ function FreePlayPage() {
           </>
         )}
 
-        <motion.div className="mt-2 max-w-md text-center game-card px-3 py-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        <motion.div className="jam-controls-hint mt-2 max-w-md text-center game-card px-3 py-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
           <p className="text-xs font-medium" style={{ color: 'var(--jma-dark)' }}>
             <span className="font-bold">Controls:</span>{' '}
             {isDrumTab ? 'Q=Hi-Hat  W=Crash  E=Ride  A=Snare  S=Tom1  D=Tom2  X=Kick' : 'Bells: keys 1-8 | Drums always: Q W E A S D X'}

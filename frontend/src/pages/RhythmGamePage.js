@@ -116,6 +116,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   const [speed, setSpeed] = useState('normal');
   const [showHighScores, setShowHighScores] = useState(false);
   const [fallingNotes, setFallingNotes] = useState([]);
+  // Phone landscape: short lanes → give notes more air time so kids can see them coming.
+  const fallScale = (window.innerHeight < 520 && window.innerWidth > window.innerHeight) ? 1.35 : 1;
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
@@ -856,8 +858,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         </div>
       )}
       <AnimatePresence>{feedback && <FeedbackPopup feedback={feedback} />}</AnimatePresence>
-      <main className="relative z-10 flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
-        <div className="game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
+      <main className="rhythm-main relative z-10 flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
+        <div className="rhythm-board game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
           {/* Lanes - each lane has its instrument target at the bottom */}
           <div className="rhythm-lanes" ref={lanesRef} style={{ height: '100%' }}>
             {activeBells.map((note) => {
@@ -970,11 +972,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                   note={note.note}
                   laneIndex={note.laneIndex}
                   totalLanes={activeBells.length}
-                  speed={speedConfig.fallSpeed}
+                  speed={speedConfig.fallSpeed * fallScale}
                   isDrum={isDrumMode}
                   registerRef={registerFallingRef}
                   glowDelayMs={reachMsRef.current || 0.55 * speedConfig.fallSpeed}
-                  glowDurationMs={0.40 * speedConfig.fallSpeed}
+                  glowDurationMs={0.40 * speedConfig.fallSpeed * fallScale}
                   onMiss={handleNoteMiss}
                 />
               ))}

@@ -57,7 +57,7 @@ function SubtitleChip({ text }) {
   );
 }
 
-function GameHeader({ title, subtitle, score, streak, showHomeButton = true, backTo = null, onBack: onBackOverride = null }) {
+function GameHeader({ title, subtitle, score, streak, showHomeButton = true, backTo = null, onBack: onBackOverride = null, keepTitle = false }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -185,7 +185,7 @@ function GameHeader({ title, subtitle, score, streak, showHomeButton = true, bac
             typeof title === 'string' ? (
               <motion.div
                 key="header-title-string"
-                className="flex flex-col items-center pointer-events-auto pt-1 md:pt-0 min-w-0 flex-shrink"
+                className={`game-title-pill flex flex-col items-center pointer-events-auto pt-1 md:pt-0 min-w-0 flex-shrink ${keepTitle ? 'keep-title' : ''}`}
                 initial={{ y: -20, opacity: 0, scale: 0.85 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: -24, opacity: 0, scale: 0.85 }}
@@ -197,7 +197,7 @@ function GameHeader({ title, subtitle, score, streak, showHomeButton = true, bac
             ) : (
               <motion.div
                 key="header-title-node"
-                className="pointer-events-auto pt-1 md:pt-0"
+                className={`game-title-pill pointer-events-auto pt-1 md:pt-0 ${keepTitle ? 'keep-title' : ''}`}
                 initial={{ y: -20, opacity: 0, scale: 0.85 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: -24, opacity: 0, scale: 0.85 }}

@@ -127,10 +127,10 @@ function DriveIn({ live }) {
 function BrandMarquee({ extras }) {
   return (
     <>
-      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '32%', left: '56%', top: '18.5%', zIndex: 5 }}>
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '28%', left: '56%', top: '20%', zIndex: 5 }}>
         <motion.img src="assets/ui/jma-stylized-logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-logo"
           className="w-full object-contain" style={{ filter: 'drop-shadow(0 2px 0 rgba(2,36,63,0.35))' }}
-          animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3.4, ease: 'easeInOut' }} />
+          animate={{ scale: [0.9, 1.14, 0.9] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }} />
       </div>
       {extras && (
         <div className="absolute flex flex-col items-center pointer-events-none" style={{ right: '-7%', bottom: '6%', width: '16%', zIndex: 6 }} data-testid="plaza-pennant">
@@ -187,15 +187,17 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             </span>
           )}
           {b.hangSign && (
-            <motion.div data-testid={`campus-building-${b.id}-hang-sign`} className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none" style={{ top: `${b.hangSign.y}%`, zIndex: 5, transformOrigin: 'top center' }}
+            <div data-testid={`campus-building-${b.id}-hang-sign`} className="absolute -translate-x-1/2 pointer-events-none" style={{ left: `${b.hangSign.x ?? 50}%`, top: `${b.hangSign.y}%`, zIndex: 5 }}>
+            <motion.div className="flex flex-col items-center" style={{ transformOrigin: 'top center' }}
               animate={{ rotate: [-2.5, 2.5, -2.5] }} transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut' }}>
-              <span className="flex justify-between" style={{ width: Math.round(L.bw * b.size * 0.34) }}>
+              <span className="flex justify-between" style={{ width: Math.round(L.bw * b.size * 0.24) }}>
                 {[0, 1].map((n) => <span key={n} className="block" style={{ width: 4, height: Math.round(L.bw * b.size * 0.07), background: '#2F3A4A', border: '1.5px solid var(--jma-dark)' }} />)}
               </span>
               <span className="font-black font-display whitespace-nowrap rounded-md" style={{ fontSize: Math.round(L.bw * b.size * 0.085), color: '#FFF4D6', background: '#B8783F', border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)', padding: '2px 12px', letterSpacing: '0.05em', textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}>
                 {b.hangSign.text}
               </span>
             </motion.div>
+            </div>
           )}
           {b.custom === 'bandstand' && <BrandMarquee extras={extras} />}
           {!locked && b.custom !== 'tv' && <RoofBubbles index={index} />}

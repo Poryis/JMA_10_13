@@ -1,0 +1,49 @@
+{
+  "summary": "Frontend-only testing of Charlie's one-sentence how-to voice chain across 10 game menus + 2 sub-modes (Snail-or-Cheetah, Name-That-Note Place-It) + 3 Who's-Got-The-Rhythm modes. All auto-chains fire the expected host tagline then exactly ONE Charlie how-to request. All 13 howto-voice-* speaker buttons are present/visible and clicking them does NOT throw and does NOT start the game. Dynamic sub-mode buttons (howto-voice-namenote-place, howto-voice-boom-copy/match/trail, howto-voice-tempo) appear and fire their expected mp3 requests. Mobile layout at 844x390 fits (ear-trainer, name-that-note). Game-start regression passes.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "observations": [
+    "Host tagline mp3 is requested TWICE on each menu mount (React 18 StrictMode double-invokes useEffect in dev). Chaining logic correctly cancels the first closure so Charlie's how-to still fires exactly ONCE, which matches the spec. Not a bug, but worth noting for prod.",
+    "Speaker-button clicks after the auto-chain fire NO new network request because voice.js has already added the mp3 id to the `missing` set (file 404). This matches the documented 'remembered as missing and skipped silently' behavior. Click handler does not throw, stopPropagation works (game does not start).",
+    "404s for /assets/voice/*.mp3 are expected (no recordings yet) — not reported as bugs."
+  ],
+  "test_results": {
+    "auto_chain_rhythm_game": "PASS (jazzy.tag.jukebox + 1x charlie.howto.jukebox)",
+    "auto_chain_simon_says": "PASS (stew.tag.kazoo + 1x charlie.howto.kazoo)",
+    "auto_chain_ear_trainer": "PASS (doctor.tag.earquest + 1x charlie.howto.earquest)",
+    "auto_chain_note_match": "PASS (finn.tag.notematch + 1x charlie.howto.notematch)",
+    "auto_chain_detective": "PASS (doctor.tag.detective + 1x charlie.howto.detective)",
+    "auto_chain_sight_reading": "PASS (finn.tag.sightread + 1x charlie.howto.sightread)",
+    "auto_chain_name_that_note": "PASS (finn.tag.namenote + 1x charlie.howto.namenote.name)",
+    "auto_chain_shred_legend": "PASS (charlie.tag.shred + 1x charlie.howto.shred)",
+    "auto_chain_robot_boogie": "PASS (chunk.tag.robot + 1x charlie.howto.robot)",
+    "auto_chain_fun_facts": "PASS (stew.tag.funfacts + 1x charlie.howto.funfacts)",
+    "speaker_buttons_present_all_10_routes": "PASS (jukebox, kazoo, earquest, notematch, detective, sightread, namenote-name, shred, robot, funfacts) — visible, click does not throw",
+    "speaker_click_does_not_start_game": "PASS (note-match menu still visible after speaker click)",
+    "ntn_mode_place_dynamic_button": "PASS (howto-voice-namenote-place appears + charlie.howto.namenote.place.mp3 fires)",
+    "snail_or_cheetah_tempo": "PASS (howto-voice-tempo present + charlie.howto.tempo.mp3 fires)",
+    "boom_garden_parrot_percussion_copy": "PASS (boom-how-to-play overlay + howto-voice-boom-copy + charlie.howto.boom.copy.mp3)",
+    "boom_garden_beat_finder_match": "PASS (overlay + howto-voice-boom-match + charlie.howto.boom.match.mp3)",
+    "boom_garden_rhythm_run_trail": "PASS (overlay + howto-voice-boom-trail + charlie.howto.boom.trail.mp3)",
+    "layout_844x390_ear_trainer": "PASS (no overlap, speaker btn at x=388 doesn't collide with difficulty btns at x=430; scrollHeight==innerHeight==390)",
+    "layout_844x390_name_that_note": "PASS (speaker btn at x=389 doesn't overlap mode cards at x=57-224; fits viewport)",
+    "regression_ear_difficulty_beginner": "PASS (menu transitions to game)",
+    "regression_note_match_difficulty_easy": "PASS (menu transitions to game)"
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "useVoiceTagline.js effect runs twice under React.StrictMode causing the tagline mp3 to be requested twice. The chaining still produces only one how-to call (correct per spec), but if you want to avoid the double tag request add an eslint-disable + a mounted-ref guard, or remove StrictMode in production builds.",
+    "voice.js: `missing` is module-scoped and never resets within a session — speaker buttons therefore produce zero audible playback once the host tagline/how-to has 404'd. Fine for now (files absent) but when real mp3s land, double-check cache behavior."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All Charlie how-to voice chaining & speaker buttons verified across 10 main menus + sub-modes (NTN place, Snail-or-Cheetah, Boom Garden copy/match/trail). voice.js `missing` cache suppresses repeat 404s, so speaker-button clicks AFTER the auto-chain fire no network request — verify silently (click should not throw) rather than expecting a request. For Boom Garden fresh reloads sometimes keep the how-to overlay open; close via 'Back to modes' before clicking another mode tile."
+}

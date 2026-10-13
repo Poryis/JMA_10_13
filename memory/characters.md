@@ -13,3 +13,4 @@ Scripts: Jelly Music Academy (educational series) and The Jelly of the Month Clu
 
 ## Jun 2026 note
 - Dressing Room + voice lines now have ONE shark: `finn` (Sharky's outfits Hip-Hop/Snorkel/Zoot and his Note Match lines live under Finn). Do not reintroduce a separate `sharky` id.
+- Wording: call the band "Club members" (not "Jellies") in voice lines.

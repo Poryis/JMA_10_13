@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { Play, RotateCcw, ChevronLeft, Star, Flame } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import Confetti from '../components/Confetti';
@@ -804,6 +805,7 @@ export default function ShredLegendPage() {
         {/* RESULT */}
         {screen === 'result' && (
           <div className="flex-1 flex items-center justify-center w-full">
+            <FitBox className="w-full max-w-md">
             <motion.div
               data-testid="shred-result-card"
               className="max-w-md w-full text-center rounded-3xl px-6 py-7"
@@ -877,6 +879,7 @@ export default function ShredLegendPage() {
                 </button>
               </div>
             </motion.div>
+            </FitBox>
           </div>
         )}
       </main>

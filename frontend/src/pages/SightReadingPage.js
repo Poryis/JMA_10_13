@@ -15,6 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, RotateCcw, Trophy, Play, Volume2, Check } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
@@ -283,7 +284,7 @@ export default function SightReadingPage() {
     return (
       <div
         data-testid="sight-reading-menu"
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         style={{
           backgroundImage: 'url(assets/backgrounds/wintery-sunburst1.png)',
           backgroundSize: 'cover',
@@ -294,21 +295,21 @@ export default function SightReadingPage() {
         <RoomCharacters room="sight-reading" />
 
         <motion.h1
-          className="text-3xl md:text-5xl font-black mb-2 text-center font-display uppercase"
+          className="intro-head text-3xl md:text-5xl font-black mb-2 text-center font-display uppercase"
           style={{ color: 'var(--jma-dark)' }}
           initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         >
           SIGHT-READING SPRINT
         </motion.h1>
         <motion.p
-          className="text-base md:text-lg font-bold mb-4 text-center"
+          className="intro-sub text-base md:text-lg font-bold mb-4 text-center"
           style={{ color: 'var(--jma-dark)' }}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
         >
           Read each card. Play it back fast. <b>5 cards per run.</b>
         </motion.p>
 
-        <motion.div className="game-card p-5 mb-4 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div className="intro-card game-card p-5 mb-4 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
           <BookOpen className="w-10 h-10 mx-auto mb-2" style={{ color: '#34A853' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>
@@ -320,7 +321,7 @@ export default function SightReadingPage() {
           </p>
         </motion.div>
 
-        <div className="grid gap-2 w-full max-w-md mb-2">
+        <div className="intro-levels grid gap-2 w-full max-w-md mb-2">
           {Object.entries(LEVELS).map(([key, lvl], idx) => (
             <motion.button
               key={key}
@@ -525,6 +526,7 @@ export default function SightReadingPage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             >
               <Confetti count={48} size={420} mega={isNewBest} />
+              <FitBox className="w-full max-w-md">
               <motion.div
                 className="bg-white rounded-3xl border-4 p-6 max-w-md w-full text-center"
                 style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 10px 0 0 var(--jma-dark)' }}
@@ -582,6 +584,7 @@ export default function SightReadingPage() {
                   </button>
                 </div>
               </motion.div>
+              </FitBox>
             </motion.div>
           )}
         </AnimatePresence>

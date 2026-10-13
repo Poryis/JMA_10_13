@@ -17,6 +17,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { ArrowLeft, Volume2, RotateCcw, Sparkles } from 'lucide-react';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
 import Confetti from '../components/Confetti';
@@ -135,7 +136,7 @@ function ModeTile({ mode, index, onPick }) {
       whileTap={{ scale: 0.97 }}
     >
       <div
-        className="relative rounded-3xl overflow-hidden flex flex-col"
+        className="bg-mode-tile relative rounded-3xl overflow-hidden flex flex-col"
         style={{
           border: '5px solid var(--jma-dark)',
           boxShadow: `0 10px 0 0 ${mode.accent}, 0 13px 0 0 var(--jma-dark)`,
@@ -1042,8 +1043,8 @@ export default function BoomGardenPage() {
           }}
         />
         <GameHeader showHomeButton={true} />
-        <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
-          <div className="text-center mb-4 md:mb-6">
+        <main className="bg-picker-main flex-1 pt-20 md:pt-24 lg:pt-32 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
+          <div className="bg-picker-head text-center mb-4 md:mb-6">
             <h1
               className="font-black font-display leading-none uppercase block"
               style={{
@@ -1070,11 +1071,12 @@ export default function BoomGardenPage() {
               Pick your jam
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 flex-1">
+          <div className="bg-picker-tiles grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 flex-1">
             {MODES.map((m, i) => (
               <ModeTile key={m.id} mode={m} index={i} onPick={enterMode} />
             ))}
           </div>
+          <div className="bg-picker-controls">
           {/* Difficulty selector */}
           <div className="mt-5 md:mt-7">
             <div className="text-center text-[10px] md:text-xs uppercase font-black opacity-60 mb-2" style={{ color: 'var(--jma-dark)' }}>
@@ -1136,10 +1138,11 @@ export default function BoomGardenPage() {
               ))}
             </div>
           </div>
+          </div>
 
           {/* Session-length blurb — sets expectations so the kid knows the
               session has a defined end. */}
-          <div className="text-center mt-3 text-[10px] md:text-xs font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
+          <div className="bg-picker-blurb text-center mt-3 text-[10px] md:text-xs font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
             {ROUNDS_PER_SESSION} rounds per session — beat your high score!
           </div>
         </main>
@@ -1631,6 +1634,7 @@ export default function BoomGardenPage() {
               className="fixed inset-0 z-50 flex items-center justify-center px-4"
               style={{ backgroundColor: 'rgba(10,37,64,0.55)' }}
             >
+              <FitBox className="w-full max-w-sm">
               <motion.div
                 key="session-summary-card"
                 initial={{ y: 40, opacity: 0, scale: 0.85 }}
@@ -1695,6 +1699,7 @@ export default function BoomGardenPage() {
                   </button>
                 </div>
               </motion.div>
+              </FitBox>
             </motion.div>
           )}
         </AnimatePresence>

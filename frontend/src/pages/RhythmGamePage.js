@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate } from 'react-router-dom';
 import { Play, Trophy, Zap, Drum, Music2, Star, Sparkles, Flame, Leaf } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
@@ -460,7 +461,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     else { rating = 'KEEP GOING!'; ratingColor = '#FF9500'; }
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative overflow-hidden"
+      <div className="jj-results-page min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative overflow-hidden"
            data-testid="rhythm-results" style={{ backgroundColor: '#2E1D5C' }}>
         {/* Same 3-state tile floor cycle as the playing screen — keeps
             the after-song moment feeling like a continuation of the
@@ -484,7 +485,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
             colorful, moving disco floor below. */}
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none"
              style={{ zIndex: 1, background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 90%)' }} />
-        <div className="relative z-10 flex flex-col items-center">
+        <FitBox className="jj-results-box relative z-10 w-full max-w-sm">
+        <div className="jj-results relative z-10 flex flex-col items-center">
+        <div className="jj-results-hero flex flex-col items-center">
         <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring' }} className="mb-4">
           <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-[var(--jma-dark)]" style={{ backgroundColor: ratingColor }}>
             <Trophy className="w-12 h-12 text-white" />
@@ -495,7 +498,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
             NEW HIGH SCORE!
           </motion.div>
         )}
-        <p className="text-lg mb-4 font-display" style={{ color: 'var(--jma-dark)' }}>{selectedSong.name} - {speedConfig.label}</p>
+        <p className="text-lg mb-4 font-display font-bold" style={{ color: 'white', textShadow: '0 2px 0 rgba(0,0,0,0.5)' }}>{selectedSong.name} - {speedConfig.label}</p>
+        </div>
+        <div className="jj-results-body flex flex-col items-center">
         <div className="game-card p-6 w-full max-w-sm mb-6">
           <div className="text-center mb-4">
             <p className="text-sm uppercase opacity-70">Score</p>
@@ -522,6 +527,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           <motion.button data-testid="home-button-results" className="chunky-btn bg-white px-6 py-3 font-bold" style={{ color: 'var(--jma-dark)' }} onClick={() => navigate('/')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Home</motion.button>
         </div>
         </div>
+        </div>
+        </FitBox>
       </div>
     );
   }
@@ -531,7 +538,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     const topScores = getTopScores(5);
     return (
       <div
-        className="min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative overflow-x-hidden"
+        className="jj-menu min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative overflow-x-hidden"
         data-testid="rhythm-game-menu"
         style={{
           backgroundImage: 'url(assets/backgrounds/jelly-jukebox-scene.png)',
@@ -555,7 +562,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         {/* Title block — JELLY JUKEBOX, disco-themed. Rainbow glow, chunky
             stroke, big NES-cartridge presence. */}
         <motion.div
-          className="text-center mb-3"
+          className="jj-menu-head text-center mb-3"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
@@ -579,7 +586,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         </motion.div>
 
         {/* Speed selector — chunky pill row with proper "Speed:" label */}
-        <div className="flex items-center gap-2 mb-3 flex-wrap justify-center">
+        <div className="jj-menu-speed flex items-center gap-2 mb-3 flex-wrap justify-center">
           <span className="text-[10px] md:text-xs uppercase font-black opacity-60 mr-1" style={{ color: 'var(--jma-dark)' }}>
             Speed
           </span>
@@ -610,7 +617,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         </div>
 
         {/* Category filter chips */}
-        <div className="flex gap-1.5 mb-3 flex-wrap justify-center max-w-2xl">
+        <div className="jj-menu-cats flex gap-1.5 mb-3 flex-wrap justify-center max-w-2xl">
           {categories.map((cat) => {
             const style = CATEGORY_STYLE[cat];
             const Icon = style.icon;
@@ -638,7 +645,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         </div>
 
         {/* Song grid — polished tiles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full max-w-3xl mb-3 max-h-[55vh] overflow-y-auto px-1 pb-2">
+        <div className="jj-menu-songs grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full max-w-3xl mb-3 max-h-[55vh] overflow-y-auto px-1 pb-2">
           {filteredSongs.map((song) => {
             const highScore = getHighScore(song.id, speed);
             const isDrums = song.instrumentMode === 'drums';

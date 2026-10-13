@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, Volume2, Trophy, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
@@ -448,7 +449,7 @@ export default function DetectivePage() {
     return (
       <div
         data-testid="detective-menu"
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         style={{
           backgroundImage: 'url(assets/backgrounds/detective-room.jpg)',
           backgroundSize: 'cover',
@@ -458,7 +459,7 @@ export default function DetectivePage() {
         <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
         <RoomCharacters room="detective" />
 
-        <motion.div className="text-center mb-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+        <motion.div className="intro-head text-center mb-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <h1
             className="text-3xl md:text-5xl font-black font-display uppercase"
           >
@@ -470,7 +471,7 @@ export default function DetectivePage() {
         </motion.div>
 
         <motion.div
-          className="game-card p-5 mb-4 max-w-md text-center relative overflow-visible"
+          className="intro-card game-card p-5 mb-4 max-w-md text-center relative overflow-visible"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.15 }}
@@ -496,7 +497,7 @@ export default function DetectivePage() {
           </p>
         </motion.div>
 
-        <div className="grid gap-2 w-full max-w-md">
+        <div className="intro-levels grid gap-2 w-full max-w-md">
           {/* Main difficulty picks — standard Easy / Medium / Hard */}
           {Object.entries(LEVELS).filter(([k]) => k !== 'restquiz').map(([key, lvl], idx) => {
             const best = bestRecords[key];
@@ -998,6 +999,7 @@ export default function DetectivePage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             >
               {gameState === 'win' && <Confetti count={48} size={420} mega={bestStreak >= ROUNDS_PER_RUN} />}
+              <FitBox className="w-full max-w-md">
               <motion.div
                 className="bg-white rounded-3xl border-4 p-6 max-w-md w-full text-center"
                 style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 10px 0 0 var(--jma-dark)' }}
@@ -1052,6 +1054,7 @@ export default function DetectivePage() {
                   </button>
                 </div>
               </motion.div>
+              </FitBox>
             </motion.div>
           )}
         </AnimatePresence>

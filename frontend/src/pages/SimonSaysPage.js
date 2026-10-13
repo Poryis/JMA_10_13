@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Play, Eye, RotateCcw } from 'lucide-react';
 import { KazoosRow, KAZOOS } from '../components/Kazoos';
@@ -338,7 +339,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   if (gameState === 'ready') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative" 
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative" 
         data-testid="simon-says-menu"
         style={{
           backgroundImage: 'url(assets/backgrounds/underwater.png)',
@@ -350,7 +351,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         <RoomCharacters room="kazoo-room" />
 
         <motion.h1
-          className="text-3xl md:text-5xl font-black mb-4 text-center uppercase"
+          className="intro-head text-3xl md:text-5xl font-black mb-4 text-center uppercase"
           style={{
             color: 'var(--jma-dark)',
             fontFamily: "'Fredoka', cursive",
@@ -363,7 +364,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         </motion.h1>
 
         <motion.div
-          className="game-card p-6 mb-8 max-w-md text-center"
+          className="intro-card game-card p-6 mb-8 max-w-md text-center"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2 }}
@@ -381,7 +382,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
         <motion.button
           data-testid="start-simon-button"
-          className="chunky-btn bg-[var(--jma-blue)] text-white px-8 py-4 flex items-center gap-3"
+          className="intro-extra chunky-btn bg-[var(--jma-blue)] text-white px-8 py-4 flex items-center gap-3"
           onClick={() => startGame(difficulty)}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -396,7 +397,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         {/* Difficulty picker — standardized Easy / Medium / Hard tiles
             matching every other game in the app. Sets the starting
             pattern length so kids can jump ahead if they want a challenge. */}
-        <div className="mt-6 flex flex-col items-center gap-2 w-full max-w-md">
+        <div className="intro-levels mt-6 flex flex-col items-center gap-2 w-full max-w-md">
           <div className="text-[10px] font-black uppercase tracking-wider opacity-60" style={{ color: 'var(--jma-dark)' }}>
             Difficulty
           </div>
@@ -424,7 +425,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         <motion.img
           src="assets/stew/stew-neutral.png"
           alt="Stew"
-          className="mt-8 w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl"
+          className="intro-under mt-8 w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: [0, -10, 0], opacity: 1 }}
           transition={{ y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }, opacity: { delay: 0.5 } }}
@@ -605,6 +606,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             style={{ backgroundColor: 'rgba(10,37,64,0.55)', backdropFilter: 'blur(4px)' }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           >
+            <FitBox className="w-full max-w-sm">
             <motion.div
               className="bg-white rounded-3xl border-4 p-6 max-w-sm w-full text-center relative"
               style={{ borderColor: 'var(--jma-blue)', boxShadow: '0 10px 0 0 var(--jma-blue)' }}
@@ -631,6 +633,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
                 </button>
               </div>
             </motion.div>
+            </FitBox>
           </motion.div>
       )}
 

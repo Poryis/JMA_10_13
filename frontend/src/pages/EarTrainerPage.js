@@ -199,18 +199,18 @@ function EarTrainerPage() {
   if (gameState === 'menu') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         data-testid="ear-trainer-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
         <RoomCharacters room="ear-quest" />
 
-        <motion.h1 className="text-3xl md:text-5xl font-black mb-4 text-center font-display uppercase" style={{ color: 'var(--jma-dark)' }} initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+        <motion.h1 className="intro-head text-3xl md:text-5xl font-black mb-4 text-center font-display uppercase" style={{ color: 'var(--jma-dark)' }} initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           EAR QUEST
         </motion.h1>
 
-        <motion.div className="game-card p-6 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div className="intro-card game-card p-6 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
           <Ear className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--jma-blue)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-base" style={{ color: 'var(--jma-dark)' }}>
@@ -223,7 +223,7 @@ function EarTrainerPage() {
 
         {/* Stats */}
         {stats.totalAttempts > 0 && (
-          <motion.div className="game-card p-4 mb-4 max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <motion.div className="intro-under game-card p-4 mb-4 max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             <div className="flex justify-around text-center">
               <div>
                 <p className="text-xl font-bold" style={{ color: 'var(--jma-green)' }}>{stats.totalCorrect}</p>
@@ -244,7 +244,7 @@ function EarTrainerPage() {
         )}
 
         {/* Difficulty — tapping a level instantly starts the game */}
-        <div className="grid gap-2 w-full max-w-md mb-2">
+        <div className="intro-levels grid gap-2 w-full max-w-md mb-2">
           {Object.entries(LEVELS).map(([key, lvl], idx) => (
             <motion.button key={key} data-testid={`ear-difficulty-${key}`}
               className={`level-card p-3 text-left ${difficulty === key ? 'ring-4 ring-[var(--jma-blue)]' : ''}`}

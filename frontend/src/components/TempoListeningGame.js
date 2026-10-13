@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from './FitBox';
 import { Play, RotateCcw, Volume2, Rabbit, Turtle } from 'lucide-react';
 import Confetti from './Confetti';
 import useAudio from '../hooks/useAudio';
@@ -343,6 +344,7 @@ export default function TempoListeningGame({ onExit }) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <Confetti count={48} size={420} mega={isNewBest} />
+            <FitBox className="w-full max-w-md">
             <motion.div
               className="bg-white rounded-3xl border-4 p-6 max-w-md w-full text-center"
               style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 10px 0 0 var(--jma-dark)' }}
@@ -369,6 +371,7 @@ export default function TempoListeningGame({ onExit }) {
                 </button>
               </div>
             </motion.div>
+            </FitBox>
           </motion.div>
         )}
       </AnimatePresence>

@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Trophy, Clock, RotateCcw, Sparkles, ChevronUp } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
@@ -211,7 +212,7 @@ export default function NoteMatchPage() {
   if (gameState === 'menu') {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         data-testid="note-match-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
@@ -219,7 +220,7 @@ export default function NoteMatchPage() {
         <RoomCharacters room="note-match" />
 
         <motion.h1
-          className="text-3xl md:text-5xl font-black mb-2 text-center font-display uppercase"
+          className="intro-head text-3xl md:text-5xl font-black mb-2 text-center font-display uppercase"
           style={{ color: 'var(--jma-dark)' }}
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -227,7 +228,7 @@ export default function NoteMatchPage() {
           NOTE MATCH
         </motion.h1>
         <motion.p
-          className="text-base md:text-lg font-bold mb-4 text-center"
+          className="intro-sub text-base md:text-lg font-bold mb-4 text-center"
           style={{ color: 'var(--jma-dark)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -236,7 +237,7 @@ export default function NoteMatchPage() {
           Flip the bells. Match the sounds!
         </motion.p>
 
-        <motion.div className="game-card p-5 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div className="intro-card game-card p-5 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
           <Sparkles className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--jma-purple)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>
@@ -246,7 +247,7 @@ export default function NoteMatchPage() {
           </p>
         </motion.div>
 
-        <div className="grid gap-2 w-full max-w-md mb-2">
+        <div className="intro-levels grid gap-2 w-full max-w-md mb-2">
           {Object.entries(LEVELS).map(([key, lvl], idx) => (
             <motion.button
               key={key}
@@ -433,6 +434,7 @@ export default function NoteMatchPage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             >
               <Confetti count={48} size={420} mega={isNewBest} />
+              <FitBox className="w-full max-w-md">
               <motion.div
                 className="bg-white rounded-3xl border-4 p-6 max-w-md w-full text-center"
                 style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 10px 0 0 var(--jma-dark)' }}
@@ -475,6 +477,7 @@ export default function NoteMatchPage() {
                   </button>
                 </div>
               </motion.div>
+              </FitBox>
             </motion.div>
           )}
         </AnimatePresence>

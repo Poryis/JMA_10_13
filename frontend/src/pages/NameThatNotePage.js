@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FitBox from '../components/FitBox';
 import { useNavigate } from 'react-router-dom';
 import { Music2, MapPin, Clock, RotateCcw, Play, Volume2, Check, Lightbulb, Star, X } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
@@ -569,26 +570,26 @@ export default function NameThatNotePage() {
     return (
       <div
         data-testid="name-that-note-menu"
-        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
+        className="game-intro min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         style={{ backgroundImage: 'url(assets/backgrounds/chalkboard.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
         <RoomCharacters room="name-that-note" />
 
         <motion.h1
-          className="text-3xl md:text-5xl font-black mb-1 text-center font-display uppercase"
+          className="intro-head text-3xl md:text-5xl font-black mb-1 text-center font-display uppercase"
           initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         >
           NAME THAT NOTE
         </motion.h1>
         <motion.p
-          className="text-sm md:text-lg font-bold mb-4 text-center"
+          className="intro-sub text-sm md:text-lg font-bold mb-4 text-center"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
         >
           Finn&apos;s staff school — learn where every note lives.
         </motion.p>
 
-        <div className="grid grid-cols-2 gap-2 w-full max-w-md mb-3">
+        <div className="intro-card grid grid-cols-2 gap-2 w-full max-w-md mb-3">
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -611,7 +612,7 @@ export default function NameThatNotePage() {
           ))}
         </div>
 
-        <div className="game-card px-3 py-2 mb-3 w-full max-w-md flex flex-wrap items-center justify-between gap-2">
+        <div className="intro-under game-card px-3 py-2 mb-3 w-full max-w-md flex flex-wrap items-center justify-between gap-2">
           <span className="text-[11px] md:text-xs font-black uppercase tracking-wide opacity-70" style={{ color: 'var(--jma-dark)' }}>
             Answer with
           </span>
@@ -635,7 +636,7 @@ export default function NameThatNotePage() {
           </div>
         </div>
 
-        <div className="grid gap-2 w-full max-w-md">
+        <div className="intro-levels grid gap-2 w-full max-w-md">
           {Object.entries(LEVELS).map(([key, lvl], idx) => (
             <motion.button
               key={key}
@@ -906,6 +907,7 @@ export default function NameThatNotePage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             >
               {stars >= 2 && <Confetti count={48} size={420} mega={stars === 3 || isNewBest} />}
+              <FitBox className="w-full max-w-md">
               <motion.div
                 className="bg-white rounded-3xl border-4 p-5 md:p-6 max-w-md w-full text-center relative"
                 style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 10px 0 0 var(--jma-dark)' }}
@@ -956,6 +958,7 @@ export default function NameThatNotePage() {
                   </button>
                 </div>
               </motion.div>
+              </FitBox>
             </motion.div>
           )}
         </AnimatePresence>

@@ -847,16 +847,16 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}
       <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-      <div className="fixed top-20 left-0 right-0 px-4 py-1 z-40 flex justify-center">
+      <div className="rhythm-hud fixed top-20 left-0 right-0 px-4 py-1 z-40 flex flex-col items-center gap-1" data-testid="rhythm-hud">
         <ProgressBar current={currentNoteIndex} total={selectedSong.notes.length} color={speedConfig.color} />
+        {selectedSong.mode && selectedSong.mode !== 'C-major' && (
+          <div className="rhythm-mode-chip bg-[var(--jma-yellow)] border-2 border-[var(--jma-dark)] rounded-full px-3 py-0.5 shadow-[0_2px_0_0_var(--jma-dark)] whitespace-nowrap" data-testid="rhythm-mode-chip">
+            <span className="text-xs font-bold font-display" style={{ color: 'var(--jma-dark)' }}>
+              {selectedSong.mode === 'G-mixolydian' ? 'G Mode - Start on So (5)' : 'A Minor - Start on La (6)'}
+            </span>
+          </div>
+        )}
       </div>
-      {selectedSong.mode && selectedSong.mode !== 'C-major' && (
-        <div className="fixed top-28 left-1/2 -translate-x-1/2 z-40 bg-[var(--jma-yellow)] border-2 border-[var(--jma-dark)] rounded-full px-3 py-0.5 shadow-[0_2px_0_0_var(--jma-dark)]">
-          <span className="text-xs font-bold font-display" style={{ color: 'var(--jma-dark)' }}>
-            {selectedSong.mode === 'G-mixolydian' ? 'G Mode - Start on So (5)' : 'A Minor - Start on La (6)'}
-          </span>
-        </div>
-      )}
       <AnimatePresence>{feedback && <FeedbackPopup feedback={feedback} />}</AnimatePresence>
       <main className="rhythm-main relative z-10 flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
         <div className="rhythm-board game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
@@ -924,7 +924,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                     onPointerUp={doUp}
                     onPointerLeave={doUp}
                     onPointerCancel={doUp}
-                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center bg-transparent border-0 p-0 z-10 bottom-24 md:bottom-5"
+                    className="rhythm-bell-target absolute left-1/2 -translate-x-1/2 flex flex-col items-center bg-transparent border-0 p-0 z-10 bottom-24 md:bottom-5"
                     style={{ touchAction: 'none' }}
                   >
                     <div className="relative">
@@ -954,7 +954,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                       <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-white border border-[var(--jma-dark)] text-sm font-bold flex items-center justify-center pointer-events-none"
                         style={{ color: tintColor }}>{keyHint}</span>
                     </div>
-                    <span className="text-sm md:text-base font-bold pointer-events-none mt-1" style={{ color: tintColor }}>
+                    <span className="rhythm-bell-label text-sm md:text-base font-bold pointer-events-none mt-1" style={{ color: tintColor }}>
                       {labelText}
                     </span>
                   </button>

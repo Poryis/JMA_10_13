@@ -67,6 +67,32 @@ const nextPentaFreq = (idx) => (idx < NOTES.length - 1 ? NOTES[idx + 1].freq : H
 // Sample cache + voice
 // ---------------------------------------------------------------
 const bufferCache = new Map();
+const loopCache = new Map();
+// Held notes loop a short slice of the sample's tail so a finger that stays
+// down keeps the string singing instead of dying with the 3 s recording.
+const MAX_HOLD_SEC = 14;
+
+const rms = (data, from, to) => {
+  let sum = 0;
+  for (let i = from; i < to; i++) sum += data[i] * data[i];
+  return Math.sqrt(sum / Math.max(1, to - from));
+};
+const snapToRisingZero = (data, idx) => {
+  const lim = Math.min(data.length - 1, idx + 2000);
+  for (let i = Math.max(1, idx); i < lim; i++) if (data[i - 1] <= 0 && data[i] > 0) return i;
+  return idx;
+};
+function analyzeLoop(buffer) {
+  const data = buffer.getChannelData(0);
+  const sr = buffer.sampleRate;
+  const dur = buffer.duration;
+  const end = snapToRisingZero(data, Math.floor((dur - 0.25) * sr));
+  const start = snapToRisingZero(data, Math.floor((dur - 0.85) * sr));
+  const attack = rms(data, Math.floor(0.08 * sr), Math.floor(0.45 * sr));
+  const tail = rms(data, start, end);
+  const makeup = Math.min(2.4, Math.max(1, tail > 0 ? (attack / tail) * 0.55 : 1));
+  return { loopStart: start / sr, loopEnd: end / sr, makeup };
+}
 
 async function loadSample(ctx, tone, file) {
   const cacheKey = `${tone}:${file}`;
@@ -75,6 +101,7 @@ async function loadSample(ctx, tone, file) {
     const resp = await fetch(`assets/audio/guitar-${tone}/${file}`);
     const audioBuffer = await ctx.decodeAudioData(await resp.arrayBuffer());
     bufferCache.set(cacheKey, audioBuffer);
+    loopCache.set(cacheKey, analyzeLoop(audioBuffer));
     return audioBuffer;
   } catch (err) {
     console.warn('[guitar] failed to load', tone, file, err);
@@ -82,25 +109,31 @@ async function loadSample(ctx, tone, file) {
   }
 }
 
-function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, ring = 3.5, vibrato = false }) {
+function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, vibrato = true }) {
   const s = nearestSample(freq);
-  const buffer = bufferCache.get(`${tone}:${s.file}`);
+  const key = `${tone}:${s.file}`;
+  const buffer = bufferCache.get(key);
   if (!buffer) return null;
+  const loop = loopCache.get(key);
   const t0 = ctx.currentTime + startAt;
   const src = ctx.createBufferSource();
   src.buffer = buffer;
   src.playbackRate.value = freq / s.freq;
+  if (loop) { src.loop = true; src.loopStart = loop.loopStart; src.loopEnd = loop.loopEnd; }
   const g = ctx.createGain();
   g.gain.setValueAtTime(0, t0);
   g.gain.linearRampToValueAtTime(level, t0 + 0.003);
-  if (ring < 3.5) {
-    g.gain.setValueAtTime(level, t0 + 0.05);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + ring);
-  }
+  // Sustain shape: gentle makeup as the recording decays into the loop,
+  // then a slow natural fade so an endless hold still dies away.
+  const loopAt = t0 + (loop ? loop.loopEnd : 2.9);
+  g.gain.setValueAtTime(level, t0 + 0.6);
+  g.gain.linearRampToValueAtTime(level * (loop ? loop.makeup : 1), loopAt);
+  g.gain.exponentialRampToValueAtTime(level * 0.08, t0 + MAX_HOLD_SEC);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + MAX_HOLD_SEC + 0.4);
   src.connect(g);
   g.connect(destination);
-  // Gentle vibrato that blooms in over ~0.5s, so only SUSTAINED notes get a
-  // noticeable wobble (quick taps end before it ramps up).
+  // Vibrato blooms in after ~1 s so only SUSTAINED notes get the wobble
+  // (quick taps and strums end before it ramps up).
   let lfo = null;
   if (vibrato) {
     try {
@@ -109,15 +142,16 @@ function makeVoice({ ctx, destination, tone, freq, startAt = 0, level = 1.0, rin
       lfo.frequency.value = 5.3;
       const depth = ctx.createGain();
       depth.gain.setValueAtTime(0, t0);
-      depth.gain.linearRampToValueAtTime(20, t0 + 0.5);  // up to ±20 cents
+      depth.gain.setValueAtTime(0, t0 + 0.9);
+      depth.gain.linearRampToValueAtTime(14, t0 + 1.9);  // up to ±14 cents
       lfo.connect(depth);
       depth.connect(src.detune);
       lfo.start(t0);
-      lfo.stop(t0 + ring + 0.05);
+      lfo.stop(t0 + MAX_HOLD_SEC + 0.5);
     } catch (_) { lfo = null; }
   }
   src.start(t0);
-  src.stop(t0 + ring + 0.05);
+  src.stop(t0 + MAX_HOLD_SEC + 0.5);
   return {
     src,
     sampleFreq: s.freq,
@@ -360,7 +394,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
     const id = `note-${idx}`;
     const prev = activeVoicesRef.current.get(id);
     if (prev) prev.forEach(v => v.release());
-    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90, ring: 4.6 });
+    const voice = makeVoice({ ctx: graph.ctx, destination: graph.masterNode, tone: toneRef.current, freq: note.freq, level: 0.90 });
     if (!voice) return;
     activeVoicesRef.current.set(id, [voice]);
     setBendTarget(id, { voice, baseFreq: note.freq, nextFreq: nextPentaFreq(idx) });
@@ -415,7 +449,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
       if (onPlay) onPlay({ type: 'guitar-chord', chord: chord.id });
     } else {
       const note = NOTES[zone];
-      const v = makeVoice({ ...common, freq: note.freq, level: 0.85, ring: 4.2 });
+      const v = makeVoice({ ...common, freq: note.freq, level: 0.85 });
       guitarVoicesRef.current = v ? [v] : [];
       label = note.label;
       heldId = `note-${zone}`;

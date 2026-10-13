@@ -1,0 +1,35 @@
+{
+  "summary": "Verified both requested fixes on frontend. (1) Jelly Jukebox phone-landscape (844x390): rhythm-hud (progress bar + mode chip) sits in header strip at top=18px, bottom=48px — does NOT overlap .rhythm-lanes (top=60px). Mode chip renders inline beside the progress bar for A-minor song. Bell solfege labels are display:none, bell targets sit 6px above lanes bottom, lane-target dashed zone (y=304, h=70) wraps the bell. Fullscreen button repositioned to top-right (y=16) away from lane 8. (2) Desktop regression (1280x800): rhythm-hud is below the header (y=80), mode chip appears UNDER the progress bar (y=112), labels display:block, bells still at bottom-5. Tapping bells registers hits (score went 0→50 after a tap). (3) Guitar sustain (Jam Session desktop): instrumented AudioContext.createBufferSource — holding guitar-note-3 for 5s produces a buffer source with loop=true, loopStart=2.279, loopEnd=2.880, scheduled stop at currentTime+14.5s (MAX_HOLD_SEC + 0.5). On pointerup the stop is rescheduled to +0.15s (quick fade) — exactly matching makeVoice/release in GuitarInstrument.js. Chord Am hold yields 3 looped sources (power-chord) each with stopFromNow≈14.5s. Strings pointer-hold works. No page errors, no 'loopStart' / 'setValueAtTime' exceptions during any of the holds.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "RhythmGamePage (all viewports)", "issues": ["Console warning: 'Encountered two children with the same key' when MISS popups stack in AnimatePresence — pre-existing, not related to this iteration's fixes but worth cleaning the key generation in FeedbackPopup/MISS animations."]},
+      {"screen": "Jam Session - Guitar", "issues": ["Console warning: 'An empty string (\"\") was passed to the src attribute' — a child <img> is being rendered with src=\"\" (likely a frame before assets loaded). Non-blocking but should pass null/omit the element until the url is ready."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/rhythm_landscape.png",
+    "/app/test_reports/rhythm_desktop.png",
+    "/app/test_reports/guitar_desktop.png"
+  ],
+  "action_items": [
+    "(Optional) Fix duplicate-key warning in MISS/feedback popups in RhythmGamePage.",
+    "(Optional) Avoid rendering <img src=\"\"> in the guitar/instrument frames before the asset resolves."
+  ],
+  "critical_code_review_comments": [
+    "GuitarInstrument.makeVoice correctly uses setValueAtTime with current gain value during release, so no scheduled-value exceptions when canceling the ramp. Verified via instrumentation.",
+    "RhythmGamePage.js is 992 lines — approaching the 'split into modules' guideline. Consider extracting the bell/lane renderer and HUD into subcomponents.",
+    "index.css media queries use `body:has(.rhythm-board)` which requires Safari 15.4+/Chromium 105+ — acceptable but worth noting for very old iPads.",
+    "The duplicate React key warning indicates `feedback` objects may share ids when fires overlap; use a monotonic counter rather than `Date.now()`."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "none required (no auth)",
+  "seed_data_creation": "Set localStorage['jma_player_name_skipped_v1']='1' to bypass the player-name prompt during Jam Session testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phone-landscape CSS block at /app/frontend/src/index.css line 906 governs Jelly Jukebox + Jam Session landscape layouts. The player-name prompt can appear with a delay even after dismissal — pre-seed localStorage key 'jma_player_name_skipped_v1'='1' before testing /#/free-play. Song tiles sometimes don't respond to Playwright .click(); use element.click() via JS evaluate (works reliably). To audit Web Audio behavior, patch AudioContext.prototype.createBufferSource via page.add_init_script before navigation and record sources + stop() args on window.__srcs.",
+  "rca_of_the_issue": "Both reported bugs are fixed: (a) Progress bar overlap was resolved by positioning .rhythm-hud absolutely in the header strip (top=18, left=92, right=150) under the phone-landscape media query, plus moving fullscreen button to top. (b) Guitar cutoff after ~3s was caused by the buffer source stopping at sample end; now makeVoice analyzes the tail (analyzeLoop) and enables src.loop=true with loopStart/loopEnd on zero crossings, extending playback up to MAX_HOLD_SEC (14s) with vibrato ramping in after 0.9s. Release() cancels scheduled gain and stops the source 150ms later for a quick fade."
+}

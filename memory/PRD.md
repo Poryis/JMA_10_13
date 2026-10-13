@@ -277,6 +277,12 @@ Driven by total stickers earned. Warm, non-competitive.
 - `App.js` — RankUpCelebration overlay mounted globally.
 
 ## Backlog
+- **P0 (pre-launch)**: Run full code review before GitHub Pages deploy (user asked for a reminder).
+- **P1**: "Now Playing" chip on campus streets so kids learn song names (verify `campus-now-playing` covers all streets).
+- **P1**: For Parents page static game/tool counts out of date after menu moves.
+- **P1**: Fun Facts Clubhouse discovery tracker + reset.
+- **P2**: Music 101 nudges in games; JMAtv LIVE banner shows current airing title.
+- **DONE June 2026**: Jukebox landscape HUD in header + bells hug bottom; guitar hold-sustain with looped tail + late vibrato (iteration_45).
 - **P0 (new, user-flagged as important)**: **Robot Boogie waiting area (bottom lineup) scrolls off-screen on some viewports** — the compact character lineup + Time Machine can be pushed below the fold on shorter phones / landscape / tablet-portrait. Fix so the waiting area is always visible without vertical scroll.
 - **P1 (new)**: **GarageBand-style electric guitar** — add a strummable electric guitar instrument (à la GarageBand touch instruments). Placement TBD (Jam Session tab? new Beat Lab melody instrument? standalone?).
 - **P0 (deferred, needs go)**: Beat Lab rework — swap instruments to Kick/Snare/Hat/Crash + Stand-up bass + Sax (A minor) + Piano; ditch bells; use `[Rhythm | Melody]` tabs.

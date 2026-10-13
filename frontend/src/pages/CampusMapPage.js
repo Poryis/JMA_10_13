@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight, X, Flame } from 'lucide-react';
+import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight, X, Flame, VolumeX } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
@@ -38,21 +38,27 @@ function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 
 // Street music: a Jelly instrumental playlist per street. Shuffles, fades
 // in, never repeats the same track back-to-back, stops when you leave.
+const MUTE_KEY = 'jma_street_music_muted';
 function useStreetMusic(tracks) {
   const [nowPlaying, setNowPlaying] = useState(null);
+  const [muted, setMuted] = useState(() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (_) { return false; } });
+  const audioRef = useRef(null);
+  const toggleMute = () => setMuted((m) => { const next = !m; try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch (_) { /* ignore */ } return next; });
+  useEffect(() => { if (audioRef.current) audioRef.current.muted = muted; }, [muted]);
   useEffect(() => {
     setNowPlaying(null);
     if (!tracks || !tracks.length || !voiceEnabled()) return undefined;
-    const a = new Audio(); a.preload = 'auto'; a.volume = 0;
+    const a = new Audio(); a.preload = 'auto'; a.volume = 0; a.muted = muted; audioRef.current = a;
     let last = -1; let fade = null; let armed = false; let alive = true;
     const pick = () => { let i; do { i = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && i === last); last = i; return tracks[i]; };
     const fadeIn = () => { clearInterval(fade); fade = setInterval(() => { if (!alive) return clearInterval(fade); a.volume = Math.min(0.28, a.volume + 0.02); if (a.volume >= 0.28) clearInterval(fade); }, 80); };
     const start = () => { if (!alive) return; const t = pick(); a.src = t.src; a.play().then(() => { fadeIn(); setNowPlaying(t.title); }).catch(() => {}); };
     a.addEventListener('ended', start);
     try { if (sessionStorage.getItem('jma_audio_unlocked_v1') === '1') start(); else { armed = true; document.addEventListener('pointerdown', start, { once: true, capture: true }); } } catch (_) { start(); }
-    return () => { alive = false; clearInterval(fade); a.pause(); a.src = ''; if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
+    return () => { alive = false; clearInterval(fade); a.pause(); a.src = ''; audioRef.current = null; if (armed) document.removeEventListener('pointerdown', start, { capture: true }); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tracks]);
-  return nowPlaying;
+  return { nowPlaying, muted, toggleMute };
 }
 
 // Chunky signpost at either end of the street pointing to the next one.
@@ -275,7 +281,7 @@ export default function CampusMapPage({ plaza = false }) {
   const youBottom = floor + 2;
   const YOU_W = L.you;
   const YOU_LEFT = Math.round(L.bw * 0.45); // breathing room: sign → you → first building
-  const nowPlaying = useStreetMusic(zone.tracks);
+  const { nowPlaying, muted: musicMuted, toggleMute: toggleMusic } = useStreetMusic(zone.tracks);
   const jamCount = useMemo(() => loadSavedBeats().length + loadSavedSongs().length, []);
   const jamBadge = jamCount > 0 ? `${jamCount} to jam` : null;
   const stickerCount = Object.keys(earned).length;
@@ -471,12 +477,16 @@ export default function CampusMapPage({ plaza = false }) {
       {/* now playing */}
       <AnimatePresence>
         {nowPlaying && (
-          <motion.div key={nowPlaying} data-testid="campus-now-playing" className="absolute bottom-4 left-3 z-20 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] md:text-xs font-black pointer-events-none"
-            style={{ background: 'rgba(10,37,64,0.85)', color: 'white', border: '2px solid white', boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)' }}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <motion.span animate={{ rotate: [-12, 12, -12] }} transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}><Music className="w-3.5 h-3.5" strokeWidth={3} /></motion.span>
-            {nowPlaying}
-          </motion.div>
+          <motion.button key={nowPlaying} type="button" data-testid="campus-now-playing" data-muted={musicMuted ? 'true' : 'false'} aria-label={musicMuted ? 'Unmute street music' : 'Mute street music'} onClick={toggleMusic}
+            className="absolute bottom-4 left-3 z-20 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] md:text-xs font-black cursor-pointer"
+            style={{ background: 'rgba(10,37,64,0.85)', color: 'white', border: '2px solid white', boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)', opacity: musicMuted ? 0.7 : 1 }}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: musicMuted ? 0.7 : 1, y: 0 }} exit={{ opacity: 0, y: 10 }} whileTap={{ scale: 0.92 }}>
+            {musicMuted
+              ? <VolumeX className="w-3.5 h-3.5" strokeWidth={3} />
+              : <motion.span animate={{ rotate: [-12, 12, -12] }} transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}><Music className="w-3.5 h-3.5" strokeWidth={3} /></motion.span>}
+            <span style={{ textDecoration: musicMuted ? 'line-through' : 'none' }}>{nowPlaying}</span>
+            {musicMuted && <span className="opacity-80">· tap for sound</span>}
+          </motion.button>
         )}
       </AnimatePresence>
 

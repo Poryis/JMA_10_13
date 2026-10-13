@@ -1,6 +1,6 @@
 # JMA Voice Recording Script
 
-**150 lines · 6 voices.** Lou never speaks. **Sharky IS Finn Danger — the same shark, one voice.** Stew can be performed as kazoo-talk.
+**166 lines · 6 voices.** Lou never speaks. **Sharky IS Finn Danger — the same shark, one voice.** Stew can be performed as kazoo-talk.
 
 ## How to record
 - One short take per line, 1–3 seconds. Leave ~150 ms of silence at the start, trim the tail.
@@ -12,7 +12,7 @@
 
 ---
 
-## Charlie the Polliwog — 43 lines
+## Charlie the Polliwog — 59 lines
 **Rooms:** Academy host · Shred City · Song Studio · Music 101 · JMAtv  
 **Voice:** Sinatra / Louis Prima New York wise guy. Friendly, finger-snapping, "how YOU doin'" warmth. Calls you kid, pal, champ.
 
@@ -25,42 +25,58 @@
 | 5 | `charlie.hub.streak` | **Look at you — on a streak!** | proud | Home — practice streak ≥ 3 days |
 | 6 | `charlie.hub.quests` | **Got fresh quests for ya today.** | eager | Home — fresh quests, none done yet |
 | 7 | `charlie.hub.alldone` | **That's the whole list! See ya tomorrow, kid.** | warm, satisfied | Home — all 3 quests done |
-| 8 | `charlie.hub.lockbadge` | **Not yet, pal — go earn a badge first.** | playful, kind | Tapping a locked LEARN/CREATE card or tile |
-| 9 | `charlie.hub.lockpass` | **Ask a grown-up about that one, kid.** | gentle | Tapping an Academy-Pass-locked room (future) |
-| 10 | `charlie.tag.shred` | **Welcome to Shred City, baby!** | rock announcer | Entering Shred City |
-| 11 | `charlie.tag.songstudio` | **Step into my studio. Let's write a hit.** | creative, warm | Entering Charlie's Song Studio |
-| 12 | `charlie.tag.music101` | **Class is in session, folks.** | teacher-y, fun | Entering Music 101 |
-| 13 | `charlie.tag.jmatv` | **You're watchin' JMAtv!** | TV announcer | Entering JMAtv |
-| 14 | `charlie.meta.badge` | **Badda-bing — new badge!** | excited | Any achievement badge earned |
-| 15 | `charlie.meta.sticker` | **New sticker! Lookin' sharp.** | delighted | Any collection sticker earned |
-| 16 | `charlie.meta.gem` | **A Daily Gem! Now THAT'S classy.** | awed | Daily Gem sticker earned |
-| 17 | `charlie.meta.rankup` | **Jumpin' Jelly Beans — you ranked up, kid!** | huge | Rank-up celebration |
-| 18 | `charlie.meta.questsdone` | **All three quests. Whatta pro!** | proud | Daily quests complete overlay |
-| 19 | `charlie.meta.academyopen` | **Jumpin' Jelly Beans! The Academy is OPEN!** | ceremonial | First badge → LEARN/CREATE reveal |
-| 20 | `charlie.meta.streak3` | **Three days runnin'! Attaboy!** | proud | Practice streak hits 3 |
-| 21 | `charlie.meta.streak7` | **A whole week? Fuhgeddaboudit!** | amazed | Practice streak hits 7 |
-| 22 | `charlie.shred.opening` | **Opening act! Here we go!** | announcer | Crowd meter tier: Opening Act |
-| 23 | `charlie.shred.headliner` | **You're the headliner, kid!** | bigger | Crowd meter tier: Headliner |
-| 24 | `charlie.shred.legend` | **SHRED LEGEND, BABY!** | maximum | Crowd meter maxed |
-| 25 | `charlie.shred.encore` | **They want an encore! Encore!** | crowd-chant | Encore round starts |
-| 26 | `charlie.shred.toowild` | **Whoa whoa whoa — too wild, pal!** | laughing | Mash guard triggers |
-| 27 | `charlie.shred.flawless` | **Flawless encore. Un-be-lievable!** | stunned joy | Result card after a flawless encore |
-| 28 | `charlie.correct.1` | **Yeah, that's it!** | quick | Correct |
-| 29 | `charlie.correct.2` | **Badda-bing!** | punchy | Correct |
-| 30 | `charlie.correct.3` | **Now you're cookin'!** | happy | Correct |
-| 31 | `charlie.correct.4` | **That's the stuff, kid.** | rock | Correct |
-| 32 | `charlie.perfect.1` | **PERFECT! Whatta pro!** | yell | Perfect |
-| 33 | `charlie.perfect.2` | **Oh, you're GOOD.** | thrilled | Perfect |
-| 34 | `charlie.perfect.3` | **Ring-a-ding-ding! Flawless!** | amazed | Perfect |
-| 35 | `charlie.miss.1` | **Ehh, almost, pal.** | kind | Miss |
-| 36 | `charlie.miss.2` | **Not that one — try it again.** | encouraging | Miss |
-| 37 | `charlie.miss.3` | **Close, kid. Real close.** | sympathetic | Miss |
-| 38 | `charlie.miss.4` | **Shake it off. One more time.** | upbeat | Miss |
-| 39 | `charlie.go.1` | **Keep it rollin'!** | cheer | Mid-game encouragement |
-| 40 | `charlie.go.2` | **You got this, champ.** | cheer | Mid-game encouragement |
-| 41 | `charlie.quest.q_shred` | **Play a show in Shred City, kid!** | rock | Quest: Shred City |
-| 42 | `charlie.quest.q_song_save` | **Come write a hit in my studio.** | creative | Quest: Song Studio |
-| 43 | `charlie.quest.q_jmatv` | **Catch a show on JMAtv, pal.** | TV | Quest: JMAtv |
+| 8 | `charlie.jam.takeit` | **Take it to the Jam Session, kid!** | hyped | Beat Lab / Song Studio — tapping "Jam on it!" |
+| 9 | `charlie.hub.lockbadge` | **Not yet, pal — go earn a badge first.** | playful, kind | Tapping a locked LEARN/CREATE card or tile |
+| 10 | `charlie.hub.lockpass` | **Ask a grown-up about that one, kid.** | gentle | Tapping an Academy-Pass-locked room (future) |
+| 11 | `charlie.tag.shred` | **Welcome to Shred City, baby!** | rock announcer | Entering Shred City |
+| 12 | `charlie.tag.songstudio` | **Step into my studio. Let's write a hit.** | creative, warm | Entering Charlie's Song Studio |
+| 13 | `charlie.tag.music101` | **Class is in session, folks.** | teacher-y, fun | Entering Music 101 |
+| 14 | `charlie.tag.jmatv` | **You're watchin' JMAtv!** | TV announcer | Entering JMAtv |
+| 15 | `charlie.meta.badge` | **Badda-bing — new badge!** | excited | Any achievement badge earned |
+| 16 | `charlie.meta.sticker` | **New sticker! Lookin' sharp.** | delighted | Any collection sticker earned |
+| 17 | `charlie.meta.gem` | **A Daily Gem! Now THAT'S classy.** | awed | Daily Gem sticker earned |
+| 18 | `charlie.meta.rankup` | **Jumpin' Jelly Beans — you ranked up, kid!** | huge | Rank-up celebration |
+| 19 | `charlie.meta.questsdone` | **All three quests. Whatta pro!** | proud | Daily quests complete overlay |
+| 20 | `charlie.meta.academyopen` | **Jumpin' Jelly Beans! The Academy is OPEN!** | ceremonial | First badge → LEARN/CREATE reveal |
+| 21 | `charlie.meta.streak3` | **Three days runnin'! Attaboy!** | proud | Practice streak hits 3 |
+| 22 | `charlie.meta.streak7` | **A whole week? Fuhgeddaboudit!** | amazed | Practice streak hits 7 |
+| 23 | `charlie.shred.opening` | **Opening act! Here we go!** | announcer | Crowd meter tier: Opening Act |
+| 24 | `charlie.shred.headliner` | **You're the headliner, kid!** | bigger | Crowd meter tier: Headliner |
+| 25 | `charlie.shred.legend` | **SHRED LEGEND, BABY!** | maximum | Crowd meter maxed |
+| 26 | `charlie.shred.encore` | **They want an encore! Encore!** | crowd-chant | Encore round starts |
+| 27 | `charlie.shred.toowild` | **Whoa whoa whoa — too wild, pal!** | laughing | Mash guard triggers |
+| 28 | `charlie.shred.flawless` | **Flawless encore. Un-be-lievable!** | stunned joy | Result card after a flawless encore |
+| 29 | `charlie.correct.1` | **Yeah, that's it!** | quick | Correct |
+| 30 | `charlie.correct.2` | **Badda-bing!** | punchy | Correct |
+| 31 | `charlie.correct.3` | **Now you're cookin'!** | happy | Correct |
+| 32 | `charlie.correct.4` | **That's the stuff, kid.** | rock | Correct |
+| 33 | `charlie.perfect.1` | **PERFECT! Whatta pro!** | yell | Perfect |
+| 34 | `charlie.perfect.2` | **Oh, you're GOOD.** | thrilled | Perfect |
+| 35 | `charlie.perfect.3` | **Ring-a-ding-ding! Flawless!** | amazed | Perfect |
+| 36 | `charlie.miss.1` | **Ehh, almost, pal.** | kind | Miss |
+| 37 | `charlie.miss.2` | **Not that one — try it again.** | encouraging | Miss |
+| 38 | `charlie.miss.3` | **Close, kid. Real close.** | sympathetic | Miss |
+| 39 | `charlie.miss.4` | **Shake it off. One more time.** | upbeat | Miss |
+| 40 | `charlie.go.1` | **Keep it rollin'!** | cheer | Mid-game encouragement |
+| 41 | `charlie.go.2` | **You got this, champ.** | cheer | Mid-game encouragement |
+| 42 | `charlie.howto.jukebox` | **Tap the bell when the note drops into the box, kid!** | coach, upbeat | Jelly Jukebox menu — after Jazzy's tagline / speaker button |
+| 43 | `charlie.howto.kazoo` | **Watch Stew play his kazoos, then tap 'em back in the same order.** | coach, warm | Stew Kazoo Says menu / speaker button |
+| 44 | `charlie.howto.earquest` | **Listen to the mystery note, then tap the bell that matches it, pal.** | coach, warm | Ear Quest menu / speaker button |
+| 45 | `charlie.howto.tempo` | **Two tunes — was the second one faster like a cheetah, or slower like a snail?** | playful | Snail or Cheetah menu / speaker button |
+| 46 | `charlie.howto.notematch` | **Flip two cards and listen — find the ones that sound the same.** | coach, warm | Note Match menu / speaker button |
+| 47 | `charlie.howto.detective` | **Hear the tune twice, then tap the note that sounds wrong the second time.** | sly, coach | Detective menu / speaker button |
+| 48 | `charlie.howto.sightread` | **Listen to the notes on the staff, then tap those bells in order before time's up.** | coach, quick | Sight-Reading Sprint menu / speaker button |
+| 49 | `charlie.howto.namenote.name` | **See the note on the staff? Tap its name, champ.** | coach, warm | Name That Note menu — Name It mode / speaker button |
+| 50 | `charlie.howto.namenote.place` | **Read the note's name, then drag it home onto the staff.** | coach, warm | Name That Note menu — Place It mode selected / speaker button |
+| 51 | `charlie.howto.boom.copy` | **Chunk plays a rhythm — tap it right back the same way.** | coach, groovy | Who's Got the Rhythm — Parrot Percussion how-to card |
+| 52 | `charlie.howto.boom.match` | **Hear the rhythm, then tap the card that matches it.** | coach, groovy | Who's Got the Rhythm — Beat Finder how-to card |
+| 53 | `charlie.howto.boom.trail` | **Follow the rhythm on the trail and tap along in time.** | coach, groovy | Who's Got the Rhythm — Rhythm Run how-to card |
+| 54 | `charlie.howto.shred` | **Pick a song, then rock the guitar in time with the beat to get the crowd goin'!** | rock announcer | Shred City intro / speaker button |
+| 55 | `charlie.howto.robot` | **Tap the Club members to get 'em dancin' — the more you add, the bigger the boogie!** | party host | Robot Boogie — on arrival / speaker button |
+| 56 | `charlie.howto.funfacts` | **Slide the spyglass around to find all the hidden friends, kid.** | cozy, curious | Fun Facts Clubhouse — on arrival / speaker button |
+| 57 | `charlie.quest.q_shred` | **Play a show in Shred City, kid!** | rock | Quest: Shred City |
+| 58 | `charlie.quest.q_song_save` | **Come write a hit in my studio.** | creative | Quest: Song Studio |
+| 59 | `charlie.quest.q_jmatv` | **Catch a show on JMAtv, pal.** | TV | Quest: JMAtv |
 
 ---
 

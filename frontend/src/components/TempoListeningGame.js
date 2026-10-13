@@ -12,6 +12,8 @@
 // foundation of timing/groove).
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import HowToVoiceButton from './HowToVoiceButton';
+import useVoiceTagline from '../hooks/useVoiceTagline';
 import { motion, AnimatePresence } from 'framer-motion';
 import FitBox from './FitBox';
 import { Play, RotateCcw, Volume2, Rabbit, Turtle } from 'lucide-react';
@@ -57,6 +59,7 @@ function buildRound(roundIndex) {
 export default function TempoListeningGame({ onExit }) {
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
   const [gameState, setGameState] = useState('menu'); // menu | listening | guess | reveal | win
+  useVoiceTagline('charlie.howto.tempo', null, 600);
   const [round, setRound] = useState(null);
   const [roundNum, setRoundNum] = useState(0);   // 0-indexed
   const [correct, setCorrect] = useState(0);
@@ -162,9 +165,10 @@ export default function TempoListeningGame({ onExit }) {
     return (
       <motion.div
         data-testid="tempo-quiz-menu"
-        className="game-card p-5 max-w-md w-full text-center"
+        className="game-card p-5 max-w-md w-full text-center relative"
         initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
       >
+        <HowToVoiceButton lineId="charlie.howto.tempo" className="absolute -top-3 -right-3 z-10" />
         <div className="flex items-center justify-center gap-2 mb-2">
           <Rabbit className="w-9 h-9" style={{ color: '#FF6B35' }} />
           <span className="text-3xl">↔</span>

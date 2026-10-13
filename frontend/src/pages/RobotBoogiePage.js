@@ -37,6 +37,7 @@ import { earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 
 // ============================================================
 // Character config
@@ -918,7 +919,7 @@ const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return 
 const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; return acc; }, {});
 
 export default function RobotBoogiePage() {
-  useVoiceTagline('chunk.tag.robot');
+  useVoiceTagline('chunk.tag.robot', 'charlie.howto.robot');
   const {
     setStemActive, muteAll, getAudioClock,
     triggerStab, startRiser, stopRiser, setPlaybackRate,
@@ -1213,6 +1214,7 @@ export default function RobotBoogiePage() {
         className="fixed top-2 right-2 md:top-3 md:right-4 z-40 flex flex-row items-center gap-2"
         style={{ pointerEvents: 'none' }}
       >
+        <HowToVoiceButton lineId="charlie.howto.robot" size={32} className="pointer-events-auto" />
         <button
           type="button"
           data-testid="robot-boogie-reset"

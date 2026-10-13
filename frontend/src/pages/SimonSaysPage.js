@@ -11,6 +11,7 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 
@@ -181,7 +182,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setShowingIndex(0);
   }, [initAudioContext, resetGame, difficulty]);
 
-  useVoiceTagline('stew.tag.kazoo');
+  useVoiceTagline('stew.tag.kazoo', 'charlie.howto.kazoo');
 
   // Daily-quest deep link: /simon-says?quest=easy starts straight away.
   const location = useLocation();
@@ -364,11 +365,12 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         </motion.h1>
 
         <motion.div
-          className="intro-card game-card p-6 mb-8 max-w-md text-center"
+          className="intro-card game-card p-6 mb-8 max-w-md text-center relative"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2 }}
         >
+          <HowToVoiceButton lineId="charlie.howto.kazoo" className="absolute -top-3 -right-3 z-10" />
           <Eye className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--jma-blue)' }} />
           <h2 className="text-xl font-bold mb-2" style={{ fontFamily: "'Fredoka', cursive" }}>
             How to Play

@@ -17,6 +17,7 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import useNoteNames from '../hooks/useNoteNames';
 
 // All 8 bells (including High C). Note Match uses subsets per difficulty.
@@ -112,7 +113,7 @@ export default function NoteMatchPage() {
     firstFlippedRef.current = null;
   }, [initAudioContext, difficulty]);
 
-  useVoiceTagline('finn.tag.notematch');
+  useVoiceTagline('finn.tag.notematch', 'charlie.howto.notematch');
 
   // Daily-quest deep link: /note-match?quest=easy skips the pick screen.
   const location = useLocation();
@@ -237,7 +238,8 @@ export default function NoteMatchPage() {
           Flip the bells. Match the sounds!
         </motion.p>
 
-        <motion.div className="intro-card game-card p-5 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div className="intro-card game-card p-5 mb-6 max-w-md text-center relative" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+          <HowToVoiceButton lineId="charlie.howto.notematch" className="absolute -top-3 -right-3 z-10" />
           <Sparkles className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--jma-purple)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>

@@ -192,6 +192,25 @@ export const VOICE_LINES = [
   L('finn.quest.q_sight_read',       'Run a sprint with me! Oh boy!',               'daring',   'Quest: Sight-Reading'),
   L('finn.quest.q_name_note',        'Eight outta ten! I DARE ya! Hee-hee!',          'dare',     'Quest: Name That Note'),
   L('finn.quest.q_lesson',           'Class time! Watch a lesson — it\'s FUN!',         'bright',   'Quest: Music 101 lesson'),
+  // Charlie — one-sentence how-to for every game (for kids who can't read yet).
+  // Plays on the start menu right after the room host's tagline; the speaker
+  // button on each "How to Play" card replays it.
+  L('charlie.howto.jukebox',        'Tap the bell when the note drops into the box, kid!',                                   'coach, upbeat',   'Jelly Jukebox menu — after Jazzy\'s tagline / speaker button'),
+  L('charlie.howto.kazoo',          'Watch Stew play his kazoos, then tap \'em back in the same order.',                      'coach, warm',     'Stew Kazoo Says menu / speaker button'),
+  L('charlie.howto.earquest',       'Listen to the mystery note, then tap the bell that matches it, pal.',                   'coach, warm',     'Ear Quest menu / speaker button'),
+  L('charlie.howto.tempo',          'Two tunes — was the second one faster like a cheetah, or slower like a snail?',         'playful',         'Snail or Cheetah menu / speaker button'),
+  L('charlie.howto.notematch',      'Flip two cards and listen — find the ones that sound the same.',                       'coach, warm',     'Note Match menu / speaker button'),
+  L('charlie.howto.detective',      'Hear the tune twice, then tap the note that sounds wrong the second time.',             'sly, coach',      'Detective menu / speaker button'),
+  L('charlie.howto.sightread',      'Listen to the notes on the staff, then tap those bells in order before time\'s up.',   'coach, quick',    'Sight-Reading Sprint menu / speaker button'),
+  L('charlie.howto.namenote.name',  'See the note on the staff? Tap its name, champ.',                                       'coach, warm',     'Name That Note menu — Name It mode / speaker button'),
+  L('charlie.howto.namenote.place', 'Read the note\'s name, then drag it home onto the staff.',                              'coach, warm',     'Name That Note menu — Place It mode selected / speaker button'),
+  L('charlie.howto.boom.copy',      'Chunk plays a rhythm — tap it right back the same way.',                                'coach, groovy',   'Who\'s Got the Rhythm — Parrot Percussion how-to card'),
+  L('charlie.howto.boom.match',     'Hear the rhythm, then tap the card that matches it.',                                   'coach, groovy',   'Who\'s Got the Rhythm — Beat Finder how-to card'),
+  L('charlie.howto.boom.trail',     'Follow the rhythm on the trail and tap along in time.',                                 'coach, groovy',   'Who\'s Got the Rhythm — Rhythm Run how-to card'),
+  L('charlie.howto.shred',          'Pick a song, then rock the guitar in time with the beat to get the crowd goin\'!',      'rock announcer',  'Shred City intro / speaker button'),
+  L('charlie.howto.robot',          'Tap the Club members to get \'em dancin\' — the more you add, the bigger the boogie!',  'party host',      'Robot Boogie — on arrival / speaker button'),
+  L('charlie.howto.funfacts',       'Slide the spyglass around to find all the hidden friends, kid.',                        'cozy, curious',   'Fun Facts Clubhouse — on arrival / speaker button'),
+
   L('finn.quest.q_note_match',     'Clear a round of Note Match! Oh boy oh boy!',        'cool',     'Quest: Note Match'),
   L('charlie.quest.q_shred',         'Play a show in Shred City, kid!',          'rock',     'Quest: Shred City'),
   L('charlie.quest.q_song_save',     'Come write a hit in my studio.',           'creative', 'Quest: Song Studio'),

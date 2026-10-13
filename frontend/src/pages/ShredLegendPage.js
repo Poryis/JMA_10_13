@@ -12,6 +12,7 @@ import { earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import AvatarSprite from '../components/AvatarSprite';
 import { useNavigate } from 'react-router-dom';
@@ -303,7 +304,7 @@ function StageLights({ energy, style = 'rock' }) {
 }
 
 export default function ShredLegendPage() {
-  useVoiceTagline('charlie.tag.shred');
+  useVoiceTagline('charlie.tag.shred', 'charlie.howto.shred');
   const navigate = useNavigate();
   const { getAudioGraph, initAudioContext } = useAudio();
   const band = useShredBand(getAudioGraph, initAudioContext);
@@ -649,10 +650,11 @@ export default function ShredLegendPage() {
           <div className="flex-1 flex items-center justify-center w-full">
             <motion.div
               data-testid="shred-intro-card"
-              className="max-w-md w-full text-center rounded-3xl px-6 py-7"
+              className="max-w-md w-full text-center rounded-3xl px-6 py-7 relative"
               style={{ background: 'rgba(16,24,38,0.92)', border: '4px solid #FFCC00', boxShadow: '0 8px 0 0 #0A1420' }}
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
+              <HowToVoiceButton lineId="charlie.howto.shred" className="absolute top-3 right-3 z-10" dark />
               <img src="assets/characters/charlie-punk.png" alt="" className="w-28 h-28 object-contain mx-auto mb-1" />
               <h1 className="font-black font-display text-white text-4xl leading-none mb-2">SHRED CITY</h1>
               <p className="text-xs mb-3" style={{ color: '#9DB4CC' }}>

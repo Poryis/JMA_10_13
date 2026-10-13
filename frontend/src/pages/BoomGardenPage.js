@@ -31,6 +31,7 @@ import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import {
   PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS as BASE_BEAT_MS, TOLERANCE_MS,
   patternBeats, noteStartTimes, ROUNDS_PER_SESSION,
@@ -900,6 +901,7 @@ export default function BoomGardenPage() {
     // Show the How-to-Play overlay BEFORE the demo/count-in. The kid
     // dismisses with "Got it!" → round starts.
     setShowInstructions(true);
+    say(`charlie.howto.boom.${m}`, { minGapMs: 0, delayMs: 500 });
   }, [clearTimeouts]);
 
   // Start a fresh session of N rounds with the SAME mode / level / tempo.
@@ -1723,7 +1725,7 @@ export default function BoomGardenPage() {
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: -20, opacity: 0, scale: 0.9 }}
                 transition={{ type: 'spring', stiffness: 240, damping: 20 }}
-                className="rounded-3xl border-4 px-6 py-5 md:px-8 md:py-7 flex flex-col items-center gap-4 max-w-md w-full bg-white"
+                className="rounded-3xl border-4 px-6 py-5 md:px-8 md:py-7 flex flex-col items-center gap-4 max-w-md w-full bg-white relative"
                 style={{
                   borderColor: 'var(--jma-dark)',
                   boxShadow: '0 10px 0 0 var(--jma-dark)',
@@ -1742,6 +1744,7 @@ export default function BoomGardenPage() {
                 >
                   How to play
                 </div>
+                <HowToVoiceButton lineId={`charlie.howto.boom.${mode}`} className="absolute top-3 right-3 z-10" />
                 <h2 className="text-3xl md:text-4xl font-black font-display leading-none text-center">
                   {modeConfig.label}
                 </h2>

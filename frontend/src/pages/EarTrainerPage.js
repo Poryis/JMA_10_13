@@ -10,6 +10,7 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
 import TempoListeningGame from '../components/TempoListeningGame';
 import useNoteNames from '../hooks/useNoteNames';
@@ -25,7 +26,7 @@ const LEVELS = {
 function EarTrainerPage() {
   const { nameFor, mode: nameMode } = useNoteNames();
   const nameOf = (note) => { const b = BELLS.find(x => x.note === note); return b ? nameFor(b.note, b.solfege) : note; };
-  useVoiceTagline('doctor.tag.earquest');
+  useVoiceTagline('doctor.tag.earquest', 'charlie.howto.earquest');
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -210,7 +211,8 @@ function EarTrainerPage() {
           EAR QUEST
         </motion.h1>
 
-        <motion.div className="intro-card game-card p-6 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div className="intro-card game-card p-6 mb-6 max-w-md text-center relative" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+          <HowToVoiceButton lineId="charlie.howto.earquest" className="absolute -top-3 -right-3 z-10" />
           <Ear className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--jma-blue)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-base" style={{ color: 'var(--jma-dark)' }}>

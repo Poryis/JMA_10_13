@@ -6,6 +6,7 @@ import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import { GameHeader } from '../components/GameUI';
 
 // Characters placed IN the clubhouse scene at specific spots.
@@ -69,7 +70,7 @@ function writeFound(set) {
 const INTRO_KEY = 'jma_clubhouse_intro_seen_v1';
 
 function FunFactsPage() {
-  useVoiceTagline('stew.tag.funfacts');
+  useVoiceTagline('stew.tag.funfacts', 'charlie.howto.funfacts');
   const [activeFact, setActiveFact] = useState(null);
   const [found, setFound] = useState(() => readFound());
   const [poppingName, setPoppingName] = useState(null); // for first-find animation
@@ -425,6 +426,9 @@ function FunFactsPage() {
               >
                 Find all 7 friends!
               </h2>
+              <div className="flex justify-center mb-3">
+                <HowToVoiceButton lineId="charlie.howto.funfacts" />
+              </div>
               <ul
                 className="text-sm font-bold mb-5 space-y-2 text-left mx-auto inline-block"
                 style={{ color: 'var(--jma-dark)' }}

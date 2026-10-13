@@ -17,6 +17,7 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import useNoteNames from '../hooks/useNoteNames';
 
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
@@ -333,7 +334,7 @@ export default function DetectivePage() {
     setTimeout(() => playRound(r), 350);
   }, [initAudioContext, difficulty, playRound]);
 
-  useVoiceTagline('doctor.tag.detective');
+  useVoiceTagline('doctor.tag.detective', 'charlie.howto.detective');
 
   // Daily-quest deep link: /detective?quest=easy skips the pick screen.
   const location = useLocation();
@@ -476,6 +477,7 @@ export default function DetectivePage() {
           animate={{ scale: 1 }}
           transition={{ delay: 0.15 }}
         >
+          <HowToVoiceButton lineId="charlie.howto.detective" className="absolute -top-3 -left-3 z-10" />
           {/* Detective Dr. Jellybone illustration */}
           <motion.img
             src="assets/characters/dr-jellybone-detective.png"

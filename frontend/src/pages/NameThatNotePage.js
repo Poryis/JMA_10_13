@@ -24,6 +24,7 @@ import { earnAchievement, earnAchievementUpTo, earnSticker } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import { formatNoteName, getNoteNameMode, NOTE_NAME_MODES } from '../hooks/useNoteNames';
 
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -274,7 +275,7 @@ function FinnBubble({ text, mood }) {
 // Page
 // ---------------------------------------------------------------------------
 export default function NameThatNotePage() {
-  useVoiceTagline('finn.tag.namenote');
+  useVoiceTagline('finn.tag.namenote', 'charlie.howto.namenote.name');
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -589,13 +590,14 @@ export default function NameThatNotePage() {
           Finn&apos;s staff school — learn where every note lives.
         </motion.p>
 
-        <div className="intro-card grid grid-cols-2 gap-2 w-full max-w-md mb-3">
+        <div className="intro-card grid grid-cols-2 gap-2 w-full max-w-md mb-3 relative">
+          <HowToVoiceButton lineId={`charlie.howto.namenote.${mode}`} className="absolute -top-3 -right-3 z-10" />
           {MODES.map((m) => (
             <button
               key={m.id}
               data-testid={`ntn-mode-${m.id}`}
               type="button"
-              onClick={() => setMode(m.id)}
+              onClick={() => { setMode(m.id); say(`charlie.howto.namenote.${m.id}`, { minGapMs: 0 }); }}
               className="rounded-2xl border-3 p-3 text-left"
               style={{
                 borderColor: 'var(--jma-dark)',

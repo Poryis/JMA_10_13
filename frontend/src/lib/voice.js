@@ -37,8 +37,8 @@ function resolve(idOrGroup) {
   return pick;
 }
 
-// Returns true if a line started playing.
-export function say(idOrGroup, { interrupt = true, minGapMs = 900, delayMs = 0, volume = 0.95 } = {}) {
+// Returns true if a line started playing. onDone fires when it ends/fails.
+export function say(idOrGroup, { interrupt = true, minGapMs = 900, delayMs = 0, volume = 0.95, onDone } = {}) {
   if (!voiceEnabled()) return false;
   const now = Date.now();
   if (lastSpokenAt[idOrGroup] && now - lastSpokenAt[idOrGroup] < minGapMs) return false;
@@ -51,10 +51,12 @@ export function say(idOrGroup, { interrupt = true, minGapMs = 900, delayMs = 0, 
     stopVoice();
     const a = new Audio(`${BASE}${line.id}.mp3`);
     a.volume = volume;
-    a.onerror = () => { missing.add(line.id); if (current === a) current = null; };
-    a.onended = () => { if (current === a) current = null; };
+    let done = false;
+    const finish = (ok) => { if (done) return; done = true; if (current === a) current = null; onDone?.(ok); };
+    a.onerror = () => { missing.add(line.id); finish(false); };
+    a.onended = () => finish(true);
     current = a;
-    a.play().catch(() => { /* autoplay blocked — stay silent */ });
+    a.play().catch(() => finish(false));
   };
   if (!audioUnlocked()) { deferUntilGesture(play); return true; }
   if (delayMs > 0) setTimeout(play, delayMs); else play();

@@ -12,6 +12,7 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 import { reportQuestEvent } from '../hooks/useDailyQuests';
 import { say } from '../lib/voice';
 import useVoiceTagline from '../hooks/useVoiceTagline';
+import HowToVoiceButton from '../components/HowToVoiceButton';
 import { SONG_LIBRARY, SPEED_SETTINGS, getSongsByCategory } from '../data/songs';
 import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
 import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
@@ -108,7 +109,7 @@ function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, r
 
 function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame }) {
   const { nameFor } = useNoteNames();
-  useVoiceTagline('jazzy.tag.jukebox');
+  useVoiceTagline('jazzy.tag.jukebox', 'charlie.howto.jukebox');
   const navigate = useNavigate();
   const { playBellNote, playDrumSound, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -587,6 +588,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
 
         {/* Speed selector — chunky pill row with proper "Speed:" label */}
         <div className="jj-menu-speed flex items-center gap-2 mb-3 flex-wrap justify-center">
+          <HowToVoiceButton lineId="charlie.howto.jukebox" size={30} className="mr-1" />
           <span className="text-[10px] md:text-xs uppercase font-black opacity-60 mr-1" style={{ color: 'var(--jma-dark)' }}>
             Speed
           </span>

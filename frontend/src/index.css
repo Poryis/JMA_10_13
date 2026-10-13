@@ -918,7 +918,7 @@ h1, h2, h3, h4, h5, h6 {
   /* Jam Session: no keyboard hints, tighter stack, instruments sized to fit */
   .jam-controls-hint { display: none !important; }
   .jam-instrument-wrap { margin-top: 0 !important; }
-  .jam-main { padding-top: 52px !important; }
+  .jam-main { padding-top: 48px !important; padding-bottom: 0 !important; }
   [data-testid="jelly-bells-row"] { width: min(62vh, 720px) !important; }
   [data-testid="guitar-instrument"] { zoom: 0.56; }
 
@@ -926,5 +926,5 @@ h1, h2, h3, h4, h5, h6 {
   .funfacts-hint { display: none !important; }
   .funfacts-main { padding-top: 60px !important; padding-bottom: 6px !important; }
   .funfacts-scene.w-\[2400px\] { width: 1500px !important; }
-  .funfacts-scroller-pad { padding: 26vh 30vw; }
+  .funfacts-scroller-pad { padding: 26vh 30vw; box-sizing: content-box; width: max-content; }
 }

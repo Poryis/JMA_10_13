@@ -1,0 +1,48 @@
+{
+  "summary": "Executed the phone-landscape (844x390), desktop (1280x800), and portrait (390x844) suite requested for the JMA 'phone landscape only' fixes. Jukebox, Detective, Campus, Jam Session title/guitar/xylophone, desktop and portrait checks all PASS. ONE critical bug remains in Fun Facts (phone landscape + coarse pointer): the `.funfacts-scroller-pad` is `box-sizing: border-box` so its 30vw right-padding is clipped by the scroller's clientWidth, so Stew and Lou cannot be brought within 120px of the porthole centre (Stew residual 283px, Lou residual 163px). Minor: Free Play phone landscape has 8px document scroll vs spec's <=5px threshold; Robot Boogie reports data-scale=1.00 (content fits naturally at 390px, inner overflow=0) which is below spec's expected 0.40-0.60 band but is not a visual defect.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "FunFactsPage .funfacts-scroller-pad", "issue": "On phone landscape with coarse pointer the pad has box-sizing:border-box and width:auto (=scroller clientWidth 800px), so the right-side 30vw padding (253px) is absorbed inside the box and does NOT extend the scrollable range. Measured: scrollerScrollWidth=1753 but scene width=1500 + 2x253 padding should yield 2006. Result: funfacts-character-stew unreachable (residual 283px from porthole centre, needs <=120); funfacts-character-lou also unreachable (residual 163px). Vertical padding works because the scene height (~844) is less than the pad content height. Fix: add `.funfacts-scroller-pad{ box-sizing: content-box; width: max-content; }` (or set the pad to inline-block + fit-content) so BOTH sides of padding actually enlarge the scroll range.",
+        "selector": ".funfacts-scroller-pad",
+        "priority": "HIGH"},
+      {"component": "FreePlayPage root (.jam-main / wrapper)", "issue": "At 844x390 the document scrollHeight is 398 vs innerHeight 390 (8px overflow). Spec allows <=5. Mostly cosmetic (no visible scrollbar) but same measurement in Jelly Bells tab also 398.",
+        "selector": "body / .jam-main", "priority": "LOW"},
+      {"component": "FitStage on Robot Boogie", "issue": "Measured data-scale=1.00 with inner.scrollHeight - clientHeight = 0 at 844x390 (page naturally fits). Spec expected 0.40-0.60 band. Not a visual defect but FitStage's MIN_BY_ROUTE floor of 0.4 is never engaged on this viewport because scrollHeight<=innerHeight. If the intent is to force shrink, the natural content needs to exceed 390 first. No action required unless target was to make it visually smaller.",
+        "selector": "[data-testid=fit-stage]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/jukebox_phone.png",
+    "/app/test_reports/jukebox_menu.png",
+    "/app/test_reports/jukebox_after.png",
+    "/app/test_reports/detective_phone.png",
+    "/app/test_reports/robot_phone.png",
+    "/app/test_reports/campus_phone.png",
+    "/app/test_reports/funfacts_phone.png",
+    "/app/test_reports/funfacts_final.png",
+    "/app/test_reports/freeplay_bells.png",
+    "/app/test_reports/freeplay_jellybells.png",
+    "/app/test_reports/freeplay_guitar.png",
+    "/app/test_reports/freeplay_xyl.png"
+  ],
+  "action_items": [
+    "Fix .funfacts-scroller-pad so BOTH left and right 30vw padding actually widen the scroll range on phone landscape coarse pointer (use box-sizing:content-box and/or width:max-content / display:inline-block). Verified Stew residual=283px, Lou residual=163px right now; both must drop to <=120. Vertical padding already works.",
+    "Shave 3-8px off .jam-main / free-play layout so document scrollHeight <= 390 at 844x390 (currently 398)."
+  ],
+  "critical_code_review_comments": [
+    "FunFactsPage.js wraps the fixed-width (w-[2400px] -> 1500px via CSS override) scene inside .funfacts-scroller-pad. With Tailwind's base `*{box-sizing:border-box}` the pad computes to parent width (800px) and the padding is absorbed, defeating the 'padded wrapper so every corner can reach the porthole centre' guarantee claimed in the implementation notes.",
+    "FitStage data-scale remains 1 on Robot Boogie at 844x390 because the robot room naturally fits; the comment 'Robot Boogie may shrink more (floor 0.4)' only applies if its natural height exceeds innerHeight. Consider adding a hard scale cap OR verifying content height before shipping.",
+    "FunFactsPage .funfacts-scene keeps class `w-[2400px]` even in phone landscape; CSS media-query overrides the computed width to 1500px (`.funfacts-scene.w-\\[2400px\\]{width:1500px!important}`). This dual-source-of-truth is fragile—consider toggling the class in JS when !desk && !allFound && isPhoneLandscape."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend only)", "frontend": "~85% (10/12 phone-landscape checks pass; 1 critical + 2 minor failing; desktop + portrait fully pass)"},
+  "test_credentials": "None required",
+  "seed_data_creation": "localStorage keys jma_unlock_all_v1=1, jma_reveal_seen_v1=1, jma_player_name_skipped_v1=1; sessionStorage jma_portrait_ok_v1=1; matchMedia('(pointer: coarse)') stubbed=true for Fun Facts phone-landscape check.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Reach-computation JS stored inline in prior script: scroller.clientW/H center minus clamped scrollLeft/Top; residual Hypot must be <=120 for each [data-testid^='funfacts-character-']. Phone-landscape 844x390 with matchMedia '(pointer: coarse)' stub mandatory to hit the coarse branch (desk=false). The scroller is data-testid='funfacts-scene-scroller' (class is the SAME string but prefer the data-testid). Stew is positioned at scene far-right and Lou at the bottom-right; vertical pad currently works, horizontal pad does not. Jukebox gameplay only renders .rhythm-lane after clicking a song card (I used data-testid='song-jma_play_one_skip_one'). On Robot Boogie, members are data-testid='robot-boogie-char-<id>' (hits are suffixed `-hit-`).",
+  "rca_of_the_issue": "ROOT CAUSE for Stew-unreachable: `.funfacts-scroller-pad { padding: 26vh 30vw; }` is applied to a block element inside the scroller. Tailwind's preflight sets `*{box-sizing:border-box}` globally, so the pad's computed width equals the scroller's clientWidth (800px at 844-ingress-44). Because the padding is inside the border-box, the inner fixed-width scene (1500px) overflows horizontally and the right-side 253px padding is never materialised as scrollable area. scrollWidth=1753 = 1500 + ~left padding only. REPRO: 844x390 viewport, matchMedia '(pointer: coarse)' true, visit /#/fun-facts, allFound=false; compute desired scrollLeft to centre funfacts-character-stew → desired exceeds (scrollWidth-clientWidth)=953 by 283px. MITIGATION: `.funfacts-scroller-pad { box-sizing: content-box; width: max-content; }` OR `display: inline-block` so the pad grows to scene+padding (2006px) and scrollWidth matches."
+}

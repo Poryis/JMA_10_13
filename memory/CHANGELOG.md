@@ -2354,3 +2354,10 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - 15 new `charlie.howto.*` lines in `data/voiceLines.js` (one per game; per-mode for Name That Note + Who's Got the Rhythm). Regenerated `/app/memory/voice_script.md` (166 lines) via `node scripts/voiceScript.mjs`. User wording rule: band members are "Club members", never "Jellies".
 - `useVoiceTagline(tagId, howToId)` chains Charlie's how-to after the host tagline (`say()` gained a once-only `onDone`). `HowToVoiceButton` (speaker, `howto-voice-*`) on every How-to card / Jukebox speed row / Robot Boogie top bar / Fun Facts welcome / Boom Garden how-to overlay / Snail-or-Cheetah menu.
 - No MP3s recorded yet — lines are silent until files land in `public/assets/voice/<id>.mp3`.
+
+## June 2026 — Academy Plaza homepage (verified: iteration_48, ~95% → overlap fixed after)
+- `/home` (and `/`) now render `CampusMapPage plaza` — the underwater street engine as a town square. Old card home kept at `/home-classic`.
+- Data: `PLAZA_ZONE` / `PLAZA_BUILDINGS` in `data/campus.js` (Quest Board → quests modal, PLAY/LEARN/CREATE gates → streets with lock gating, Bandstand w/ logo marquee + Charlie host + rank pennant + streak flame, JMAtv drive-in (CSS `DriveIn`), Sticker Shack, Dressing Room). Plaza items use size-packed x positions (`xs`) and `flat` (no shelf lift); tall props capped by viewport height (`vp.h*0.78`).
+- Art: `public/assets/plaza/*.png` generated in the user's style from campus refs (Gemini image edit) then checkerboard-keyed to transparent (sources in `/app/memory/plaza_src/`). User is sensitive to "AI look" — always generate with reference images + thick-outline flat style.
+- `Building` gained `sign`/`signPos`/`signColor`, `custom` ('tv' | 'bandstand'), `flat`, `x`, `extras`; `Host` gained `pos`. `DailyQuestCard` gained `defaultExpanded`.
+- Not carried over from old home yet: "Next Mission" suggestion card (could become a Charlie shout / Quest Board pin).

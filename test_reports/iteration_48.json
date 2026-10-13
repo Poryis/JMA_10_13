@@ -1,0 +1,49 @@
+{
+  "summary": "Frontend-only testing of the new Academy Plaza homepage (CampusMapPage with plaza prop). Verified structure, buildings, signs, locked gates, Quest Board modal (open/close/backdrop), navigation to PLAY/LEARN/CREATE streets, JMAtv/Sticker Shack/Dressing Room/For Grown-Ups, bandstand no-nav behavior, / -> /#/home redirect, /#/home-classic old home, and street regression (signs + now-playing). Tested on desktop 1280x800 and phone landscape 844x390. Overall the plaza works as specified. Found one layout/overlap issue on phone landscape and one transient React duplicate-key warning.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CampusMapPage plaza (bandstand)", "issue": "On phone landscape 844x390, the bandstand marquee/logo overlaps the top header. Measured plaza-logo top=46px while header bottom=76px (overlap ~30px). The 'Jelly of the Month Club' marquee at the top of the bandstand is visibly clipped behind the ACADEMY PLAZA header pill. Spec says: 'bandstand marquee/logo must be below the header'.", "selector": "[data-testid=plaza-logo] vs header", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Plaza phone landscape (844x390)", "issues": ["Bandstand marquee top (plaza-logo) sits above header bottom. Suggest adding top padding for plaza content on short viewports or lowering the bandstand/logo start Y."]}
+    ],
+    "console_warnings": [
+      {"issue": "Transient React warning observed on first plaza load: 'Encountered two children with the same key'. Did not reproduce on subsequent loads. Likely in an AnimatePresence list (hosts shout, or buildings) — recommend auditing key assignment on PLAZA_BUILDINGS/host shouts for uniqueness.", "priority": "LOW"},
+      {"issue": "AnimatePresence with mode='wait' is receiving multiple children warnings (x2).", "priority": "LOW"}
+    ]
+  },
+  "verification_matrix": {
+    "plaza_at_/#/home": "PASS (data-plaza=true, all 8 buildings present, no campus-sign-left/right)",
+    "plaza_logo_and_pennant": "PASS",
+    "quest_board_badge_text": "PASS ('0/3 today')",
+    "sign_labels_PLAY_LEARN_CREATE": "PASS",
+    "locked_learn_create_with_pill_Earn_1_badge": "PASS (data-locked=true, pill 'Earn 1 badge', clicks do not navigate)",
+    "/_redirects_to_/#/home": "PASS",
+    "/#/home-classic_renders_old_home": "PASS (no campus-map-page, old card homepage)",
+    "quest_board_opens_modal_and_close_via_X_and_backdrop": "PASS (modal present, 5 buttons incl. 3 GOs + close)",
+    "gate-play_swim_then_navigate_to_/#/campus?zone=play": "PASS (data-swimming=true then URL /#/campus?zone=play within 3s)",
+    "street_back_button_returns_to_/#/home": "PASS",
+    "jmatv_sticker_dressing_room_navigation": "PASS",
+    "for-parents_link": "PASS",
+    "bandstand_click_no_nav": "PASS (URL unchanged)",
+    "street_signs_still_present_on_play_street": "PASS (campus-sign-left/right exist)",
+    "now-playing_chip_after_click": "PASS"
+  },
+  "test_report_links": ["/app/test_reports/screens/desktop_plaza_0.png", "/app/test_reports/screens/desktop_plaza_900.png", "/app/test_reports/screens/desktop_plaza_max.png", "/app/test_reports/screens/phone_plaza_0.png", "/app/test_reports/screens/phone_plaza_480.png"],
+  "action_items": [
+    "Fix bandstand marquee/logo being clipped behind the top header on phone landscape (844x390). plaza-logo top (46px) < header bottom (76px). Add top offset on short viewports or shift bandstand down.",
+    "Audit the duplicate-key React warning observed on first plaza mount (likely in Host shout list or AnimatePresence block). Low priority but should be cleaned up."
+  ],
+  "critical_code_review_comments": [
+    "CampusMapPage.js is handling both street and plaza modes which is making the file quite complex; consider splitting plaza concerns (hosts/custom bandstand/quests modal) into a Plaza subcomponent for readability.",
+    "AnimatePresence mode='wait' with multiple animated children emits warnings — review structure in CampusMapPage swim/entering/shout animations."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "~95% (1 phone-layout overlap + minor React warnings)"},
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Plaza fully functional end-to-end. Only remaining items to re-verify after fixes: (1) bandstand marquee below header on phone 844x390, (2) absence of React duplicate-key warning on initial load of /#/home. Expected 404s for assets/voice/charlie.hub.*.mp3 occurred (not bugs)."
+}

@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight, X, Flame, Star } from 'lucide-react';
+import { Lock, Music, ChevronsRight, ArrowLeft, ArrowRight, X, Flame } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
@@ -127,7 +127,7 @@ function DriveIn({ live }) {
 function BrandMarquee({ extras }) {
   return (
     <>
-      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '37%', left: '52.5%', top: '16%', zIndex: 5 }}>
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '36%', left: '52.5%', top: '17.5%', zIndex: 5 }}>
         <motion.img src="assets/ui/jma-stylized-logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-logo"
           className="w-full object-contain" style={{ filter: 'drop-shadow(0 2px 0 rgba(2,36,63,0.35))' }}
           animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3.4, ease: 'easeInOut' }} />
@@ -240,7 +240,7 @@ export default function CampusMapPage({ plaza = false }) {
   useEffect(() => { const f = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
   const L = layoutFor(vp.w, vp.h);
   // Plaza: the tall props (bandstand) must still clear the header on short phones.
-  const buildings = useMemo(() => (plaza ? rawBuildings.map((b) => ({ ...b, size: Math.min(b.size, Math.max(0.9, (vp.h * 0.86 - L.floor) / L.bw)) })) : rawBuildings), [plaza, rawBuildings, vp.h, L.floor, L.bw]);
+  const buildings = useMemo(() => (plaza ? rawBuildings.map((b) => ({ ...b, size: Math.min(b.size, Math.max(0.9, (vp.h * 0.78 - L.floor) / L.bw)) })) : rawBuildings), [plaza, rawBuildings, vp.h, L.floor, L.bw]);
   const { slot, sandBack, sandFront, floor } = L;
   const acc = Math.min(1.4, L.k); // accent art scale
   // Plaza props vary a lot in width, so pack them by size instead of fixed slots.

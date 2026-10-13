@@ -35,6 +35,7 @@ import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
 import PlayerNamePrompt from "./components/PlayerNamePrompt";
 import OrientationGate from "./components/OrientationGate";
 import FullscreenButton from "./components/FullscreenButton";
+import FitStage from "./components/FitStage";
 import usePlayTime from "./hooks/usePlayTime";
 
 // RootGate — always send visitors straight to the app Home. The
@@ -70,6 +71,7 @@ function App() {
         <DailyQuestCelebration />
         <AnimatePresence mode="wait">
           <ScrollToTop />
+          <FitStage>
           <Routes>
             {/* Smart root gate:
                   - If the browser has a stored player profile (jma_player_v1)
@@ -114,6 +116,7 @@ function App() {
             <Route path="/dressing-room" element={<DressingRoomPage />} />
             <Route path="/campus" element={<CampusMapPage />} />
           </Routes>
+          </FitStage>
         </AnimatePresence>
       </HashRouter>
     </div>

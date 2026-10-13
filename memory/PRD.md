@@ -1,5 +1,13 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
+## Jun 2026: Phone-landscape polish pass 2 (tested iteration_43/44, pass) — ALL scoped to @media (max-height:520px) and (orientation: landscape); desktop/portrait unchanged
+- FitStage EXCLUDED: /, /home, /campus, /fun-facts, /rhythm-game, /free-play (they have their own handling). `.fit-stage-inner > * { min-height:100% }` kills the navy bar. MIN_BY_ROUTE robot-boogie 0.4.
+- GameHeader title (`.game-title-pill`) hidden in phone landscape except `keepTitle` (campus).
+- Jukebox: `.rhythm-board` calc(100vh-62px), `.rhythm-main` pt 54, lanes min-height 0, bells 52×62, `fallScale` 1.35 (notes take 35% longer to fall on short screens → runway).
+- Jam Session: `.jam-controls-hint` hidden, `.jam-main` pt 48, bells circle width min(62vh,720px), `[data-testid=guitar-instrument] { zoom: .56 }`.
+- Fun Facts: `desk` = width≥768 AND fine pointer; touch devices (any width) get the pannable porthole room (2400px portrait / 1500px phone-landscape) wrapped in `.funfacts-scroller-pad` (content-box, max-content, 26vh/30vw padding so corners reach the porthole centre); spyglass follows pointermove (finger too) on desk; when all 7 found the room goes `w-full` and the porthole hides.
+- Campus phone landscape: bw = 0.62·h; left street sign at sandBack·0.95 (clear of the avatar).
+
 ## Jun 2026: Phone-landscape fit (FitStage) — tested iteration_42
 - `components/FitStage.js` wraps `<Routes>` in App.js. Active only when innerHeight < 520 && landscape; excluded: `/`, `/home`, `/campus` (own landscape layouts). Measures the page's natural height and CSS-scales the stage (floor 0.55; stage width 100/scale vw; internal scroll if still too tall; bounded re-measure via ResizeObserver/MutationObserver to avoid oscillation). Fixed headers inside stay aligned (transform = containing block).
 - Per-route at 844×390: rhythm-game 0.70, song-studio 0.70, loop-studio 0.59, name-that-note 0.58, shred 0.56, free-play 0.56, boom-garden 0.55 fit; STILL OVERFLOW at floor (menus are tall vertical stacks): robot-boogie, note-match, fun-facts, simon-says, detective, sight-reading → candidates for dedicated landscape (side-by-side) menu layouts.

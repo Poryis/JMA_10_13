@@ -1,0 +1,26 @@
+{
+  "summary": "Retest of iteration_43 fixes on phone landscape (844x390, pointer: coarse stubbed). BOTH fixes verified PASS. (1) Fun Facts: .funfacts-scroller-pad now has box-sizing:content-box + width:max-content (1500px), padding 101.4px 253.2px (26vh x 30vw). Scroller scrollWidth=2006 (=1500 + 2x253 as expected), scrollHeight=1047 (=844 scene height + 2x101.4). All 7 characters (chunk, finn, drjellybone, stew, jazzy, charlie, lou) can be centred within 120px of the scroller visible centre; measured residuals: chunk 0.5, finn 0.3, drjellybone 0.3, stew 29.7, jazzy 0.4, charlie 0.3, lou 0.4 (prev stew=283, lou=163). After clicking all 7 the porthole-frame is unmounted and .funfacts-scene has class w-full. (2) Jam Session /#/free-play on default (Bells), Jelly Bells, and Guitar tabs: document scrollHeight==innerHeight==390, overflow=0 everywhere (<=5 passes). BEND bar button visible on Guitar tab (text 'BEND \u2197'). Previously 8px overflow is resolved.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/retest_funfacts_final.png",
+    "/app/test_reports/retest_funfacts_allfound.png",
+    "/app/test_reports/retest_guitar2.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FunFactsPage .funfacts-scene still uses w-[2400px] class with CSS @media override forcing 1500px on phone landscape. Dual source of truth remains but functional; could be unified by toggling class from JS."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend only)", "frontend": "100% (both retest items pass)"},
+  "test_credentials": "None required",
+  "seed_data_creation": "localStorage: jma_unlock_all_v1=1, jma_reveal_seen_v1=1, jma_player_name_skipped_v1=1; sessionStorage: jma_portrait_ok_v1=1. window.matchMedia stubbed to return matches:true for '(pointer: coarse)' AFTER /#/home load and BEFORE hash-navigating to /#/fun-facts (so FunFactsPage mounts in coarse branch).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Hash routing means matchMedia stub must be applied AFTER initial page load but BEFORE the target page mounts. Welcome JMA 'What should we call you?' modal re-appears on each hash navigation when jma_player_name_skipped_v1 isn't yet in storage during initial React mount; set that key AND click 'I\\'ll add my name later' when it shows. Clubhouse welcome modal on /#/fun-facts dismissed via 'Let\\'s find them!'. Fact modal dismiss text='Awesome'. Characters: chunk, finn, drjellybone, stew, jazzy, charlie, lou (data-testid funfacts-character-<id>). BEND button text contains an arrow character ('BEND \u2197') so check startsWith('BEND') not equality.",
+  "rca_of_the_issue": "Previous iteration root cause (border-box padding absorption in .funfacts-scroller-pad) correctly fixed by adding `box-sizing: content-box; width: max-content;` in the phone-landscape media block of index.css. Padding is now additive to the 1500px scene width, yielding scrollWidth 2006 == 1500 + 2x30vw, which brings all right-edge characters (stew, lou) within 120px of the visible scroller centre."
+}

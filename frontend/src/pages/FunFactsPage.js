@@ -106,6 +106,18 @@ function FunFactsPage() {
     return () => wrapper.removeEventListener('pointermove', onMove);
   }, []);
   const [wideLayout, setWideLayout] = useState(() => window.innerWidth >= 768 && !window.matchMedia('(pointer: coarse)').matches);
+  // Phones: open the porthole on an empty patch near the middle of the room, not the top-left corner.
+  const scrollerRef = useRef(null);
+  useEffect(() => {
+    const sc = scrollerRef.current;
+    const scene = sc?.querySelector('.funfacts-scene');
+    if (!sc || !scene || wideLayout) return;
+    const id = requestAnimationFrame(() => {
+      sc.scrollLeft = scene.offsetLeft + scene.offsetWidth * 0.42 - sc.clientWidth / 2;
+      sc.scrollTop = scene.offsetTop + scene.offsetHeight * 0.44 - sc.clientHeight / 2;
+    });
+    return () => cancelAnimationFrame(id);
+  }, [wideLayout]);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)'); const coarse = window.matchMedia('(pointer: coarse)');
     const f = () => setWideLayout(mq.matches && !coarse.matches);
@@ -247,6 +259,7 @@ function FunFactsPage() {
             className={`w-full h-full rounded-2xl md:rounded-[28px] border-4 md:border-[10px] border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)] ${desk ? 'overflow-visible' : 'overflow-auto'}`}
             style={{ WebkitOverflowScrolling: 'touch', touchAction: wideLayout ? 'none' : 'pan-x pan-y' }}
             data-testid="funfacts-scene-scroller"
+            ref={scrollerRef}
           >
             <div className={!desk && !allFound ? 'funfacts-scroller-pad' : ''}>
             <div

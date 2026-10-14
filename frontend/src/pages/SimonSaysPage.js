@@ -479,11 +479,11 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         )}
       </AnimatePresence>
 
-      <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-8 px-4">
+      <main className="simon-main flex-1 flex flex-col items-center justify-center pt-24 pb-8 px-4">
         {/* Message */}
         <motion.div
           key={message}
-          className="game-card px-6 py-4 mb-8"
+          className="simon-msg game-card px-6 py-4 mb-8"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
@@ -497,7 +497,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
         {/* Pattern progress (during playing) */}
         {gameState === 'playing' && (
-          <div className="flex gap-2 mb-6">
+          <div className="simon-dots flex gap-2 mb-6">
             {currentPattern.map((note, idx) => {
               const kazoo = KAZOOS.find(k => k.note === note);
               const isCompleted = idx < playerIndex;
@@ -526,9 +526,10 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             stewFrameRefs and those overrides survive every re-render —
             even ones triggered by setState calls fired in the same tick.
             Same proven pattern as the Beat Lab drum kit. */}
+        <div className="simon-stage flex flex-col items-center">
         <div
           key="stew-mascot-container"
-          className="relative w-32 h-32 md:w-44 md:h-44 mb-2"
+          className="simon-stew relative w-32 h-32 md:w-44 md:h-44 mb-2"
         >
           <div
             ref={stewContainerRef}
@@ -582,11 +583,12 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             highlightedNote={highlightedNote}
           />
         </motion.div>
+        </div>
 
         {/* Hint for showing phase */}
         {gameState === 'showing' && (
           <motion.p
-            className="mt-6 text-lg font-bold opacity-70"
+            className="simon-hint mt-6 text-lg font-bold opacity-70"
             style={{ color: 'var(--jma-dark)' }}
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ repeat: Infinity, duration: 1.5 }}

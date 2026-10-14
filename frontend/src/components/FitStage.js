@@ -36,11 +36,20 @@ export default function FitStage({ children }) {
     let raf = 0;
     const measure = () => {
       raf = 0;
-      const natural = el.scrollHeight; // stage-local px (pre-transform)
+      // Measure the page's own height (min-height:100% fill is lifted while measuring, so
+      // the scale can grow back when content shrinks — e.g. intro after a tall game screen).
+      el.classList.add('fit-measuring');
+      let natural = 0;
+      for (const c of el.children) {
+        if (getComputedStyle(c).position === 'fixed') continue;
+        natural = Math.max(natural, c.offsetTop + c.offsetHeight);
+      }
+      if (el.scrollHeight > el.clientHeight) natural = Math.max(natural, el.scrollHeight);
+      el.classList.remove('fit-measuring');
       const floor = MIN_BY_ROUTE[location.pathname] || MIN_SCALE;
       const target = Math.max(floor, Math.min(1, window.innerHeight / Math.max(1, natural)));
       // damped + bounded iterations so width changes can't oscillate forever
-      if (Math.abs(target - sRef.current) > 0.03 && steps.current < 4) {
+      if (Math.abs(target - sRef.current) > 0.01 && steps.current < 4) {
         steps.current += 1;
         sRef.current = target; setScale(target);
       }

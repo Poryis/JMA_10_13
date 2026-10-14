@@ -1102,6 +1102,15 @@ export default function RobotBoogiePage() {
   // holds a Map<charId, RefObject<HTMLElement>> for each active char's
   // rendered slot so we can aim the bolt at their chest.
   const stageRef = useRef(null);
+  const bandRef = useRef(null);
+  const [bandSize, setBandSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = bandRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(([e]) => setBandSize({ w: e.contentRect.width, h: e.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const timeMachineRef = useRef(null);
   const charSlotRefsRef = useRef(new Map());
   // Get or create a persistent ref for a given char id.
@@ -1272,7 +1281,7 @@ export default function RobotBoogiePage() {
           (back-button pill + title marquee) plus the floated Reset /
           Speed cluster in the top-right corner. */}
       <div ref={stageRef}
-           className="relative z-10 flex-1 min-h-0 flex flex-col items-center w-full mx-auto px-2 md:px-4 pb-2 pt-20 md:pt-16"
+           className="rb-stage relative z-10 flex-1 min-h-0 flex flex-col items-center w-full mx-auto px-2 md:px-4 pb-2 pt-20 md:pt-16"
            style={{ maxWidth: '1200px' }}>
 
         {/* Lightning bolts — drawn OVER the entire stage from the Time
@@ -1300,6 +1309,7 @@ export default function RobotBoogiePage() {
             at the container edge. Drag-clamp bounds in
             handleCharDrag() keep them from wandering too far anyway. */}
         <div
+          ref={bandRef}
           data-testid="robot-boogie-active-band"
           className="w-full flex-1 min-h-0 flex flex-wrap items-end justify-center content-center gap-0 pt-2 pb-0"
           style={{
@@ -1379,12 +1389,16 @@ export default function RobotBoogiePage() {
                 //  5-6|   34%    | 340px |    -10      |  ~34%-20  (3 per row on all viewports)
                 //  7-8|   24%    | 260px |    -10      |   240   (4 per row on desktop/tablet)
                 let widthPct, maxW, negPx;
-                if (n === 1)      { widthPct = '55%'; maxW = '440px'; negPx = 0; }
-                else if (n === 2) { widthPct = '50%'; maxW = '440px'; negPx = 30; }
-                else if (n === 3) { widthPct = '36%'; maxW = '380px'; negPx = 25; }
-                else if (n === 4) { widthPct = '28%'; maxW = '340px'; negPx = 22; }
-                else if (n <= 6)  { widthPct = '34%'; maxW = '340px'; negPx = 10; }
-                else               { widthPct = '24%'; maxW = '260px'; negPx = 10; }
+                if (n === 1)      { widthPct = 55; maxW = 440; negPx = 0; }
+                else if (n === 2) { widthPct = 50; maxW = 440; negPx = 30; }
+                else if (n === 3) { widthPct = 36; maxW = 380; negPx = 25; }
+                else if (n === 4) { widthPct = 28; maxW = 340; negPx = 22; }
+                else if (n <= 6)  { widthPct = 34; maxW = 340; negPx = 10; }
+                else               { widthPct = 24; maxW = 260; negPx = 10; }
+                // Never taller than the band (one row for n<=4, two rows above) — short landscape phones.
+                const rows = n > 4 ? 2 : 1;
+                const fromH = bandSize.h ? (bandSize.h / rows) * 0.75 : Infinity;
+                const slotW = bandSize.w ? Math.min((bandSize.w * widthPct) / 100, maxW, fromH) : undefined;
 
                 return (
                   <motion.div
@@ -1396,7 +1410,7 @@ export default function RobotBoogiePage() {
                     transition={{ type: 'spring', stiffness: 260, damping: 24 }}
                     className="min-w-0 flex-shrink-0"
                     style={{
-                      width: widthPct,
+                      width: slotW ?? `${widthPct}%`,
                       maxWidth: maxW,
                       // `maxHeight: 100%` + `aspectRatio: 3/4` combo
                       // lets the browser shrink BOTH dimensions

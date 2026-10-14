@@ -378,7 +378,7 @@ export default function SightReadingPage() {
       <GameHeader title="SIGHT-READING SPRINT" subtitle={level.name} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="sight-reading" />
 
-      <main className="flex-1 flex flex-col items-center pt-20 md:pt-20 pb-6 px-3">
+      <main className="sr-main flex-1 flex flex-col items-center pt-20 md:pt-20 pb-6 px-3">
         {/* Progress dots — one per card in the run */}
         <div className="flex items-center justify-center gap-2 mb-3" data-testid="card-progress-dots">
           {Array.from({ length: CARDS_PER_RUN }).map((_, i) => {
@@ -411,7 +411,7 @@ export default function SightReadingPage() {
         </div>
 
         {/* HUD */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+        <div className="sr-chips flex flex-wrap items-center justify-center gap-2 mb-3">
           <div
             data-testid="sight-reading-card-label"
             className="px-3 py-1 rounded-full font-black text-sm border-2"
@@ -467,7 +467,7 @@ export default function SightReadingPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -80, opacity: 0 }}
             transition={{ duration: 0.35 }}
-            className="w-full"
+            className="sr-staff w-full"
           >
             <SolfegeStaff
               sequence={sequence}
@@ -483,14 +483,14 @@ export default function SightReadingPage() {
           <button
             data-testid="sight-reading-replay-btn"
             onClick={replayDemo}
-            className="mt-3 chunky-btn bg-[var(--jma-blue)] text-white px-3 py-1.5 text-sm flex items-center gap-1.5"
+            className="sr-replay mt-3 chunky-btn bg-[var(--jma-blue)] text-white px-3 py-1.5 text-sm flex items-center gap-1.5"
           >
             <Volume2 className="w-4 h-4" /> Hear Again
           </button>
         )}
 
         {/* Bells — keyboard ENABLED so C D E F G A B keys work too */}
-        <div className="mt-5 w-full">
+        <div className="sr-bells mt-5 w-full">
           <JellyBellsRow
             ref={bellsRowRef}
             onPlayNote={handleBellTap}
@@ -501,7 +501,7 @@ export default function SightReadingPage() {
         </div>
 
         {/* Bottom controls */}
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div className="sr-controls mt-5 flex flex-wrap items-center justify-center gap-2">
           <button
             data-testid="sight-reading-restart-btn"
             onClick={() => startRun(difficulty)}

@@ -19,12 +19,13 @@ import { StageLights, CrowdRow, CROWD_SHOUTS } from './ShredLegendPage';
 
 const CURTAIN = 'repeating-linear-gradient(90deg, #C2173A 0 18px, #8E0C22 18px 36px)';
 const FANFARE = ['C4', 'E4', 'G4', 'C5'];
+const SFX = (file, vol, delay) => setTimeout(() => { const a = new Audio(encodeURI(`assets/audio/${file}`)); a.volume = vol; a.play().catch(() => {}); }, delay);
 const HALL_TRACKS = [{ src: 'assets/music/magic.mp3', title: 'Magic' }, { src: 'assets/music/brand-new-friend.mp3', title: 'Brand New Friend' }];
 const OVATION_AT = 3;
 
 // Camera flashes + hearts/notes rising from the pit on every bow.
 function CrowdBurst({ id, big }) {
-  const n = big ? 18 : 9;
+  const n = big ? 27 : 9;
   const items = Array.from({ length: n }, (_, i) => ({ x: 6 + ((i * 37 + id * 13) % 88), d: (i % 5) * 0.12, heart: i % 3 !== 0 }));
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 8 }} aria-hidden="true">
@@ -34,7 +35,7 @@ function CrowdBurst({ id, big }) {
           {it.heart ? <Heart className="w-5 h-5" fill="currentColor" strokeWidth={0} /> : <Music className="w-5 h-5" strokeWidth={3} />}
         </motion.span>
       ))}
-      {Array.from({ length: big ? 10 : 5 }, (_, i) => (
+      {Array.from({ length: big ? 15 : 5 }, (_, i) => (
         <motion.span key={`f${id}-${i}`} className="absolute rounded-full bg-white" style={{ left: `${10 + ((i * 53 + id * 7) % 80)}%`, bottom: `${3 + (i % 3) * 5}%`, width: 14, height: 14, boxShadow: '0 0 24px 10px rgba(255,255,255,0.9)' }}
           initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.25, delay: 0.15 + i * 0.18 }} />
       ))}
@@ -55,8 +56,11 @@ function BadgeTicker({ names }) {
   );
 }
 
+// Kick → crunchy guitar C-E-G-C → crash. Rock fanfare, not a recital.
 function playFanfare() {
-  FANFARE.forEach((n, i) => setTimeout(() => { const a = new Audio(`assets/audio/${n}.mp3`); a.volume = 0.5; a.play().catch(() => {}); }, i * 110));
+  SFX('Bass drum - kick.mp3', 0.9, 0);
+  FANFARE.forEach((n, i) => SFX(`guitar-crunch/${n}.mp3`, 0.55, 60 + i * 120));
+  SFX('Crash cymbal.mp3', 0.6, 60 + FANFARE.length * 120);
 }
 
 function Trophy({ rank, state, index, onPick, picked }) {
@@ -92,7 +96,6 @@ export default function RankHallPage() {
   const [bubble, setBubble] = useState(`Welcome to the Rank Hall, ${currentRank.title}! Tap a trophy, or take a bow!`);
   const [hype, setHype] = useState(0);
   const [ovation, setOvation] = useState(false);
-  const [spotX, setSpotX] = useState(50);
   const timers = useRef([]);
   const hypeTimer = useRef(null);
   useEffect(() => () => { timers.current.forEach(clearTimeout); clearTimeout(hypeTimer.current); }, []);
@@ -110,13 +113,6 @@ export default function RankHallPage() {
     timers.current.push(setTimeout(() => { setEnergy(0.3); setShouts([]); }, big ? 4200 : 2600));
   }, [bow, hype]);
 
-  // Tap anywhere on the boards → the spotlight swings over there, then drifts back to you.
-  const aimSpot = (e) => {
-    if (e.target.closest('button')) return;
-    const x = Math.max(12, Math.min(88, (e.clientX / window.innerWidth) * 100));
-    setSpotX(x);
-    timers.current.push(setTimeout(() => setSpotX(50), 2600));
-  };
 
   const pickTrophy = (rank, state) => {
     if (state === 'future') setBubble(`${rank.title} — ${rank.requirement.label}. You'll get there!`);
@@ -125,7 +121,7 @@ export default function RankHallPage() {
   };
 
   return (
-    <div className="relative overflow-hidden" data-testid="rank-hall-page" onPointerDown={aimSpot} style={{ height: '100dvh', minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 20%, #1E3A5C 0%, #0B1E33 55%, #060F1C 100%)' }}>
+    <div className="relative overflow-hidden" data-testid="rank-hall-page" style={{ height: '100dvh', minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 20%, #1E3A5C 0%, #0B1E33 55%, #060F1C 100%)' }}>
       <StageLights energy={energy} style="halftime" />
       <BadgeTicker names={badgeNames} />
       <GameHeader title="Rank Hall" showHomeButton={true} backTo="/home" />
@@ -163,8 +159,8 @@ export default function RankHallPage() {
       <div aria-hidden="true" className="absolute inset-x-0 pointer-events-none" style={{ bottom: '18%', height: '16%', background: 'repeating-linear-gradient(90deg, #A67B4C 0 60px, #8B6540 60px 62px)', borderTop: '4px solid var(--jma-dark)', boxShadow: 'inset 0 10px 20px rgba(0,0,0,0.35)', zIndex: 2 }} />
 
       {/* spotlight + YOU */}
-      <motion.div aria-hidden="true" className="absolute pointer-events-none" style={{ bottom: '30%', width: 'min(60vw, 520px)', height: '62%', zIndex: 3, x: '-50%', clipPath: 'polygon(44% 0, 56% 0, 100% 100%, 0 100%)', background: ovation ? 'linear-gradient(180deg, rgba(255,240,180,0.0) 0%, rgba(255,240,180,0.4) 60%, rgba(255,240,180,0.6) 100%)' : 'linear-gradient(180deg, rgba(255,240,180,0.0) 0%, rgba(255,240,180,0.22) 60%, rgba(255,240,180,0.35) 100%)' }}
-        animate={{ left: `${spotX}%` }} transition={{ type: 'spring', stiffness: 60, damping: 14 }} data-testid="rank-hall-spotlight" />
+      <motion.div aria-hidden="true" className="absolute left-1/2 pointer-events-none" style={{ bottom: '30%', width: 'min(60vw, 520px)', height: '62%', transformOrigin: 'top center', zIndex: 3, clipPath: 'polygon(44% 0, 56% 0, 100% 100%, 0 100%)', background: ovation ? 'linear-gradient(180deg, rgba(255,240,180,0.0) 0%, rgba(255,240,180,0.4) 60%, rgba(255,240,180,0.6) 100%)' : 'linear-gradient(180deg, rgba(255,240,180,0.0) 0%, rgba(255,240,180,0.22) 60%, rgba(255,240,180,0.35) 100%)' }}
+        animate={{ x: ['-50%', '-46%', '-54%', '-50%'] }} transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }} />
       <motion.button type="button" data-testid="rank-hall-you" onClick={takeBow} aria-label="Take a bow"
         className="rank-hall-you absolute left-1/2 -translate-x-1/2 bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center" style={{ bottom: '31%', zIndex: 5, height: '40%' }}>
         <motion.div key={bow} className="h-full flex items-end" style={{ transformOrigin: 'bottom center' }}
@@ -224,7 +220,14 @@ export default function RankHallPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      {confetti > 0 && <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 40 }}><Confetti key={confetti} mega testId="rank-hall-confetti" /></div>}
+      {confetti > 0 && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 40 }}>
+          <Confetti key={confetti} mega testId="rank-hall-confetti" />
+          {ovation && [-30, 30].map((dx) => (
+            <div key={`${confetti}-${dx}`} className="absolute inset-0" style={{ transform: `translateX(${dx}%)` }}><Confetti mega /></div>
+          ))}
+        </div>
+      )}
       <HowRanksWorkModal open={howOpen} onClose={() => setHowOpen(false)} />
     </div>
   );

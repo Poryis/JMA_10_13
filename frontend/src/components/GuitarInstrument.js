@@ -86,11 +86,20 @@ function analyzeLoop(buffer) {
   const data = buffer.getChannelData(0);
   const sr = buffer.sampleRate;
   const dur = buffer.duration;
-  const end = snapToRisingZero(data, Math.floor((dur - 0.25) * sr));
-  const start = snapToRisingZero(data, Math.floor((dur - 0.85) * sr));
   const attack = rms(data, Math.floor(0.08 * sr), Math.floor(0.45 * sr));
+  // Walk the 0.6 s loop window back from the tail until the string is still
+  // clearly ringing (>= 30% of the attack). High clean notes are near-silent
+  // by 2 s, so looping their tail made held notes die early and unevenly.
+  const win = 0.6;
+  let startSec = dur - 0.85;
+  for (let t = dur - 0.85; t >= 0.7; t -= 0.1) {
+    startSec = t;
+    if (rms(data, Math.floor(t * sr), Math.floor((t + win) * sr)) >= attack * 0.3) break;
+  }
+  const start = snapToRisingZero(data, Math.floor(startSec * sr));
+  const end = snapToRisingZero(data, Math.floor((startSec + win) * sr));
   const tail = rms(data, start, end);
-  const makeup = Math.min(2.4, Math.max(1, tail > 0 ? (attack / tail) * 0.55 : 1));
+  const makeup = Math.min(4, Math.max(1, tail > 0 ? (attack / tail) * 0.55 : 1));
   return { loopStart: start / sr, loopEnd: end / sr, makeup };
 }
 
@@ -603,7 +612,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
                 onPointerUp={() => stopChord(chord.id)}
                 onPointerLeave={() => stopChord(chord.id)}
                 onPointerCancel={() => stopChord(chord.id)}
-                className="relative rounded-2xl flex items-center justify-center py-4 md:py-6 border-2 touch-manipulation select-none"
+                className="relative rounded-2xl flex items-center justify-center py-4 md:py-6 border-2 touch-none select-none"
                 style={{
                   background: `linear-gradient(180deg, ${chord.color} 0%, ${chord.color}CC 100%)`,
                   borderColor: '#000',
@@ -632,7 +641,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
                   onPointerUp={() => stopNote(idx)}
                   onPointerLeave={() => stopNote(idx)}
                   onPointerCancel={() => stopNote(idx)}
-                  className="relative rounded-xl flex items-center justify-center py-3 md:py-5 border-2 touch-manipulation select-none"
+                  className="relative rounded-xl flex items-center justify-center py-3 md:py-5 border-2 touch-none select-none"
                   style={{
                     background: `linear-gradient(180deg, ${NOTE_COLORS[idx]} 0%, ${NOTE_COLORS[idx]}CC 100%)`,
                     borderColor: '#000',
@@ -656,7 +665,7 @@ export default function GuitarInstrument({ getAudioGraph, initAudioContext, onPl
             onPointerUp={() => applyBend(false)}
             onPointerLeave={() => applyBend(false)}
             onPointerCancel={() => applyBend(false)}
-            className="w-full rounded-xl flex items-center justify-center gap-2 py-2.5 md:py-3 border-2 touch-manipulation select-none font-black uppercase tracking-widest text-sm md:text-base"
+            className="w-full rounded-xl flex items-center justify-center gap-2 py-2.5 md:py-3 border-2 touch-none select-none font-black uppercase tracking-widest text-sm md:text-base"
             style={{
               background: bending
                 ? 'linear-gradient(180deg, #FFE07A 0%, #FFCC00 100%)'

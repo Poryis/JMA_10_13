@@ -158,6 +158,28 @@ function BrandMarquee({ extras }) {
   );
 }
 
+function GateRibbon({ ribbon, fontSize }) {
+  const text = <span className="font-black font-display whitespace-nowrap" style={{ fontSize, lineHeight: 1.25, color: ribbon.color, letterSpacing: '0.06em', textShadow: ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none' }}>{ribbon.text}</span>;
+  if (ribbon.style === 'scroll') {
+    return (
+      <div className="relative" style={{ width: '112%', filter: 'drop-shadow(0 4px 0 rgba(2,36,63,0.35))' }}>
+        <img src="assets/plaza/ribbon-scroll.png" alt="" draggable={false} className="block w-full" />
+        <span className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '12%', paddingLeft: '8%', paddingRight: '8%' }}>{text}</span>
+      </div>
+    );
+  }
+  if (ribbon.style === 'marquee') {
+    return (
+      <div className="flex justify-center w-full rounded-full" style={{ padding: 7, background: 'radial-gradient(circle, #FFF2A8 0 2.5px, rgba(255,255,255,0) 3.5px) 1px 1px / 15px 15px, var(--jma-dark)', border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}>
+        <span className="flex justify-center w-full rounded-full" style={{ background: ribbon.bg, padding: '4px 26px', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.3)' }}>{text}</span>
+      </div>
+    );
+  }
+  return (
+    <span className="flex justify-center w-full" style={{ background: ribbon.bg, padding: '4px 26px', borderRadius: 12, border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark), inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.3)' }}>{text}</span>
+  );
+}
+
 function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras, x }) {
   const [shake, setShake] = useState(0);
   const lift = b.flat ? (b.lift ? 58 * b.lift : 0) : index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
@@ -216,10 +238,8 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             </div>
           )}
           {b.ribbon && (
-            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: `${-5 + (b.ribbonLift || 0)}%`, left: `${b.portal.box.left + 5}%`, width: `${b.portal.box.width}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
-              <span className="font-black font-display whitespace-nowrap text-center w-full" style={{ fontSize: Math.round(L.bw * b.size * 0.085), lineHeight: 1.25, color: b.ribbon.color, background: b.ribbon.bg, padding: '4px 30px', letterSpacing: '0.06em', clipPath: 'polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%)', textShadow: b.ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.35)' }}>
-                {b.ribbon.text}
-              </span>
+            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: `${-5 + (b.ribbonLift || 0)}%`, left: `${b.portal.box.left + 5}%`, width: `${b.portal.box.width}%`, zIndex: 6 }}>
+              <GateRibbon ribbon={b.ribbon} fontSize={Math.round(L.bw * b.size * 0.085)} />
             </div>
           )}
           {b.custom === 'bandstand' && <BrandMarquee extras={extras} />}
@@ -490,7 +510,6 @@ export default function CampusMapPage({ plaza = false }) {
           {buildings.map((b, i) => (
             <Building key={b.id} b={b} index={i} L={L} x={xs ? xs[i] : undefined} badge={badgeFor(b)} extras={b.custom === 'bandstand' ? extras : null} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
-          {plaza && <SandStrip src={UW_ASSETS.sandFront} height={Math.round(sandFront * 0.42)} shift={FRONT_TROUGH + 0.12} style={{ zIndex: 8 }} data-testid="campus-sand-cover" />}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">
             {frontAccents.map((a, i) => a.kind === 'weed'

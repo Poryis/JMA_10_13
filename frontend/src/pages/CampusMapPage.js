@@ -24,6 +24,7 @@ import { readAvatarOutfit } from '../hooks/useAvatar';
 import { loadSavedBeats } from '../hooks/useSavedBeats';
 import { loadSavedSongs } from '../hooks/useSongLoopPlayer';
 import { say, voiceEnabled } from '../lib/voice';
+import { pickFeaturedEpisode } from '../data/jmatv';
 
 // Shelf layout scales with the viewport: a building is ~46% of the screen
 // height (capped by width) and everything else is derived from that.
@@ -110,6 +111,8 @@ function RoofBubbles({ index }) {
 
 // Plaza: the JMAtv drive-in screen — outer-space billboard on two posts.
 function DriveIn({ live }) {
+  const featured = useMemo(() => pickFeaturedEpisode(), []);
+  const previewSrc = featured ? `https://player.vimeo.com/video/${featured.vimeoId}?autoplay=1&loop=1&muted=1&background=1&controls=0&app_id=122963&title=0&byline=0&portrait=0&dnt=1` : null;
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-end" data-testid="plaza-drive-in">
       <div className="relative w-full rounded-[14%/18%] overflow-hidden" style={{ height: '62%', background: 'radial-gradient(ellipse at 30% 20%, #2A1B5E 0%, #0B1033 55%, #05071C 100%)', border: '5px solid var(--jma-dark)', boxShadow: '0 8px 0 0 rgba(2,36,63,0.45), inset 0 0 40px rgba(120,80,255,0.25)' }}>
@@ -117,7 +120,12 @@ function DriveIn({ live }) {
           <motion.span key={i} className="absolute rounded-full bg-white" style={{ width: 2 + (i % 3), height: 2 + (i % 3), left: `${(i * 37) % 100}%`, top: `${(i * 53) % 100}%` }}
             animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.5 + (i % 4) * 0.6, delay: (i % 5) * 0.3 }} />
         ))}
-        <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[56%] object-contain" style={{ filter: 'drop-shadow(0 3px 0 rgba(0,0,0,0.5))' }} />
+        {previewSrc && (
+          <iframe key={featured.vimeoId} title="JMAtv preview" src={previewSrc} allow="autoplay; fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" data-testid="plaza-drive-in-preview"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: '112%', height: '100%', border: 0 }} />
+        )}
+        <span aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: 'repeating-linear-gradient(180deg, rgba(0,0,0,0.16) 0 1px, transparent 1px 3px)', mixBlendMode: 'multiply' }} />
+        <img src="assets/ui/jmatv-logo-v2.png" alt="JMAtv" draggable={false} className={`absolute object-contain ${previewSrc ? 'bottom-[6%] right-[5%] w-[24%]' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[56%]'}`} style={{ filter: 'drop-shadow(0 3px 0 rgba(0,0,0,0.5))' }} />
         <motion.span className="absolute top-[7%] left-[7%] flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] md:text-[11px] font-black text-white" style={{ background: '#E11D48', border: '2px solid white' }} animate={{ opacity: [1, 0.55, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white" /> {live || 'LIVE'}
         </motion.span>
@@ -160,21 +168,6 @@ function BrandMarquee({ extras }) {
 
 function GateRibbon({ ribbon, fontSize }) {
   const text = <span className="font-black font-display whitespace-nowrap" style={{ fontSize, lineHeight: 1.25, color: ribbon.color, letterSpacing: '0.06em', textShadow: ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none' }}>{ribbon.text}</span>;
-  if (ribbon.style === 'scroll') {
-    return (
-      <div className="relative" style={{ width: '112%', filter: 'drop-shadow(0 4px 0 rgba(2,36,63,0.35))' }}>
-        <img src="assets/plaza/ribbon-scroll.png" alt="" draggable={false} className="block w-full" />
-        <span className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '12%', paddingLeft: '8%', paddingRight: '8%' }}>{text}</span>
-      </div>
-    );
-  }
-  if (ribbon.style === 'marquee') {
-    return (
-      <div className="flex justify-center w-full rounded-full" style={{ padding: 7, background: 'radial-gradient(circle, #FFF2A8 0 2.5px, rgba(255,255,255,0) 3.5px) 1px 1px / 15px 15px, var(--jma-dark)', border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}>
-        <span className="flex justify-center w-full rounded-full" style={{ background: ribbon.bg, padding: '4px 26px', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.3)' }}>{text}</span>
-      </div>
-    );
-  }
   return (
     <span className="flex justify-center w-full" style={{ background: ribbon.bg, padding: '4px 26px', borderRadius: 12, border: '3px solid var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark), inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.3)' }}>{text}</span>
   );

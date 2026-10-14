@@ -119,7 +119,7 @@ export default function ForParentsPage() {
     <div
       ref={parentPageRef}
       data-testid="for-parents-page"
-      className="min-h-screen w-full overflow-x-hidden"
+      className="min-h-screen w-full overflow-x-hidden select-text"
       style={{
         background: 'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 40%, #FFF8E8 100%)',
       }}

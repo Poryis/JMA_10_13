@@ -31,6 +31,13 @@
 * {
   box-sizing: border-box;
 }
+img, video, svg {
+  -webkit-user-drag: none;
+}
+input, textarea, [contenteditable], .select-text {
+  user-select: text;
+  -webkit-user-select: text;
+}
 
 /* ---- SubMenu tile "pop" animations ---- */
 /* Slow Ken Burns drift on card background scenes. Livelier version: a
@@ -267,6 +274,9 @@
 body {
   margin: 0;
   font-family: var(--font-body);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--jma-bg);

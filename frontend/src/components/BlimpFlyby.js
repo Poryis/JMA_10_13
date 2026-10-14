@@ -33,7 +33,7 @@ function makeLap(direction) {
   };
 }
 
-export default function BlimpFlyby() {
+export default function BlimpFlyby({ zIndex = 0 }) {
   const [frame, setFrame] = useState(0);
   const [lap, setLap] = useState(() => makeLap(1));
 
@@ -62,7 +62,7 @@ export default function BlimpFlyby() {
         left: 0,
         top: 0,
         width: 'clamp(112px, 18vw, 256px)',
-        zIndex: 0,
+        zIndex,
         opacity: 0.92,
       }}
       key={`${direction}-${startYvh.toFixed(1)}-${endYvh.toFixed(1)}-${scale.toFixed(2)}`}

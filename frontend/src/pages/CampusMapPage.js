@@ -400,9 +400,14 @@ export default function CampusMapPage({ plaza = false }) {
       {/* water + wave bands (user's layers) */}
       <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '82%', zIndex: 0, backgroundImage: `url(${UW_ASSETS.bands})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: 'center bottom' }} />
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
-      <Bubbles className="absolute inset-0 z-[2]" />
-      <BlimpFlyby />
-      <GameHeader title={plaza ? <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="object-contain" style={{ height: 'clamp(150px, 44vh, 384px)', filter: 'drop-shadow(0 6px 0 rgba(2,36,63,0.35))' }} /> : zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
+      {/* layer order: water → fish (1) → shield (2) → bubbles + blimp (3) → strollers (4) → buildings (5) */}
+      {plaza && (
+        <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="absolute object-contain pointer-events-none"
+          style={{ top: 'clamp(8px, 2vh, 20px)', left: 'clamp(8px, 1.5vw, 24px)', height: 'clamp(150px, 44vh, 384px)', zIndex: 2, filter: 'drop-shadow(0 6px 0 rgba(2,36,63,0.35))' }} />
+      )}
+      <Bubbles className="absolute inset-0 z-[3]" />
+      <BlimpFlyby zIndex={3} />
+      <GameHeader title={plaza ? '' : zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
       {plaza && (
         <button type="button" data-testid="home-for-parents-link" onClick={() => navigate('/for-parents')}
           className="absolute top-3 right-3 md:top-4 md:right-6 z-20 text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full transition-transform hover:scale-105 active:scale-95"
@@ -413,7 +418,7 @@ export default function CampusMapPage({ plaza = false }) {
 
 
       {/* the user's fish — every sprite faces the way it swims */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} data-testid="campus-fish">
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }} data-testid="campus-fish">
         <Swimmer src={UW_ASSETS.fishSchool} top="11%" dur={64} delay={18} width="clamp(90px, 10vw, 170px)" />
         <Swimmer src={UW_ASSETS.fish1} top="30%" dur={30} delay={6} width="clamp(40px, 5vw, 80px)" dir="left" />
         <Swimmer src={UW_ASSETS.fish2} top="20%" dur={24} delay={2} width="clamp(44px, 5vw, 84px)" />

@@ -147,11 +147,11 @@ function BrandMarquee({ extras }) {
           animate={{ scale: [0.9, 1.14, 0.9] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }} />
       </div>
       {extras && (
-        <div className="absolute flex flex-col items-center pointer-events-none" style={{ left: '-6%', bottom: '4%', width: 'max(15%, 60px)', zIndex: 6 }} data-testid="plaza-pennant">
+        <div className="absolute flex flex-col items-center pointer-events-none" style={{ left: '-6%', bottom: '4%', width: '15%', zIndex: 6 }} data-testid="plaza-pennant">
           <motion.div className="relative w-full" animate={{ skewY: [0, 3, 0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
-            <div className="w-full rounded-xl p-1 flex flex-col items-center" style={{ background: '#FFCC00', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}>
-              <img src={extras.rankIcon} alt="" className="w-[70%] object-contain" />
-              <span className="text-[9px] md:text-[10px] font-black leading-none text-center" style={{ color: 'var(--jma-dark)' }}>{extras.rankTitle}</span>
+            <div className="rounded-xl p-1 flex flex-col items-center" style={{ minWidth: '100%', width: 'max-content', background: '#FFCC00', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}>
+              <img src={extras.rankIcon} alt="" className="w-[70%] max-w-[44px] md:max-w-none object-contain" />
+              <span className="text-[8px] md:text-[10px] font-black leading-none text-center whitespace-nowrap px-0.5" style={{ color: 'var(--jma-dark)' }}>{extras.rankTitle}</span>
             </div>
           </motion.div>
           <span className="block" style={{ width: 6, height: 'clamp(30px, 8vh, 70px)', background: '#8B5A2B', border: '2px solid var(--jma-dark)', borderTop: 0 }} />

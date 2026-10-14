@@ -16,6 +16,7 @@ const isShort = () => window.innerHeight < 520 && window.innerWidth > window.inn
 export default function FitStage({ children }) {
   const location = useLocation();
   const ref = useRef(null);
+  const probeRef = useRef(null); // 100vh in px — stable while the mobile URL bar shows/hides (innerHeight is not)
   const [active, setActive] = useState(isShort);
   const [scale, setScale] = useState(1);
   const sRef = useRef(1);
@@ -47,7 +48,9 @@ export default function FitStage({ children }) {
       if (el.scrollHeight > el.clientHeight) natural = Math.max(natural, el.scrollHeight);
       el.classList.remove('fit-measuring');
       const floor = MIN_BY_ROUTE[location.pathname] || MIN_SCALE;
-      const target = Math.max(floor, Math.min(1, window.innerHeight / Math.max(1, natural)));
+      const vh = probeRef.current?.offsetHeight || window.innerHeight;
+      let target = Math.max(floor, Math.min(1, vh / Math.max(1, natural)));
+      if (target > 0.97) target = 1; // dead zone: a few px of overflow isn't worth a visible jump
       // damped + bounded iterations so width changes can't oscillate forever
       if (Math.abs(target - sRef.current) > 0.01 && steps.current < 4) {
         steps.current += 1;
@@ -64,10 +67,12 @@ export default function FitStage({ children }) {
     return () => { ro.disconnect(); mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [active, location.pathname]);
 
-  if (!active || EXCLUDED.includes(location.pathname)) return children;
+  const probe = <div ref={probeRef} aria-hidden="true" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: '100vh', visibility: 'hidden', pointerEvents: 'none' }} />;
+  if (!active || EXCLUDED.includes(location.pathname)) return <>{probe}{children}</>;
   const pct = 100 / scale;
   return (
     <div data-testid="fit-stage" data-scale={scale.toFixed(2)} className="fixed inset-0 overflow-hidden" style={{ background: '#02243F' }}>
+      {probe}
       <div ref={ref} className="fit-stage-inner overflow-y-auto overflow-x-hidden"
         style={{ width: `${pct}vw`, height: `${pct}vh`, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
         {children}

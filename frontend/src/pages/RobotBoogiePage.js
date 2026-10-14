@@ -1397,8 +1397,11 @@ export default function RobotBoogiePage() {
                 else               { widthPct = 24; maxW = 260; negPx = 10; }
                 // Never taller than the band (one row for n<=4, two rows above) — short landscape phones.
                 const rows = n > 4 ? 2 : 1;
-                const fromH = bandSize.h ? (bandSize.h / rows) * 0.75 : Infinity;
-                const slotW = bandSize.w ? Math.min((bandSize.w * widthPct) / 100, maxW, fromH) : undefined;
+                // Heads may peek ~25% above the band (overflow is visible) — keeps dancers readable on short screens.
+                const fromH = bandSize.h ? (bandSize.h / rows) * 0.75 * 1.25 : Infinity;
+                const fromW = bandSize.w ? Math.min((bandSize.w * widthPct) / 100, maxW) : Infinity;
+                const slotW = bandSize.w ? Math.min(fromW, fromH) : undefined;
+                if (slotW !== undefined && fromH < fromW) negPx = 0; // height-limited: don't bunch them up
 
                 return (
                   <motion.div

@@ -909,6 +909,16 @@ h1, h2, h3, h4, h5, h6 {
 .home-short .home-card-title { font-size: clamp(26px, 4.2vw, 40px) !important; }
 .home-short .home-card-sub { font-size: clamp(8px, 1.3vw, 12px) !important; }
 
+/* Sticker Shack: earned medals get a slow foil shine sweep */
+.medal-earned::after {
+  content: ''; position: absolute; inset: 0; border-radius: 9999px; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.75) 50%, transparent 65%);
+  background-size: 250% 100%; animation: medal-shine 4s ease-in-out infinite;
+}
+@keyframes medal-shine { 0%, 60% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+.shack-pegboard { background-image: radial-gradient(rgba(255,255,255,0.09) 1.6px, transparent 1.7px); background-size: 22px 22px; }
+.shack-sign { display: inline-flex; align-items: center; gap: 8px; background: #FFCC00; color: var(--jma-dark); border: 3px solid var(--jma-dark); border-radius: 14px; padding: 4px 14px; box-shadow: 0 4px 0 0 var(--jma-dark); }
+
 /* FitStage: the scaled page always paints to the bottom of the stage (no navy bar). */
 .fit-stage-inner:not(.fit-measuring) > * { min-height: 100%; }
 

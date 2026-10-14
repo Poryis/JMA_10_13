@@ -92,7 +92,7 @@ function StickerDetailModal({ sticker, earned, allEarned, teacherView, onClose, 
         ) : (
           <img src={sticker.icon} alt={sticker.name} draggable={false}
             className="w-32 h-32 object-contain mx-auto"
-            style={{ filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)' }} />
+            style={{ filter: isEarned ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.2))' : 'brightness(0) invert(1) opacity(0.3)' }} />
         )}
         <h3 className="text-2xl font-black mt-2" style={{ color: accentColor }}>
           {isEarned ? sticker.name : 'Locked'}
@@ -159,19 +159,21 @@ function StickerDetailModal({ sticker, earned, allEarned, teacherView, onClose, 
 }
 
 // Round collection-sticker tile (kept from the original design).
-function CollectionStickerCard({ sticker, earned, onOpen }) {
+function CollectionStickerCard({ sticker, earned, onOpen, index = 0 }) {
   const isEarned = !!earned;
+  const tilt = isEarned ? [-4, 3, -2, 4, -3][index % 5] : 0;
   return (
     <motion.button
       data-testid={`sticker-${sticker.id}`}
       onClick={() => onOpen(sticker)}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.08, rotate: 0 }}
       whileTap={{ scale: 0.95 }}
-      className="relative flex flex-col items-center rounded-2xl border-4 p-2 md:p-3 cursor-pointer"
+      className="relative flex flex-col items-center rounded-2xl p-2 md:p-3 cursor-pointer"
       style={{
-        borderColor: isEarned ? sticker.color : '#cbd5e1',
-        backgroundColor: isEarned ? `${sticker.color}20` : '#f1f5f9',
-        boxShadow: isEarned ? `0 5px 0 0 ${sticker.color}` : '0 3px 0 0 #cbd5e1',
+        rotate: tilt,
+        border: isEarned ? '4px solid white' : '3px dashed rgba(255,255,255,0.22)',
+        background: isEarned ? `radial-gradient(circle at 40% 30%, white 0%, ${sticker.color}33 100%)` : 'rgba(255,255,255,0.06)',
+        boxShadow: isEarned ? `0 5px 0 0 ${sticker.color}, 0 0 14px ${sticker.color}66` : 'none',
       }}
     >
       <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
@@ -185,9 +187,9 @@ function CollectionStickerCard({ sticker, earned, onOpen }) {
       </div>
       <span
         className="text-[10px] md:text-xs font-black text-center mt-1 leading-tight"
-        style={{ color: isEarned ? sticker.color : '#64748b' }}
+        style={{ color: isEarned ? 'var(--jma-dark)' : 'rgba(255,255,255,0.5)' }}
       >
-        {isEarned ? sticker.name : '???'}
+        {isEarned ? sticker.name : '?'}
       </span>
       {isEarned && (
         <motion.div
@@ -241,14 +243,15 @@ export default function StickerBookPage() {
   const handleStickerClick = (s) => setOpenSticker(s);
 
   return (
-    <div className="min-h-screen flex flex-col" data-testid="sticker-book-page"
-      style={{ background: 'linear-gradient(135deg, #FFF9E6 0%, #E0F7FA 50%, #FFE4F1 100%)' }}>
-      <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b-4 border-[var(--jma-dark)] px-4 py-2 flex items-center gap-3 z-40">
+    <div className="min-h-screen flex flex-col relative" data-testid="sticker-book-page"
+      style={{ background: 'radial-gradient(ellipse at 50% 0%, #2F6A8A 0%, #163A55 45%, #0B2238 100%)' }}>
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none shack-pegboard" />
+      <div className="fixed top-0 left-0 right-0 backdrop-blur-md border-b-4 border-[var(--jma-dark)] px-4 py-2 flex items-center gap-3 z-40" style={{ background: 'rgba(10,37,64,0.92)' }}>
         <button data-testid="sticker-home-btn" onClick={() => navigate('/')}
           aria-label="Home"
           className="flex flex-col items-center group cursor-pointer bg-transparent border-0 p-0">
           <div
-            className="rounded-2xl border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] group-hover:shadow-[0_5px_0_0_var(--jma-dark)] transition-shadow p-1"
+            className="rounded-2xl border-3 border-white/70 shadow-[0_3px_0_0_rgba(255,255,255,0.5)] group-hover:shadow-[0_5px_0_0_rgba(255,255,255,0.5)] transition-shadow p-1"
             style={{ backgroundColor: 'var(--jma-dark)' }}
           >
             <HarpIcon size={34} />
@@ -258,17 +261,17 @@ export default function StickerBookPage() {
             Home
           </span>
         </button>
-        <h1 className="text-xl md:text-2xl font-black font-display flex-1 text-center" style={{ color: 'var(--jma-dark)' }}>
-          Sticker Book
+        <h1 className="text-xl md:text-2xl font-black font-display flex-1 text-center" style={{ color: '#FFCC00', textShadow: '0 2px 0 rgba(0,0,0,0.4)' }}>
+          Sticker Shack
         </h1>
-        <div className="text-xs md:text-sm font-bold whitespace-nowrap text-right leading-tight mr-10 md:mr-12" style={{ color: 'var(--jma-dark)' }}>
+        <div className="text-xs md:text-sm font-bold whitespace-nowrap text-right leading-tight mr-10 md:mr-12 text-white">
           <div>🏅 {achievementCount}/{totalAchievements}</div>
           <div>🎁 {collectionCount}/{totalCollection}</div>
         </div>
       </div>
 
 
-      <main className="flex-1 pt-20 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
+      <main className="relative flex-1 pt-20 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
           {/* Rank badge with progress meter inside it, plus a compact
               "How ranks work?" affordance. Passive help — not a
               notification, so no bounce or red dot. */}
@@ -295,10 +298,10 @@ export default function StickerBookPage() {
         {/* ============ ACHIEVEMENT BADGES (top — the rank-driving section) ============ */}
         <section className="mb-10" data-testid="category-achievements">
           <div className="flex items-center justify-between gap-2 mb-3 px-1">
-            <h2 className="text-lg md:text-xl font-black font-display flex items-center gap-2" style={{ color: 'var(--jma-dark)' }}>
-              <Trophy className="w-5 h-5" style={{ color: '#D89B00' }} />
-              Achievement Badges
-              <span className="text-xs font-bold opacity-60 ml-1">({achievementCount}/{totalAchievements})</span>
+            <h2 className="shack-sign text-base md:text-lg font-black font-display">
+              <Trophy className="w-5 h-5" />
+              Achievement Medals
+              <span className="text-xs font-bold opacity-70">({achievementCount}/{totalAchievements})</span>
             </h2>
             <div className="flex items-center gap-2">
               <button
@@ -367,7 +370,7 @@ export default function StickerBookPage() {
           </div>
 
           {/* One row per domain, three badges across (Cadet · Pro · Master) */}
-          <div className="rounded-2xl border-3 border-[var(--jma-dark)] bg-white/80 backdrop-blur-sm divide-y-2 divide-[var(--jma-dark)]/15 overflow-hidden">
+          <div className="rounded-2xl border-3 border-[var(--jma-dark)] divide-y-2 divide-white/10 overflow-hidden text-white" style={{ background: 'linear-gradient(180deg, rgba(30,58,82,0.92) 0%, rgba(16,36,56,0.95) 100%)', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), 0 6px 0 0 var(--jma-dark)' }}>
             {ACHIEVEMENT_DOMAINS.map((dom) => (
               <div key={dom.id} className="flex items-start gap-2 md:gap-4 p-2.5 md:p-4" data-testid={`domain-row-${dom.id}`}>
                 {/* Domain label column — width grows in teacher view so the
@@ -376,25 +379,23 @@ export default function StickerBookPage() {
                   <div className="flex items-start gap-2">
                     <div
                       className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex-shrink-0 mt-0.5"
-                      style={{ borderColor: 'var(--jma-dark)', backgroundColor: `${dom.color}33`, overflow: 'hidden' }}
+                      style={{ borderColor: dom.color, backgroundColor: `${dom.color}33`, overflow: 'hidden' }}
                     >
                       <img src={dom.icon} alt={dom.label} className="w-full h-full object-contain" draggable={false} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs md:text-sm font-black font-display leading-tight" style={{ color: 'var(--jma-dark)' }}>{dom.label}</div>
+                      <div className="text-xs md:text-sm font-black font-display leading-tight text-white">{dom.label}</div>
                       {teacherView ? (
                         <div
                           data-testid={`domain-teacher-desc-${dom.id}`}
-                          className="text-[10px] md:text-[11px] opacity-80 leading-tight mt-0.5"
-                          style={{ color: 'var(--jma-dark)' }}
+                          className="text-[10px] md:text-[11px] opacity-80 leading-tight mt-0.5 text-white"
                         >
                           {dom.teacherDescription}
                         </div>
                       ) : (
                         <div
                           data-testid={`domain-blurb-${dom.id}`}
-                          className="text-[9px] md:text-[10px] opacity-60 leading-tight"
-                          style={{ color: 'var(--jma-dark)' }}
+                          className="text-[9px] md:text-[10px] opacity-60 leading-tight text-white"
                         >
                           {dom.blurb}
                         </div>
@@ -432,17 +433,18 @@ export default function StickerBookPage() {
           const earnedHere = stickers.filter(s => earned[s.id]).length;
           return (
             <section key={cat.id} className="mb-8" data-testid={`category-${cat.id}`}>
-              <h2 className="text-lg md:text-xl font-black font-display mb-3 px-1" style={{ color: 'var(--jma-dark)' }}>
+              <h2 className="shack-sign text-base md:text-lg font-black font-display mb-3">
                 {cat.label}
-                <span className="ml-2 text-xs font-bold opacity-60">({earnedHere}/{stickers.length})</span>
+                <span className="text-xs font-bold opacity-70">({earnedHere}/{stickers.length})</span>
               </h2>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3">
-                {stickers.map(s => (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 rounded-2xl p-3" style={{ background: 'rgba(0,0,0,0.22)', border: '3px solid rgba(0,0,0,0.35)', boxShadow: 'inset 0 3px 8px rgba(0,0,0,0.35)' }}>
+                {stickers.map((s, i) => (
                   <CollectionStickerCard
                     key={s.id}
                     sticker={s}
                     earned={earned[s.id]}
                     onOpen={handleStickerClick}
+                    index={i}
                   />
                 ))}
               </div>

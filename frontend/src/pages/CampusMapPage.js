@@ -13,6 +13,8 @@ import BlimpFlyby from '../components/BlimpFlyby';
 import { Bubbles, Swimmer, SandStrip, Seaweed, UW_ASSETS, UNDERWATER_WATER, FRONT_TROUGH } from '../components/UnderwaterBackdrop';
 import AvatarSprite from '../components/AvatarSprite';
 import DailyQuestCard from '../components/DailyQuestCard';
+import RankHallModal from '../components/RankHallModal';
+import HowRanksWorkModal from '../components/HowRanksWorkModal';
 import FitBox from '../components/FitBox';
 import { CAMPUS_ZONES, CAMPUS_BUILDINGS, PLAZA_ZONE, PLAZA_BUILDINGS } from '../data/campus';
 import useUnlocks from '../hooks/useUnlocks';
@@ -274,6 +276,8 @@ export default function CampusMapPage({ plaza = false }) {
   const { count: streakCount } = usePracticeStreak();
   const { quests, doneCount, allDone } = useDailyQuests();
   const [questsOpen, setQuestsOpen] = useState(false);
+  const [rankHallOpen, setRankHallOpen] = useState(false);
+  const [howRanksOpen, setHowRanksOpen] = useState(false);
   const scroller = useRef(null);
   const shelfRef = useRef(null);
   const [leaving, setLeaving] = useState(null);
@@ -393,8 +397,9 @@ export default function CampusMapPage({ plaza = false }) {
     if (b.action === 'quests') { setQuestsOpen(true); return; }
     if (b.action === 'band') {
       const s = { id: Date.now(), buildingId: 'bandstand', text: SHOUTS[Math.floor(Math.random() * SHOUTS.length)] };
-      setShout(s); say('charlie.hub.quests', { minGapMs: 0 });
+      setShout(s);
       setTimeout(() => setShout((cur) => (cur && cur.id === s.id ? null : cur)), 1600);
+      setTimeout(() => setRankHallOpen(true), 450);
       return;
     }
     const el = shelfRef.current && shelfRef.current.querySelector(`[data-testid="campus-building-${b.id}"]`);
@@ -545,6 +550,9 @@ export default function CampusMapPage({ plaza = false }) {
         <motion.div data-testid="campus-door-transition" className="fixed inset-0 pointer-events-none" style={{ background: 'var(--jma-dark)', zIndex: 60 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.1 }} />
       )}
 
+      {/* Plaza: the Bandstand is the Rank Hall */}
+      <RankHallModal open={rankHallOpen} onClose={() => setRankHallOpen(false)} onHowRanks={() => { setRankHallOpen(false); setHowRanksOpen(true); }} />
+      <HowRanksWorkModal open={howRanksOpen} onClose={() => setHowRanksOpen(false)} />
       {/* Plaza: the Quest Board opens today's quests */}
       <AnimatePresence>
         {questsOpen && (

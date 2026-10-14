@@ -37,7 +37,7 @@ const PZ = 'assets/plaza/';
 export const PLAZA_ZONE = {
   id: 'plaza', label: 'ACADEMY PLAZA', street: 'Academy Plaza', color: '#FFCC00', ground: '#9BE27A',
   tracks: [T('goody-bag', 'Goody Bag'), T('magic', 'Magic'), T('faster-as-we-go', 'Faster As We Go'), T('brand-new-friend', 'Brand New Friend')],
-  strollers: [`${CH}dr-jellybone.png`, `${CH}sharky-snorkel.png`],
+  strollers: [{ src: `${CH}dr-jellybone.png`, facing: 'left' }, `${CH}sharky-snorkel.png`],
 };
 export const PLAZA_BUILDINGS = [
   { id: 'quest-board',   zone: 'plaza', name: 'Quest Board',   action: 'quests',             art: `${PZ}quest-board.png`,    starter: true,  size: 0.78, flat: true, hangSign: { text: 'QUESTS', x: 51.5, y: 67 } },

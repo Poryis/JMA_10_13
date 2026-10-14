@@ -428,10 +428,10 @@ export default function CampusMapPage({ plaza = false }) {
       </div>
 
       {/* Surf Charlie paddles right, Snorkel Finn swims left */}
-      {(zone.strollers || []).slice(0, 2).map((src, i) => (
-        <Swimmer key={src} src={src} top={`${24 + i * 14}%`} dur={40 + i * 8} delay={i * 13} width="clamp(56px, 8vw, 100px)" dir={i ? 'left' : 'right'} bob={14} zIndex={4}
+      {(zone.strollers || []).slice(0, 2).map((st, i) => { const src = typeof st === 'string' ? st : st.src; return (
+        <Swimmer key={src} src={src} facing={typeof st === 'string' ? 'right' : st.facing} top={`${24 + i * 14}%`} dur={40 + i * 8} delay={i * 13} width="clamp(56px, 8vw, 100px)" dir={i ? 'left' : 'right'} bob={14} zIndex={4}
           style={{ filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.25))' }} />
-      ))}
+      ); })}
 
       {night && <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(2,20,45,0.32)', zIndex: 4 }} />}
 

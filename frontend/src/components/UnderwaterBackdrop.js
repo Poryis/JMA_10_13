@@ -57,12 +57,13 @@ export function Bubbles({ className = 'fixed inset-0 z-0' }) {
 
 // A user-drawn fish (all art faces RIGHT). dir='left' flips it so it
 // always faces the way it swims. Positions are viewport-relative.
-export function Swimmer({ src, top, dur, delay = 0, width, dir = 'right', bob = 10, zIndex = 1, style = {} }) {
+export function Swimmer({ src, top, dur, delay = 0, width, dir = 'right', bob = 10, zIndex = 1, style = {}, facing = 'right' }) {
   const left = dir === 'right';
+  const flip = (left ? 1 : -1) * (facing === 'left' ? -1 : 1); // art drawn facing left needs the opposite mirror
   return (
     <motion.img src={src} alt="" draggable={false} className="absolute pointer-events-none object-contain"
       style={{ top, width, left: 0, zIndex, ...style }}
-      initial={{ x: left ? '-20vw' : '110vw', scaleX: left ? 1 : -1 }}
+      initial={{ x: left ? '-20vw' : '110vw', scaleX: flip }}
       animate={{ x: left ? '110vw' : '-20vw', y: [0, -bob, 0, bob * 0.6, 0] }}
       transition={{ x: { repeat: Infinity, duration: dur, ease: 'linear', delay: -delay }, y: { repeat: Infinity, duration: 3.2, ease: 'easeInOut' } }} />
   );

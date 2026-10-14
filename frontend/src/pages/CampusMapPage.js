@@ -162,6 +162,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
   const [shake, setShake] = useState(0);
   const lift = b.flat ? (b.lift ? 58 * b.lift : 0) : index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
   const scale = b.flat ? 1 : index % 3 === 1 ? 0.86 : 1;
+  const drop = b.drop || 0;
   const handle = () => {
     if (locked) { setShake((s) => s + 1); say('charlie.hub.lockbadge'); return; }
     onEnter(b);
@@ -183,17 +184,17 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked && !b.flat ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
           {b.portal && (
-            <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top}%`, bottom: `${b.portal.box.bottom}%`, borderRadius: '50% 50% 0 0 / 45% 45% 0 0', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
+            <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top + drop}%`, bottom: `${b.portal.box.bottom - drop}%`, borderRadius: '50% 50% 0 0 / 45% 45% 0 0', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
               <motion.div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 70%, rgba(255,255,255,0.35) 0%, transparent 60%)' }} animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }} />
               {b.portal.art.map((name, i) => (
-                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute bottom-[4%] object-contain" style={{ width: '54%', left: i ? '44%' : '2%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
+                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute object-contain" style={{ bottom: `${4 + drop * 100 / (100 - b.portal.box.top - b.portal.box.bottom)}%`, width: '54%', left: i ? '44%' : '2%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
                   animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.2 + i * 0.5, ease: 'easeInOut' }} />
               ))}
             </div>
           )}
           {b.custom === 'tv'
             ? <DriveIn />
-            : <img src={b.art} alt="" draggable={false} className="relative z-[1] w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />}
+            : <img src={b.art} alt="" draggable={false} className="relative z-[1] w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))', transform: drop ? `translateY(${drop}%)` : undefined }} />}
           {b.sign && (
             <span data-testid={`campus-building-${b.id}-sign`} className="absolute -translate-x-1/2 -translate-y-1/2 font-black font-display whitespace-nowrap pointer-events-none"
               style={{ left: `${b.signPos.x}%`, top: `${b.signPos.y}%`, fontSize: Math.round(L.bw * b.size * (b.sign.length > 8 ? 0.055 : 0.085) * (b.signScale || 1)), color: 'var(--jma-dark)', zIndex: 5, letterSpacing: '0.04em',
@@ -215,7 +216,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             </div>
           )}
           {b.ribbon && (
-            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: '-5%', left: `${b.portal.box.left - 5}%`, width: `${b.portal.box.width + 10}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
+            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: `${-5 + (b.ribbonLift || 0)}%`, left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
               <span className="font-black font-display whitespace-nowrap text-center w-full" style={{ fontSize: Math.round(L.bw * b.size * 0.085), lineHeight: 1.25, color: b.ribbon.color, background: b.ribbon.bg, padding: '4px 30px', letterSpacing: '0.06em', clipPath: 'polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%)', textShadow: b.ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.35)' }}>
                 {b.ribbon.text}
               </span>

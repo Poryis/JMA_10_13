@@ -175,7 +175,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
       aria-label={b.name}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      style={{ left: x ?? (L.left + index * L.slot), width: Math.round(L.bw * b.size * scale), marginBottom: (b.portal ? L.floor - Math.round(L.bw * 0.2) : L.floor) + lift * L.lift, zIndex: b.flat ? (b.portal ? 7 : 10) : 10 - (index % 3) }}
+      style={{ left: x ?? (L.left + index * L.slot), width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: b.flat ? (b.portal ? 7 : 10) : 10 - (index % 3) }}
       initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: entering ? 1.04 : 1 }} transition={{ delay: entering ? 0 : 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
@@ -183,10 +183,10 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked && !b.flat ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
           {b.portal && (
-            <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top}%`, bottom: `${b.portal.box.bottom}%`, borderRadius: '50% 50% 0 0 / 38% 38% 0 0', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
+            <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top}%`, bottom: `${b.portal.box.bottom}%`, borderRadius: '50% 50% 0 0 / 45% 45% 0 0', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
               <motion.div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 70%, rgba(255,255,255,0.35) 0%, transparent 60%)' }} animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }} />
               {b.portal.art.map((name, i) => (
-                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute bottom-[14%] object-contain" style={{ width: '58%', left: i ? '42%' : '0%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
+                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute bottom-[4%] object-contain" style={{ width: '54%', left: i ? '44%' : '2%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
                   animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.2 + i * 0.5, ease: 'easeInOut' }} />
               ))}
             </div>
@@ -215,7 +215,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             </div>
           )}
           {b.ribbon && (
-            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: '9%', left: `${b.portal.box.left - 7}%`, width: `${b.portal.box.width + 14}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
+            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: '-5%', left: `${b.portal.box.left - 5}%`, width: `${b.portal.box.width + 10}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
               <span className="font-black font-display whitespace-nowrap text-center w-full" style={{ fontSize: Math.round(L.bw * b.size * 0.085), lineHeight: 1.25, color: b.ribbon.color, background: b.ribbon.bg, padding: '4px 30px', letterSpacing: '0.06em', clipPath: 'polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%)', textShadow: b.ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.35)' }}>
                 {b.ribbon.text}
               </span>
@@ -231,7 +231,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
               <Music className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
             </motion.span>
           ))}
-          {(!locked || b.flat) && b.host && <Host src={b.host} shout={shout} pos={b.custom === 'bandstand' ? { left: '30%', bottom: '21%', height: '36%', zIndex: 4 } : b.portal ? { left: '-10%', bottom: '16%', height: '34%', zIndex: 4 } : undefined} />}
+          {(!locked || b.flat) && b.host && <Host src={b.host} shout={shout} pos={b.custom === 'bandstand' ? { left: '30%', bottom: '21%', height: '36%', zIndex: 4 } : b.portal ? { left: '-10%', bottom: '2%', height: '34%', zIndex: 4 } : undefined} />}
         </motion.div>
         {!locked && badge && (
           <motion.span data-testid={`campus-building-${b.id}-badge`} className="absolute -top-3 right-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] md:text-xs font-black whitespace-nowrap"
@@ -489,7 +489,7 @@ export default function CampusMapPage({ plaza = false }) {
           {buildings.map((b, i) => (
             <Building key={b.id} b={b} index={i} L={L} x={xs ? xs[i] : undefined} badge={badgeFor(b)} extras={b.custom === 'bandstand' ? extras : null} locked={!unlocked && !b.starter} onEnter={enter} entering={!!swim && swim.buildingId === b.id} shout={shout && shout.buildingId === b.id ? shout : null} />
           ))}
-          {plaza && <SandStrip src={UW_ASSETS.sandFront} height={Math.round(sandFront * 0.55)} shift={FRONT_TROUGH + 0.12} style={{ zIndex: 8 }} data-testid="campus-sand-cover" />}
+          {plaza && <SandStrip src={UW_ASSETS.sandFront} height={Math.round(sandFront * 0.42)} shift={FRONT_TROUGH + 0.12} style={{ zIndex: 8 }} data-testid="campus-sand-cover" />}
           {/* near seaweed + shells (parallax, in front) */}
           <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: width + 600, height: sandFront + 120, transform: `translateX(${-scrollX * 0.2}px)`, zIndex: 7 }} data-testid="campus-front-accents">
             {frontAccents.map((a, i) => a.kind === 'weed'

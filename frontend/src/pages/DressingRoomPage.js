@@ -3,7 +3,7 @@
 // Locked outfits can be tried on for 3 s as a ghost. New unlocks arrive as gift
 // boxes to unwrap. The camera takes a 3-2-1 Polaroid for the photo wall.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
 import { Lock, Camera, Sparkles, X, Check } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import AvatarSprite from '../components/AvatarSprite';
@@ -82,6 +82,11 @@ export default function DressingRoomPage() {
   const [countdown, setCountdown] = useState(null);
   const [polaroid, setPolaroid] = useState(null);
   const [photos, setPhotos] = useState(() => readJSON(PHOTOS_KEY, []));
+  const poseCtl = useAnimationControls();
+  useEffect(() => {
+    if (!pose) return;
+    poseCtl.start({ y: [0, -18, 0, -8, 0], rotate: [0, -8, 6, -3, 0], scale: [1, 1.08, 1], transition: { duration: 0.9 } });
+  }, [pose, poseCtl]);
   const mirrorRef = useRef(null);
   const cardRefs = useRef({});
   const timers = useRef([]);
@@ -148,9 +153,8 @@ export default function DressingRoomPage() {
             <img src="assets/dressing/mirror.png" alt="" draggable={false} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ zIndex: 3, filter: 'drop-shadow(0 8px 0 rgba(0,0,0,0.35))' }} />
             {/* glass contents: the Jelly, posed */}
             <div className="absolute flex items-end justify-center" style={{ left: '14%', right: '14%', top: '8%', bottom: '22%', zIndex: 4 }}>
-              <motion.div key={pose} className="h-[92%] flex items-end" style={{ transformOrigin: 'bottom center' }}
-                animate={pose ? { y: [0, -18, 0, -8, 0], rotate: [0, -8, 6, -3, 0], scale: [1, 1.08, 1] } : { y: [0, -3, 0] }} transition={pose ? { duration: 0.9 } : { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}>
-                <AvatarSprite key={shownSrc} src={shownSrc} helmet={shownHelmet} className="h-full" testId="dressing-mirror-avatar"
+              <motion.div className="dr-bob h-[92%] flex items-end" style={{ transformOrigin: 'bottom center' }} animate={poseCtl}>
+                <AvatarSprite src={shownSrc} helmet={shownHelmet} className="h-full" testId="dressing-mirror-avatar"
                   imgStyle={{ height: '100%', width: 'auto', filter: ghost ? 'grayscale(1) opacity(0.55) drop-shadow(0 0 10px rgba(255,255,255,0.6))' : 'drop-shadow(0 6px 0 rgba(0,0,0,0.3))', transition: 'filter 0.3s' }} />
               </motion.div>
               {poof > 0 && <Poof key={poof} id={poof} ghost={!!ghost} />}

@@ -909,6 +909,8 @@ h1, h2, h3, h4, h5, h6 {
 .home-short .home-card-title { font-size: clamp(26px, 4.2vw, 40px) !important; }
 .home-short .home-card-sub { font-size: clamp(8px, 1.3vw, 12px) !important; }
 
+@keyframes dr-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+.dr-bob { animation: dr-bob 2.4s ease-in-out infinite; }
 .no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
 /* Sticker Shack: earned medals get a slow foil shine sweep */
 .medal-earned::after {

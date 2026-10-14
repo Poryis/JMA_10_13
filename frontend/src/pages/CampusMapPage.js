@@ -369,9 +369,16 @@ export default function CampusMapPage({ plaza = false }) {
 
   // Desktop drag-to-pan (touch uses native scrolling).
   const drag = useRef(null);
-  const onPointerDown = (e) => { if (e.pointerType === 'mouse') drag.current = { x: e.clientX, left: scroller.current.scrollLeft }; };
-  const onPointerMove = (e) => { if (drag.current) scroller.current.scrollLeft = drag.current.left - (e.clientX - drag.current.x); };
-  const onPointerUp = () => { drag.current = null; };
+  const dragged = useRef(false); // a real drag must not count as a tap on whatever is under the cursor
+  const onPointerDown = (e) => { if (e.pointerType === 'mouse') { drag.current = { x: e.clientX, left: scroller.current.scrollLeft }; dragged.current = false; } };
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    const dx = e.clientX - drag.current.x;
+    if (Math.abs(dx) > 6) { dragged.current = true; e.currentTarget.style.cursor = 'grabbing'; }
+    scroller.current.scrollLeft = drag.current.left - dx;
+  };
+  const onPointerUp = (e) => { drag.current = null; e.currentTarget.style.cursor = 'grab'; };
+  const onClickCapture = (e) => { if (dragged.current) { e.stopPropagation(); e.preventDefault(); dragged.current = false; } };
 
   const zoomIn = (b) => {
     const el = document.querySelector(`[data-testid="campus-building-${b.id}"]`);
@@ -469,7 +476,7 @@ export default function CampusMapPage({ plaza = false }) {
         className="absolute inset-x-0 bottom-0 overflow-x-auto overflow-y-hidden"
         style={{ top: 0, zIndex: 5, transformOrigin: leaving ? `${leaving.x}px ${leaving.y}px` : 'center', scrollbarWidth: 'none', cursor: 'grab', touchAction: 'pan-x' }}
         onScroll={(e) => { setScrollX(e.currentTarget.scrollLeft); if (hint) setHint(false); }}
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp} onClickCapture={onClickCapture}
         animate={leaving ? { scale: 2.6, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.6, 0, 0.8, 1] }}
       >

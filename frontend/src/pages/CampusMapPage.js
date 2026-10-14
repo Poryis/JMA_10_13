@@ -216,7 +216,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             </div>
           )}
           {b.ribbon && (
-            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: `${-5 + (b.ribbonLift || 0)}%`, left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
+            <div data-testid={`campus-building-${b.id}-ribbon`} className="absolute flex justify-center pointer-events-none" style={{ bottom: `${-5 + (b.ribbonLift || 0)}%`, left: `${b.portal.box.left + 5}%`, width: `${b.portal.box.width}%`, zIndex: 6, filter: 'drop-shadow(0 4px 0 var(--jma-dark))' }}>
               <span className="font-black font-display whitespace-nowrap text-center w-full" style={{ fontSize: Math.round(L.bw * b.size * 0.085), lineHeight: 1.25, color: b.ribbon.color, background: b.ribbon.bg, padding: '4px 30px', letterSpacing: '0.06em', clipPath: 'polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%)', textShadow: b.ribbon.color === 'white' ? '0 2px 0 rgba(0,0,0,0.35)' : 'none', boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.18), inset 0 3px 0 rgba(255,255,255,0.35)' }}>
                 {b.ribbon.text}
               </span>

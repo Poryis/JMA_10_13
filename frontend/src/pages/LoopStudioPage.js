@@ -559,7 +559,6 @@ function LoopStudioPage() {
             background: 'linear-gradient(180deg, #33507A 0%, #1B2B44 100%)',
             borderColor: '#050C18',
             boxShadow: '0 10px 0 rgba(0,0,0,0.35), inset 0 3px 0 rgba(255,255,255,0.08), inset 0 -6px 0 rgba(0,0,0,0.35)',
-            marginLeft: 'max(0px, env(safe-area-inset-left))',
           }}
         >
           {/* TRANSPORT */}

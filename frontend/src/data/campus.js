@@ -40,12 +40,16 @@ export const PLAZA_ZONE = {
   strollers: [{ src: `${CH}dr-jellybone.png`, facing: 'left' }, `${CH}sharky-snorkel.png`],
 };
 export const PLAZA_BUILDINGS = [
-  { id: 'quest-board',   zone: 'plaza', name: 'Quest Board',   action: 'quests',             art: `${PZ}quest-board.png`,    starter: true,  size: 0.78, flat: true, hangSign: { text: 'QUESTS', x: 51.5, y: 67 } },
-  { id: 'gate-play',     zone: 'plaza', name: 'Play Street',   path: '/campus?zone=play',    art: `${PZ}gate-play.png`,      host: `${CH}chunk-disco.png`,  starter: true,  size: 1.0,  flat: true, sign: 'PLAY',   signPos: { x: 52.5, y: 34 } },
-  { id: 'bandstand',     zone: 'plaza', name: 'JMA Bandstand', action: 'band',               art: `${PZ}bandstand.png`, host: `${CH}charlie.png`, starter: true, size: 1.5, flat: true, custom: 'bandstand' },
-  { id: 'gate-learn',    zone: 'plaza', name: 'Learn Street',  path: '/campus?zone=learn',   art: `${PZ}gate-learn.png`,     host: `${CH}jazzy-marching.png`, starter: false, size: 1.0, flat: true, sign: 'LEARN',  signPos: { x: 52.5, y: 39.5 }, signScale: 0.7 },
-  { id: 'gate-create',   zone: 'plaza', name: 'Create Street', path: '/campus?zone=create',  art: `${PZ}gate-create.png`,    host: `${CH}sharky-hiphop.png`, starter: false, size: 1.0, flat: true, sign: 'CREATE', signPos: { x: 53, y: 33.5 } },
-  { id: 'jmatv',         zone: 'plaza', name: 'JMAtv',         path: '/jmatv',               art: null, custom: 'tv',                                       starter: true,  size: 1.0,  flat: true },
-  { id: 'sticker-shack', zone: 'plaza', name: 'Sticker Shack', path: '/sticker-book',        art: `${PZ}sticker-shack.png`,  host: `${CH}stew.png`,         starter: true,  size: 0.9,  flat: true, sign: 'STICKERS', signPos: { x: 50, y: 7 }, signColor: '#FF2D85' },
-  { id: 'dressing-room', zone: 'plaza', name: 'Dressing Room', path: '/dressing-room',       art: `${PZ}dressing-room.png`,  starter: true,  size: 0.95, flat: true, sign: 'DRESSING ROOM', signPos: { x: 50, y: 4 }, signColor: '#F9A8D4' },
+  // Foreground props sit small on the front sand; the three street gates + bandstand stand big on the back dune.
+  { id: 'quest-board',   zone: 'plaza', name: 'Quest Board',   action: 'quests',             art: `${PZ}quest-board.png`,    starter: true,  size: 0.7,  flat: true, hangSign: { text: 'QUESTS', x: 51.5, y: 67 } },
+  { id: 'gate-play',     zone: 'plaza', name: 'Play Street',   path: '/campus?zone=play',    art: `${PZ}gate-play.png`,      host: `${CH}chunk-disco.png`,  starter: true,  size: 1.45, flat: true, lift: 1, sign: 'PLAY',   signSub: 'STREET', signPos: { x: 52.5, y: 34 }, signScale: 0.8,
+    portal: { box: { left: 30, width: 40, top: 44, bottom: 6 }, bg: 'radial-gradient(ellipse at 50% 85%, #FF2D85 0%, #5B1C8A 45%, #140B2E 100%)', art: ['jukebox-diner', 'shred-club'] } },
+  { id: 'bandstand',     zone: 'plaza', name: 'JMA Bandstand', action: 'band',               art: `${PZ}bandstand.png`, host: `${CH}charlie.png`, starter: true, size: 1.5, flat: true, lift: 1, custom: 'bandstand' },
+  { id: 'gate-learn',    zone: 'plaza', name: 'Learn Street',  path: '/campus?zone=learn',   art: `${PZ}gate-learn.png`,     host: `${CH}jazzy-marching.png`, starter: false, size: 1.45, flat: true, lift: 1, sign: 'LEARN',  signSub: 'STREET', signPos: { x: 52.5, y: 39.5 }, signScale: 0.62,
+    portal: { box: { left: 29, width: 42, top: 44, bottom: 6 }, bg: 'radial-gradient(ellipse at 50% 90%, #7ED957 0%, #2E7D32 40%, #0B2E4F 100%)', art: ['football-field', 'music-101'] } },
+  { id: 'gate-create',   zone: 'plaza', name: 'Create Street', path: '/campus?zone=create',  art: `${PZ}gate-create.png`,    host: `${CH}sharky-hiphop.png`, starter: false, size: 1.45, flat: true, lift: 1, sign: 'CREATE', signSub: 'STREET', signPos: { x: 53, y: 33.5 }, signScale: 0.8,
+    portal: { box: { left: 27, width: 46, top: 32, bottom: 8 }, bg: 'radial-gradient(ellipse at 50% 85%, #FF4D4D 0%, #7A1E2E 35%, #120A1E 100%)', art: ['song-studio', 'beat-lab'] } },
+  { id: 'jmatv',         zone: 'plaza', name: 'JMAtv',         path: '/jmatv',               art: null, custom: 'tv',                                       starter: true,  size: 0.82, flat: true },
+  { id: 'sticker-shack', zone: 'plaza', name: 'Sticker Shack', path: '/sticker-book',        art: `${PZ}sticker-shack.png`,  host: `${CH}stew.png`,         starter: true,  size: 0.78, flat: true, sign: 'STICKERS', signPos: { x: 50, y: 7 }, signColor: '#FF2D85' },
+  { id: 'dressing-room', zone: 'plaza', name: 'Dressing Room', path: '/dressing-room',       art: `${PZ}dressing-room.png`,  starter: true,  size: 0.85, flat: true, sign: 'DRESSING ROOM', signPos: { x: 50, y: 4 }, signColor: '#F9A8D4' },
 ];

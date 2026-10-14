@@ -139,7 +139,7 @@ function BrandMarquee({ extras }) {
           animate={{ scale: [0.9, 1.14, 0.9] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }} />
       </div>
       {extras && (
-        <div className="absolute flex flex-col items-center pointer-events-none" style={{ right: '-7%', bottom: '6%', width: '16%', zIndex: 6 }} data-testid="plaza-pennant">
+        <div className="absolute flex flex-col items-center pointer-events-none" style={{ left: '-6%', bottom: '4%', width: '15%', zIndex: 6 }} data-testid="plaza-pennant">
           <motion.div className="relative w-full" animate={{ skewY: [0, 3, 0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
             <div className="w-full rounded-xl p-1 flex flex-col items-center" style={{ background: '#FFCC00', border: '3px solid var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}>
               <img src={extras.rankIcon} alt="" className="w-[70%] object-contain" />
@@ -160,7 +160,7 @@ function BrandMarquee({ extras }) {
 
 function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras, x }) {
   const [shake, setShake] = useState(0);
-  const lift = b.flat ? 0 : index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
+  const lift = b.flat ? (b.lift ? 58 * b.lift : 0) : index % 3 === 1 ? 54 : index % 3 === 2 ? 22 : 0; // varied depth on the shelf
   const scale = b.flat ? 1 : index % 3 === 1 ? 0.86 : 1;
   const handle = () => {
     if (locked) { setShake((s) => s + 1); say('charlie.hub.lockbadge'); return; }
@@ -175,21 +175,30 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
       aria-label={b.name}
       onClick={handle}
       className={`absolute bottom-0 flex flex-col items-center bg-transparent border-0 p-0 touch-manipulation ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      style={{ left: x ?? (L.left + index * L.slot), width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: 10 - (index % 3) }}
+      style={{ left: x ?? (L.left + index * L.slot), width: Math.round(L.bw * b.size * scale), marginBottom: L.floor + lift * L.lift, zIndex: b.flat ? (b.lift ? 7 : 10) : 10 - (index % 3) }}
       initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1, scale: entering ? 1.04 : 1 }} transition={{ delay: entering ? 0 : 0.1 + index * 0.07, type: 'spring', stiffness: 200 }}
       whileHover={locked ? {} : { y: -6 }} whileTap={locked ? {} : { scale: 0.97 }}
     >
       <motion.div key={shake} animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}} transition={{ duration: 0.45 }} className="relative w-full">
         <motion.div className="relative w-full" style={{ aspectRatio: '1 / 1', filter: locked && !b.flat ? 'brightness(0.3) saturate(0.4)' : 'none', transition: 'filter 0.6s' }}
           animate={locked ? {} : { y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 3 + (index % 3), ease: 'easeInOut' }}>
+          {b.portal && (
+            <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top}%`, bottom: `${b.portal.box.bottom}%`, borderRadius: '50% 50% 4px 4px / 40% 40% 4px 4px', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
+              <motion.div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 70%, rgba(255,255,255,0.35) 0%, transparent 60%)' }} animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }} />
+              {b.portal.art.map((name, i) => (
+                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute bottom-[4%] object-contain" style={{ width: '58%', left: i ? '42%' : '0%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
+                  animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.2 + i * 0.5, ease: 'easeInOut' }} />
+              ))}
+            </div>
+          )}
           {b.custom === 'tv'
             ? <DriveIn />
-            : <img src={b.art} alt="" draggable={false} className="w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />}
+            : <img src={b.art} alt="" draggable={false} className="relative z-[1] w-full h-full object-contain object-bottom" style={{ filter: 'drop-shadow(0 8px 0 rgba(2,36,63,0.35))' }} />}
           {b.sign && (
             <span data-testid={`campus-building-${b.id}-sign`} className="absolute -translate-x-1/2 -translate-y-1/2 font-black font-display whitespace-nowrap pointer-events-none"
               style={{ left: `${b.signPos.x}%`, top: `${b.signPos.y}%`, fontSize: Math.round(L.bw * b.size * (b.sign.length > 8 ? 0.055 : 0.085) * (b.signScale || 1)), color: 'var(--jma-dark)', zIndex: 5, letterSpacing: '0.04em',
                 ...(b.signColor ? { background: b.signColor, border: '3px solid var(--jma-dark)', borderRadius: 999, padding: '2px 10px', boxShadow: '0 3px 0 0 var(--jma-dark)' } : {}) }}>
-              {b.sign}
+              {b.signSub ? <span className="flex flex-col items-center" style={{ lineHeight: 0.95 }}><span>{b.sign}</span><span style={{ fontSize: '0.5em', letterSpacing: '0.18em', opacity: 0.85 }}>{b.signSub}</span></span> : b.sign}
             </span>
           )}
           {b.hangSign && (
@@ -225,7 +234,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
           </motion.span>
         )}
         {locked && b.flat && (
-          <span aria-hidden="true" data-testid={`campus-building-${b.id}-rope`} className="absolute pointer-events-none" style={{ left: '16%', right: '16%', top: '64%', height: 0, borderTop: '5px dashed #8B5A2B', filter: 'drop-shadow(0 2px 0 var(--jma-dark))', zIndex: 5 }} />
+          <span aria-hidden="true" data-testid={`campus-building-${b.id}-rope`} className="absolute pointer-events-none" style={{ left: `${(b.portal?.box.left ?? 14) + 3}%`, width: `${(b.portal?.box.width ?? 72) - 6}%`, top: '66%', height: 0, borderTop: '5px dashed #8B5A2B', filter: 'drop-shadow(0 2px 0 var(--jma-dark))', zIndex: 5 }} />
         )}
         {locked && (
           <span data-testid={`campus-building-${b.id}-lock`} className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] md:text-[10px] font-black text-white whitespace-nowrap" style={{ background: 'rgba(10,37,64,0.92)', border: '2px solid white', zIndex: 6 }}>

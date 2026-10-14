@@ -277,8 +277,8 @@ export default function CampusMapPage({ plaza = false }) {
   // Plaza props vary a lot in width, so pack them by size instead of fixed slots.
   const xs = useMemo(() => {
     if (!plaza) return null;
-    const out = []; let x = L.left;
-    buildings.forEach((b) => { out.push(Math.round(x)); x += L.bw * b.size + L.bw * 0.22; });
+    const out = []; let x = Math.round(L.left * 0.4);
+    buildings.forEach((b) => { out.push(Math.round(x)); x += L.bw * b.size + L.bw * (b.id === 'quest-board' ? 0.95 : 0.22); });
     return out;
   }, [plaza, buildings, L.left, L.bw]);
   const width = plaza
@@ -289,7 +289,8 @@ export default function CampusMapPage({ plaza = false }) {
   const prevZone = CAMPUS_ZONES[(zi + CAMPUS_ZONES.length - 1) % CAMPUS_ZONES.length];
   const youBottom = floor + 2;
   const YOU_W = L.you;
-  const YOU_LEFT = Math.round(L.bw * 0.45); // breathing room: sign → you → first building
+  // plaza: quest board → YOU → gates; streets: sign → YOU → first building
+  const YOU_LEFT = plaza ? xs[0] + Math.round(L.bw * buildings[0].size) + Math.round(L.bw * 0.12) : Math.round(L.bw * 0.45);
   const { nowPlaying, muted: musicMuted, toggleMute: toggleMusic } = useStreetMusic(zone.tracks);
   const jamCount = useMemo(() => loadSavedBeats().length + loadSavedSongs().length, []);
   const jamBadge = jamCount > 0 ? `${jamCount} to jam` : null;
@@ -387,22 +388,22 @@ export default function CampusMapPage({ plaza = false }) {
     const n = Math.ceil((width + 400) / slot);
     for (let i = 0; i < n; i++) {
       const x = i * slot + (i % 2 ? 40 : 160);
-      if (i % 2 === 0) items.push({ kind: 'weed', src: UW_ASSETS.seaweed2, x, w: Math.round(100 * acc), bottom: sandBack * 0.5, delay: i * 0.5 });
+      if (i % 2 === 0 && (!plaza || (i > 0 && i % 4 === 0))) items.push({ kind: 'weed', src: UW_ASSETS.seaweed2, x, w: Math.round(100 * acc), bottom: sandBack * 0.5, delay: i * 0.5 });
       else items.push({ kind: 'shell', src: UW_ASSETS.shell1, x, w: Math.round(90 * acc), bottom: sandBack * 0.42 });
     }
     return items;
-  }, [width, slot, acc, sandBack]);
+  }, [width, slot, acc, sandBack, plaza]);
 
   const frontAccents = useMemo(() => {
     const items = [];
     const n = Math.ceil((width + 600) / (slot * 1.5));
     for (let i = 0; i < n; i++) {
       const x = i * slot * 1.5 + 200;
-      items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: Math.round(70 * acc), bottom: 0, delay: i * 0.7 });
+      if (!plaza || i % 2 === 0) items.push({ kind: 'weed', src: UW_ASSETS.seaweed1, x, w: Math.round(70 * acc), bottom: 0, delay: i * 0.7 });
       if (i % 2) items.push({ kind: 'shell', src: UW_ASSETS.shell2, x: x + Math.round(120 * acc), w: Math.round(36 * acc), bottom: 10 });
     }
     return items;
-  }, [width, slot, acc]);
+  }, [width, slot, acc, plaza]);
 
   return (
     <div className="h-screen relative overflow-hidden" style={{ background: UNDERWATER_WATER }} data-testid="campus-map-page" data-zone={zone.id} data-plaza={plaza ? 'true' : 'false'} data-sky={night ? 'night' : 'day'}>

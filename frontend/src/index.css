@@ -1033,9 +1033,10 @@ h1, h2, h3, h4, h5, h6 {
   .sr-main { padding-top: 46px !important; padding-bottom: 4px !important; }
   .sr-main [data-testid="card-progress-dots"], .sr-main .sr-chips, .sr-main [data-testid="sight-reading-phase"] { margin-bottom: 4px !important; }
   .sr-main .sr-staff { max-width: 460px; }
-  .sr-main .sr-staff > div { height: 140px !important; }
-  .sr-main .sr-staff [data-testid^="staff-note-"] > div:last-child { height: 64px !important; }
-  .sr-main .sr-staff [data-testid^="staff-note-"] > div:not(:last-child) { width: 30px !important; }
+  .sr-main .sr-staff > div { height: 150px !important; }
+  .sr-main .sr-staff .staff-note-img { height: 50px !important; }
+  .sr-main .sr-staff .staff-ledger { width: 24px !important; height: 2px !important; }
+  .sr-main .sr-staff > div > div:nth-child(2) svg { height: 96px !important; width: 35px !important; }
   .sr-main .sr-replay { margin-top: 4px !important; padding: 2px 10px !important; font-size: 12px !important; min-height: 0 !important; }
   .sr-main .sr-bells { margin-top: 4px !important; }
   .sr-main .bell-row { padding: 2px !important; gap: 4px !important; flex-wrap: nowrap !important; }
@@ -1045,8 +1046,8 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Robot Boogie: smaller Time Machine + lineup so dancers get real stage room */
   .rb-stage { padding-top: 50px !important; padding-bottom: 2px !important; }
-  [data-testid="robot-boogie-time-machine"] { width: 130px !important; }
-  [data-testid="robot-boogie-lineup"] > button { width: 54px !important; }
+  [data-testid="robot-boogie-time-machine"] { width: 112px !important; }
+  [data-testid="robot-boogie-lineup"] > button { width: 50px !important; }
   [data-testid="robot-boogie-lineup"] { padding-bottom: 2px !important; }
 
   /* Fun Facts: room is zoomed just enough to hunt; room reaches every corner */

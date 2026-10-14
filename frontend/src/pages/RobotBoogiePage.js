@@ -1396,12 +1396,14 @@ export default function RobotBoogiePage() {
                 else if (n <= 6)  { widthPct = 34; maxW = 340; negPx = 10; }
                 else               { widthPct = 24; maxW = 260; negPx = 10; }
                 // Never taller than the band (one row for n<=4, two rows above) — short landscape phones.
-                const rows = n > 4 ? 2 : 1;
-                // Heads may peek ~25% above the band (overflow is visible) — keeps dancers readable on short screens.
-                const fromH = bandSize.h ? (bandSize.h / rows) * 0.75 * 1.25 : Infinity;
+                // Sprites are centered in their 3:4 slot with lots of transparent padding, so a slot
+                // may be ~1.7× the band height and still read inside it (overflow is visible).
                 const fromW = bandSize.w ? Math.min((bandSize.w * widthPct) / 100, maxW) : Infinity;
-                const slotW = bandSize.w ? Math.min(fromW, fromH) : undefined;
-                if (slotW !== undefined && fromH < fromW) negPx = 0; // height-limited: don't bunch them up
+                const slotFor = (rows) => Math.min(fromW, bandSize.h ? (bandSize.h / rows) * 0.75 * 1.7 : Infinity);
+                const shortScreen = bandSize.w > 0 && window.innerHeight < 520; // phone landscape only; desktop keeps the % layout
+                let slotW = shortScreen ? slotFor(1) : undefined;
+                if (slotW !== undefined && n * (slotW - 2 * negPx) > bandSize.w) slotW = slotFor(2);
+                if (slotW !== undefined && slotW < fromW) negPx = 0; // height-limited: don't bunch them up
 
                 return (
                   <motion.div
@@ -1424,7 +1426,7 @@ export default function RobotBoogiePage() {
                       // which on a compressed band clipped heads at
                       // the top. With aspect-ratio + max-height set,
                       // characters scale down to fit inside the band.
-                      maxHeight: '100%',
+                      maxHeight: slotW === undefined ? '100%' : 'none',
                       aspectRatio: '3 / 4',
                       marginLeft: `-${negPx}px`,
                       marginRight: `-${negPx}px`,

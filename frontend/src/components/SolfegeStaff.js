@@ -147,7 +147,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
                   reads even when the colorful head sits on top of it. */}
               {showLedger && (
                 <div
-                  className="absolute pointer-events-none"
+                  className="staff-ledger absolute pointer-events-none"
                   style={{
                     left: '50%',
                     top: `${y}%`,
@@ -167,7 +167,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
                       stomp on our static head-anchor transform.
                   Image is sized to NOTE_IMG_H so head is a sensible size for staff. */}
               <div
-                className="absolute pointer-events-none"
+                className="staff-note-img absolute pointer-events-none"
                 style={{
                   left: '50%',
                   top: `${y}%`,

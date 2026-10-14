@@ -45,7 +45,7 @@ function HangerCard({ o, worn, color, isNew, onTap, cardRef }) {
         {isNew ? (
           <img src="assets/dressing/gift.png" alt="New outfit!" draggable={false} className="object-contain" style={{ height: 'clamp(54px, 6.5vw, 84px)' }} />
         ) : (
-          <AvatarSprite src={o.src} helmet={!!o.helmet} className="object-contain" imgStyle={{ height: 'clamp(54px, 6.5vw, 84px)', width: 'auto', filter: o.unlocked ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.25))' : 'grayscale(1) brightness(0.55) opacity(0.6)' }} />
+          <AvatarSprite src={o.src} helmet={!!o.helmet} className="w-full" imgStyle={{ width: '100%', height: 'clamp(54px, 6.5vw, 84px)', objectFit: 'contain', filter: o.unlocked ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.25))' : 'grayscale(1) brightness(0.55) opacity(0.6)' }} />
         )}
         <span className="mt-0.5 text-[10px] md:text-xs font-black leading-tight text-center" style={{ color: 'var(--jma-dark)' }}>{isNew ? 'NEW!' : o.name}</span>
         {!o.unlocked && !isNew && <span className="flex items-center gap-0.5 text-[8px] md:text-[9px] font-bold leading-tight text-center opacity-70" style={{ color: 'var(--jma-dark)' }}><Lock className="w-2.5 h-2.5 flex-shrink-0" />{o.unlock.hint}</span>}
@@ -153,9 +153,9 @@ export default function DressingRoomPage() {
             <img src="assets/dressing/mirror.png" alt="" draggable={false} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ zIndex: 3, filter: 'drop-shadow(0 8px 0 rgba(0,0,0,0.35))' }} />
             {/* glass contents: the Jelly, posed */}
             <div className="absolute flex items-end justify-center" style={{ left: '14%', right: '14%', top: '8%', bottom: '22%', zIndex: 4 }}>
-              <motion.div className="dr-bob h-[92%] flex items-end" style={{ transformOrigin: 'bottom center' }} animate={poseCtl}>
-                <AvatarSprite src={shownSrc} helmet={shownHelmet} className="h-full" testId="dressing-mirror-avatar"
-                  imgStyle={{ height: '100%', width: 'auto', filter: ghost ? 'grayscale(1) opacity(0.55) drop-shadow(0 0 10px rgba(255,255,255,0.6))' : 'drop-shadow(0 6px 0 rgba(0,0,0,0.3))', transition: 'filter 0.3s' }} />
+              <motion.div className="dr-bob absolute inset-x-0 bottom-0 h-[92%]" style={{ transformOrigin: 'bottom center' }} animate={poseCtl}>
+                <AvatarSprite src={shownSrc} helmet={shownHelmet} className="block w-full h-full" testId="dressing-mirror-avatar"
+                  imgStyle={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'bottom', filter: ghost ? 'grayscale(1) opacity(0.55) drop-shadow(0 0 10px rgba(255,255,255,0.6))' : 'drop-shadow(0 6px 0 rgba(0,0,0,0.3))', transition: 'filter 0.3s' }} />
               </motion.div>
               {poof > 0 && <Poof key={poof} id={poof} ghost={!!ghost} />}
               <AnimatePresence>{flash > 0 && <motion.div key={flash} className="absolute inset-0 rounded-2xl bg-white pointer-events-none" style={{ zIndex: 8 }} initial={{ opacity: 0.95 }} animate={{ opacity: 0 }} transition={{ duration: 0.45 }} />}</AnimatePresence>
@@ -221,7 +221,7 @@ export default function DressingRoomPage() {
             <div className="dr-photos absolute right-0 bottom-0 flex gap-1" data-testid="dressing-photo-wall" style={{ zIndex: 3 }}>
               {photos.slice(0, 4).map((ph, i) => (
                 <div key={ph.at} className="bg-white p-0.5 pb-2 shadow" style={{ width: 42, transform: `rotate(${[-6, 4, -3, 5][i]}deg)`, border: '1px solid rgba(0,0,0,0.25)' }}>
-                  <div className="w-full flex items-end justify-center overflow-hidden" style={{ height: 40, background: '#CFE8EF' }}><img src={ph.src} alt="" className="h-[90%] w-auto object-contain" /></div>
+                  <div className="w-full flex items-end justify-center overflow-hidden" style={{ height: 40, background: '#CFE8EF' }}><img src={ph.src} alt="" className="w-full h-full object-contain object-bottom" /></div>
                 </div>
               ))}
             </div>
@@ -245,7 +245,7 @@ export default function DressingRoomPage() {
           <motion.div key="polaroid" data-testid="dressing-polaroid" className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 60, background: 'rgba(2,36,63,0.6)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPolaroid(null)}>
             <motion.div className="relative bg-white p-3 pb-10 shadow-2xl" style={{ width: 'min(300px, 70vw)', border: '2px solid rgba(0,0,0,0.2)' }} initial={{ y: 300, rotate: -12, scale: 0.6 }} animate={{ y: 0, rotate: -3, scale: 1 }} exit={{ y: 300, opacity: 0 }} transition={{ type: 'spring', stiffness: 180, damping: 18 }} onClick={(e) => e.stopPropagation()}>
               <div className="w-full flex items-end justify-center overflow-hidden" style={{ aspectRatio: '1', background: 'radial-gradient(circle at 50% 30%, #E7F6FA 0%, #9ED3E0 100%)' }}>
-                <AvatarSprite src={polaroid.src} helmet={polaroid.helmet} className="h-[88%]" imgStyle={{ height: '100%', width: 'auto' }} />
+                <AvatarSprite src={polaroid.src} helmet={polaroid.helmet} className="block w-full h-[88%]" imgStyle={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'bottom' }} />
               </div>
               <div className="absolute left-0 right-0 bottom-2 text-center font-black font-display" style={{ color: '#2B2B3B', fontSize: 'clamp(12px, 2vw, 18px)' }}>{polaroid.name} · {polaroid.outfit}</div>
               <button type="button" aria-label="Close" data-testid="dressing-polaroid-close" onClick={() => setPolaroid(null)} className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#FF2D85', color: 'white', border: '3px solid var(--jma-dark)' }}><X className="w-4 h-4" strokeWidth={3} /></button>

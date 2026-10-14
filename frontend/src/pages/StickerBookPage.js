@@ -8,6 +8,7 @@
 // their old look.
 
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, Trophy, GraduationCap, Printer, Settings, Shirt } from 'lucide-react';
@@ -18,6 +19,7 @@ import { MISSIONS } from '../hooks/useNextMission';
 import RankBadge from '../components/RankBadge';
 import AchievementBadge from '../components/AchievementBadge';
 import HarpIcon from '../components/HarpIcon';
+import FitBox from '../components/FitBox';
 import PrintReport from '../components/PrintReport';
 import ManageDataModal from '../components/ManageDataModal';
 import HowRanksWorkModal from '../components/HowRanksWorkModal';
@@ -64,15 +66,18 @@ function StickerDetailModal({ sticker, earned, allEarned, teacherView, onClose, 
 
   const accentColor = isEarned ? (sticker.color || 'var(--jma-dark)') : '#64748b';
 
-  return (
+  // Portal to <body>: inside FitStage's transformed stage, `fixed` would pin to the top of the
+  // scrolled page (off-screen on landscape phones) instead of the real viewport.
+  return createPortal(
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={onClose}
       data-testid="sticker-detail-modal"
     >
+      <FitBox className="w-full max-w-sm">
       <motion.div
-        className="relative bg-white rounded-3xl border-4 max-w-sm w-full p-6 text-center shadow-2xl"
+        className="relative bg-white rounded-3xl border-4 w-full p-6 text-center shadow-2xl"
         style={{
           borderColor: accentColor,
           boxShadow: `0 10px 0 0 ${accentColor}`,
@@ -92,7 +97,7 @@ function StickerDetailModal({ sticker, earned, allEarned, teacherView, onClose, 
         ) : (
           <img src={sticker.icon} alt={sticker.name} draggable={false}
             className="w-32 h-32 object-contain mx-auto"
-            style={{ filter: isEarned ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.2))' : 'brightness(0) invert(1) opacity(0.3)' }} />
+            style={{ filter: isEarned ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.2))' : 'brightness(0) opacity(0.3)' }} />
         )}
         <h3 className="text-2xl font-black mt-2" style={{ color: accentColor }}>
           {isEarned ? sticker.name : 'Locked'}
@@ -154,7 +159,9 @@ function StickerDetailModal({ sticker, earned, allEarned, teacherView, onClose, 
           </div>
         )}
       </motion.div>
-    </motion.div>
+      </FitBox>
+    </motion.div>,
+    document.body
   );
 }
 
@@ -182,7 +189,7 @@ function CollectionStickerCard({ sticker, earned, onOpen, index = 0 }) {
           alt={sticker.name}
           draggable={false}
           className="w-full h-full object-contain pointer-events-none"
-          style={{ filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)' }}
+          style={{ filter: isEarned ? 'drop-shadow(0 2px 0 rgba(0,0,0,0.2))' : 'brightness(0) invert(1) opacity(0.3)' }}
         />
       </div>
       <span

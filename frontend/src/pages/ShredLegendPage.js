@@ -131,7 +131,7 @@ function charOf(src = '') {
   return f.split('-')[0];
 }
 
-function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc, avatarHelmet = false }) {
+export function CrowdRow({ energy, burstId = 0, shouts = [], avatarSrc, avatarHelmet = false }) {
   // The front row never repeats a character — drop whoever the kid IS from the regulars.
   const members = useMemo(() => {
     if (!avatarSrc) return CROWD_MEMBERS.slice(0, 7);
@@ -261,7 +261,7 @@ const LIGHT_PALETTES = {
   rock:     { beams: ['rgba(255,80,80,0.30)', 'rgba(255,204,0,0.28)',  'rgba(15,163,177,0.30)'], glow: 'rgba(255,204,0,0.22)',  strobe: false, speed: 1.0 },
 };
 
-function StageLights({ energy, style = 'rock' }) {
+export function StageLights({ energy, style = 'rock' }) {
   const pal = LIGHT_PALETTES[style] || LIGHT_PALETTES.rock;
   const beams = [
     { color: pal.beams[0], x: '18%', delay: 0 },

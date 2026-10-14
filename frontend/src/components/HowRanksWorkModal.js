@@ -6,6 +6,7 @@
 // each panel transition.
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { RANKS } from '../data/ranks';
@@ -202,7 +203,7 @@ export default function HowRanksWorkModal({ open, onClose, teacherView = false }
   const canPrev = step > 0;
   const canNext = step < panels.length - 1;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         data-testid="how-ranks-modal"
@@ -349,6 +350,7 @@ export default function HowRanksWorkModal({ open, onClose, teacherView = false }
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

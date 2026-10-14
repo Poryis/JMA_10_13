@@ -32,7 +32,7 @@ function ResultsPage({ score, gameStats, resetGame }) {
 
   const handlePlayAgain = () => {
     resetGame();
-    navigate(-1);
+    navigate('/home');
   };
 
   return (

@@ -4,6 +4,18 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
 import RetroTVIcon from './RetroTVIcon';
+import { CAMPUS_BUILDINGS } from '../data/campus';
+
+// iPhone Safari drops out of fullscreen on history traversal (history.back()),
+// so "back" always navigates FORWARD to the room's parent instead of -1.
+export function parentRouteFor(pathname) {
+  const b = CAMPUS_BUILDINGS.find((x) => x.path === pathname || (x.path && x.path.split('?')[0] === pathname));
+  if (b) return b.zone === 'plaza' ? '/home' : `/campus?zone=${b.zone}`;
+  if (pathname.startsWith('/jmatv/')) return '/jmatv';
+  if (pathname.startsWith('/lessons/')) return '/lessons';
+  if (pathname.startsWith('/campus')) return '/home';
+  return '/home';
+}
 
 // Arcade-cabinet marquee title. Chunky uppercase white letters with a
 // thick JMA-dark stroke, sat on a mustard-yellow plate with four red
@@ -90,10 +102,7 @@ function GameHeader({ title, subtitle, score, streak, showHomeButton = true, bac
     // this so mid-game "back" drops kids to the difficulty screen
     // instead of jumping all the way out to /play.
     if (typeof onBackOverride === 'function') { onBackOverride(); return; }
-    if (backTo) { navigate(backTo); return; }
-    // No history (typed URL / fresh tab) → go Home instead of doing nothing.
-    const idx = window.history.state && typeof window.history.state.idx === 'number' ? window.history.state.idx : 0;
-    if (idx > 0) navigate(-1); else navigate('/home');
+    navigate(backTo || parentRouteFor(location.pathname));
   };
 
   // When the user is inside JMAtv routes, swap the harp for a tiny

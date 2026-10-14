@@ -402,7 +402,7 @@ export default function CampusMapPage({ plaza = false }) {
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       <Bubbles className="absolute inset-0 z-[2]" />
       <BlimpFlyby />
-      <GameHeader title={plaza ? <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="object-contain" style={{ height: 'clamp(56px, 11vh, 96px)', filter: 'drop-shadow(0 4px 0 rgba(2,36,63,0.35))' }} /> : zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
+      <GameHeader title={plaza ? <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="object-contain" style={{ height: 'clamp(150px, 44vh, 384px)', filter: 'drop-shadow(0 6px 0 rgba(2,36,63,0.35))' }} /> : zone.label} showHomeButton={!plaza} backTo="/home" keepTitle />
       {plaza && (
         <button type="button" data-testid="home-for-parents-link" onClick={() => navigate('/for-parents')}
           className="absolute top-3 right-3 md:top-4 md:right-6 z-20 text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full transition-transform hover:scale-105 active:scale-95"

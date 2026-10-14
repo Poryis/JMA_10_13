@@ -18,7 +18,6 @@ import { CAMPUS_ZONES, CAMPUS_BUILDINGS, PLAZA_ZONE, PLAZA_BUILDINGS } from '../
 import useUnlocks from '../hooks/useUnlocks';
 import useRank from '../hooks/useRank';
 import usePracticeStreak from '../hooks/usePracticeStreak';
-import useStickers from '../hooks/useStickers';
 import useDailyQuests from '../hooks/useDailyQuests';
 import { readAvatarOutfit } from '../hooks/useAvatar';
 import { loadSavedBeats } from '../hooks/useSavedBeats';
@@ -273,7 +272,6 @@ export default function CampusMapPage({ plaza = false }) {
   const { unlocked } = useUnlocks();
   const { currentRank } = useRank();
   const { count: streakCount } = usePracticeStreak();
-  const { earned } = useStickers();
   const { quests, doneCount, allDone } = useDailyQuests();
   const [questsOpen, setQuestsOpen] = useState(false);
   const scroller = useRef(null);
@@ -315,11 +313,9 @@ export default function CampusMapPage({ plaza = false }) {
   const { nowPlaying, muted: musicMuted, toggleMute: toggleMusic } = useStreetMusic(zone.tracks);
   const jamCount = useMemo(() => loadSavedBeats().length + loadSavedSongs().length, []);
   const jamBadge = jamCount > 0 ? `${jamCount} to jam` : null;
-  const stickerCount = Object.keys(earned).length;
   const badgeFor = (b) => {
     if (b.id === 'jam-session') return jamBadge;
     if (b.id === 'quest-board') return `${doneCount}/${quests.length} today`;
-    if (b.id === 'sticker-shack') return stickerCount > 0 ? `${stickerCount} stickers` : null;
     return null;
   };
   const extras = plaza ? { rankIcon: currentRank.icon, rankTitle: currentRank.title, streak: streakCount } : null;

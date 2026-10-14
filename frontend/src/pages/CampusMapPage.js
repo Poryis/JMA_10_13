@@ -202,7 +202,7 @@ function Building({ b, index, locked, onEnter, shout, L, entering, badge, extras
             <div data-testid={`campus-building-${b.id}-portal`} className="absolute overflow-hidden pointer-events-none" style={{ left: `${b.portal.box.left}%`, width: `${b.portal.box.width}%`, top: `${b.portal.box.top + drop}%`, bottom: `${b.portal.box.bottom - drop}%`, borderRadius: '50% 50% 0 0 / 45% 45% 0 0', background: b.portal.bg, zIndex: 0, boxShadow: 'inset 0 0 30px rgba(0,0,0,0.45)' }}>
               <motion.div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 70%, rgba(255,255,255,0.35) 0%, transparent 60%)' }} animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }} />
               {b.portal.art.map((name, i) => (
-                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute object-contain" style={{ bottom: `${4 + drop * 100 / (100 - b.portal.box.top - b.portal.box.bottom)}%`, width: '54%', left: i ? '44%' : '2%', zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
+                <motion.img key={name} src={`assets/campus/${name}.png`} alt="" draggable={false} className="absolute object-contain" style={{ bottom: `${4 + drop * 100 / (100 - b.portal.box.top - b.portal.box.bottom)}%`, width: `${54 * (b.portal.artScale || 1)}%`, left: `${(i ? 44 : 2) * (b.portal.artScale || 1) + (1 - (b.portal.artScale || 1)) * 50}%`, zIndex: i ? 1 : 2, filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.4))' }}
                   animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.2 + i * 0.5, ease: 'easeInOut' }} />
               ))}
             </div>

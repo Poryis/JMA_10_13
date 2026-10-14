@@ -1069,6 +1069,7 @@ h1, h2, h3, h4, h5, h6 {
   .rank-hall-actions { left: 2% !important; transform: none !important; bottom: 20.5% !important; gap: 6px !important; }
   .rank-hall-actions button { padding: 4px 8px !important; font-size: 11px !important; min-height: 0 !important; }
   .rank-hall-next { bottom: 21% !important; right: 2% !important; width: 180px !important; }
+  .rank-hall-music { top: auto !important; bottom: 41% !important; right: 2% !important; }
 
   /* Fun Facts: room is zoomed just enough to hunt; room reaches every corner */
   .funfacts-hint { display: none !important; }

@@ -39,7 +39,7 @@ function isNight() { const h = new Date().getHours(); return h >= 20 || h < 5; }
 // Street music: a Jelly instrumental playlist per street. Shuffles, fades
 // in, never repeats the same track back-to-back, stops when you leave.
 const MUTE_KEY = 'jma_street_music_muted';
-function useStreetMusic(tracks) {
+export function useStreetMusic(tracks) {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [muted, setMuted] = useState(() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (_) { return false; } });
   const audioRef = useRef(null);

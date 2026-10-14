@@ -43,7 +43,6 @@ export default function OrientationGate() {
             <Smartphone className="w-14 h-14" style={{ color: 'var(--jma-dark)' }} strokeWidth={2.5} />
           </motion.div>
           <h1 className="text-3xl font-black font-display text-white mb-2">Turn me sideways!</h1>
-          <p className="text-base font-bold text-white/85 max-w-xs">The Academy is built for landscape — rotate your device to see the whole street.</p>
 
           {fs && !isStandalone() && (
             <button type="button" data-testid="orientation-fullscreen-btn" onClick={enterFullscreen}

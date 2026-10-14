@@ -19,8 +19,8 @@ const TOTAL_STEPS = STEPS_PER_BAR * BARS; // 64
 export const SONGS = [
   { name: 'Garage Stomp',    bpm: 96,  style: 'rock',     kit: 'samples', roots: ['A', 'F', 'C', 'G'] },
   { name: 'Surf Riot',       bpm: 126, style: 'surf',     kit: 'samples', roots: ['A', 'C', 'G', 'F'] },
-  { name: 'Giant Stomp',     bpm: 82,  style: 'halftime', kit: 'synth',   roots: ['A', 'G', 'F', 'G'] },
-  { name: 'Kindie Riot',     bpm: 168, style: 'punk',     kit: 'samples', roots: ['A', 'A', 'F', 'G'] },
+  { name: "Berto's Barn Burner", bpm: 82,  style: 'halftime', kit: 'synth',   roots: ['A', 'G', 'F', 'G'] },
+  { name: "Finn's Face Melter", bpm: 168, style: 'punk',     kit: 'samples', roots: ['A', 'A', 'F', 'G'] },
   { name: 'Alley Cat Strut', bpm: 104, style: 'rock',     kit: 'samples', roots: ['A', 'F', 'G', 'C'] },
 ];
 

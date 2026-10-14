@@ -909,6 +909,7 @@ h1, h2, h3, h4, h5, h6 {
 .home-short .home-card-title { font-size: clamp(26px, 4.2vw, 40px) !important; }
 .home-short .home-card-sub { font-size: clamp(8px, 1.3vw, 12px) !important; }
 
+.no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
 /* Sticker Shack: earned medals get a slow foil shine sweep */
 .medal-earned::after {
   content: ''; position: absolute; inset: 0; border-radius: 9999px; pointer-events: none;
@@ -1070,6 +1071,13 @@ h1, h2, h3, h4, h5, h6 {
   .rank-hall-actions button { padding: 4px 8px !important; font-size: 11px !important; min-height: 0 !important; }
   .rank-hall-next { bottom: 21% !important; right: 2% !important; width: 180px !important; }
   .rank-hall-music { top: auto !important; bottom: 41% !important; right: 2% !important; }
+
+  /* Dressing Room: tighter backstage on short screens */
+  .dr-grid { padding-top: 48px !important; padding-bottom: 10% !important; gap: 8px !important; }
+  .dr-mirror-col { width: 30% !important; }
+  .dr-hanger { width: 74px !important; }
+  .dr-hanger img, .dr-hanger [data-helmet] { height: 46px !important; }
+  .dr-camera { padding: 3px 8px !important; font-size: 10px !important; }
 
   /* Fun Facts: room is zoomed just enough to hunt; room reaches every corner */
   .funfacts-hint { display: none !important; }

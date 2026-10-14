@@ -57,7 +57,7 @@ function BadgeTicker({ names }) {
 }
 
 // Kick → crunchy guitar C-E-G-C → crash. Rock fanfare, not a recital.
-function playFanfare() {
+export function playFanfare() {
   SFX('Bass drum - kick.mp3', 0.9, 0);
   FANFARE.forEach((n, i) => SFX(`guitar-crunch/${n}.mp3`, 0.55, 60 + i * 120));
   SFX('Crash cymbal.mp3', 0.6, 60 + FANFARE.length * 120);

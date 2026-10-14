@@ -230,3 +230,7 @@
 | 32 | `finn.quest.q_lesson` | **Class time! Watch a lesson — it's FUN!** | bright | Quest: Music 101 lesson |
 | 33 | `finn.quest.q_note_match` | **Clear a round of Note Match! Oh boy oh boy!** | cool | Quest: Note Match |
 
+
+
+## Dressing Room (added June 2026)
+Per character: `<char>.dress.pick` (chosen as your Jelly) and `<char>.dress.wear` (changed outfit). Texts live in src/data/voiceLines.js — ids: charlie/finn/chunk/jazzy/stew/doctor/lou .dress.pick / .dress.wear.

@@ -402,8 +402,10 @@ export default function CampusMapPage({ plaza = false }) {
       <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '32vh', zIndex: 0, background: 'linear-gradient(180deg, rgba(2,36,63,0.45) 0%, rgba(2,36,63,0.12) 60%, transparent 100%)' }} />
       {/* layer order: water → fish (1) → shield (2) → bubbles + blimp (3) → strollers (4) → buildings (5) */}
       {plaza && (
-        <img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="absolute object-contain pointer-events-none"
-          style={{ top: 'clamp(8px, 2vh, 20px)', left: 'clamp(8px, 1.5vw, 24px)', height: 'clamp(150px, 44vh, 384px)', zIndex: 2, filter: 'drop-shadow(0 6px 0 rgba(2,36,63,0.35))' }} />
+        <motion.img src="assets/ui/logo.png" alt="Jelly of the Month Club Music Academy" draggable={false} data-testid="plaza-shield" className="absolute object-contain pointer-events-none"
+          data-shrunk={scrollX > 40 ? 'true' : 'false'}
+          style={{ top: 'clamp(8px, 2vh, 20px)', left: 'clamp(8px, 1.5vw, 24px)', height: 'clamp(120px, 35vh, 307px)', zIndex: 2, transformOrigin: 'top left', filter: 'drop-shadow(0 6px 0 rgba(2,36,63,0.35))' }}
+          animate={{ scale: 1 - 0.7 * Math.min(1, scrollX / 320), opacity: 1 - Math.min(1, scrollX / 320) }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
       )}
       <Bubbles className="absolute inset-0 z-[3]" />
       <BlimpFlyby zIndex={3} />
